@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../controllers/content_controller.dart';
 
 class MainLayout extends StatelessWidget {
-  final Widget child;
-
-  const MainLayout({super.key, required this.child});
+  const MainLayout({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +52,7 @@ class MainLayout extends StatelessWidget {
                 ),
               ),
               Expanded(
-                flex: 2, // 기본 공간
+                flex: 2,
                 child: Container(
                   color: const Color.fromARGB(255, 37, 52, 103),
                 ),
@@ -61,7 +61,9 @@ class MainLayout extends StatelessWidget {
           ),
         ),
       ),
-      body: child,
+      body: Consumer<ContentController>(
+        builder: (context, controller, child) => controller.currentContent,
+      ),
       bottomNavigationBar: Container(
         height: 80, // 원하는 높이로 조정
         color: const Color.fromARGB(255, 37, 52, 103),

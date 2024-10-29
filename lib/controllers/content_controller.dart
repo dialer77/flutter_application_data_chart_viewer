@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
+import 'package:flutter_application_data_chart_viewer/pages/chart_page.dart';
 import '../pages/main_page.dart';
 
 class ContentController extends ChangeNotifier {
-  final List<Widget> _history = [MainPage()];
+  final List<Widget> _history = [const MainPage()];
 
   Widget get currentContent => _history.last;
 
@@ -15,6 +16,7 @@ class ContentController extends ChangeNotifier {
     //   newContent = ChartPage(pageNumber: pageNumber, title: title);
     // }
     // _history.add(newContent);
+    _history.add(ChartPage(category: category));
     notifyListeners();
   }
 

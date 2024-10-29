@@ -4,8 +4,10 @@ import 'dart:io';
 import 'layout/main_layout.dart';
 import 'controllers/content_controller.dart';
 import 'package:provider/provider.dart';
+import 'repositories/analysis_data_repository.dart';
+import 'providers/analysis_data_provider.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows) {
     setWindowTitle('Flutter Demo');
@@ -19,9 +21,22 @@ void main() {
       ));
     });
   }
+
+  final repository = AnalysisDataRepository();
+  final dataProvider = AnalysisDataProvider(repository);
+
+  await dataProvider.loadAllData();
+
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => ContentController(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(
+          value: dataProvider,
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ContentController(),
+        ),
+      ],
       child: const MyApp(),
     ),
   );

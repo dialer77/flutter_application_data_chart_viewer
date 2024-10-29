@@ -5,8 +5,7 @@ class MenuListWidget extends StatefulWidget {
   final AnalysisCategory analysisCategory;
   final List<AnalysisDataType> analysisDataTypes;
   final List<AnalysisSubCategory> analysisSubCategories;
-  final Function(AnalysisCategory, AnalysisSubCategory, AnalysisDataType)?
-      onSubCategorySelected;
+  final Function(AnalysisCategory)? onSubCategorySelected;
 
   MenuListWidget({
     super.key,
@@ -120,11 +119,7 @@ class _MenuListWidgetState extends State<MenuListWidget>
     _controller.forward(); // 애니메이션 시작
 
     Future.delayed(const Duration(milliseconds: 1000), () {
-      widget.onSubCategorySelected?.call(
-        widget.analysisCategory,
-        widget.analysisSubCategories.first,
-        widget.analysisDataTypes.first,
-      );
+      widget.onSubCategorySelected?.call(widget.analysisCategory);
     });
   }
 
@@ -265,10 +260,10 @@ class _MenuListWidgetState extends State<MenuListWidget>
                       borderRadius: BorderRadius.circular(4),
                     ),
                     padding: const EdgeInsets.all(8.0),
-                    child: Center(
+                    child: const Center(
                       child: Text(
-                        widget.analysisDataTypes.first.toString(),
-                        style: const TextStyle(
+                        "실행",
+                        style: TextStyle(
                           color: Colors.black,
                           fontSize: 18.0,
                         ),

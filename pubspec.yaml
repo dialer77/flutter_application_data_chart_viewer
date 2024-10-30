@@ -96,6 +96,6 @@ flutter:
 
   assets:
     - assets/images/logo_amur_white_full.png
-    - assets/F_paper_DB.xlsx
+    - assets/F_논문DB.xlsx
     - assets/F_특허DB.xlsx
     - assets/F_특허+논문DB.xlsx

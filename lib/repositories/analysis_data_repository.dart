@@ -3,11 +3,11 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 
 class AnalysisDataRepository {
-  static const String _paperDbPath = 'assets/F_paper_DB.xlsx';
+  static const String _paperDbPath = 'assets/F_논문DB.xlsx';
   static const String _patentDbPath = 'assets/F_특허DB.xlsx';
   static const String _combinedDbPath = 'assets/F_특허+논문DB.xlsx';
 
-  Future<List<Map<String, dynamic>>> loadAnalysisData(
+  Future<Map<String, List<Map<String, dynamic>>>> loadAnalysisData(
       AnalysisDataType dataType) async {
     final String path;
     switch (dataType) {
@@ -23,32 +23,36 @@ class AnalysisDataRepository {
     }
 
     try {
-      print('Trying to load file: $path');
       final bytes = await rootBundle.load(path);
       final stopwatch = Stopwatch()..start();
       final excel = Excel.decodeBytes(bytes.buffer.asUint8List());
       print('Excel decoding took: ${stopwatch.elapsedMilliseconds}ms');
 
-      final List<Map<String, dynamic>> results = [];
+      final Map<String, List<Map<String, dynamic>>> sheetResults = {};
 
-      final sheet = excel.tables[excel.tables.keys.first];
-      if (sheet == null) return [];
+      for (var table in excel.tables.entries) {
+        final String sheetName = table.key;
+        final sheet = table.value;
+        final List<Map<String, dynamic>> results = [];
 
-      final headers = sheet.rows[0];
+        final headers = sheet.rows[0];
 
-      for (var row in sheet.rows.skip(1)) {
-        final Map<String, dynamic> rowData = {};
-        for (var i = 0; i < headers.length; i++) {
-          if (headers[i]?.value != null && row[i]?.value != null) {
-            rowData[headers[i]!.value.toString()] = row[i]!.value;
+        for (var row in sheet.rows.skip(1)) {
+          final Map<String, dynamic> rowData = {};
+          for (var i = 0; i < headers.length; i++) {
+            if (headers[i]?.value != null && row[i]?.value != null) {
+              rowData[headers[i]!.value.toString()] = row[i]!.value;
+            }
+          }
+          if (rowData.isNotEmpty) {
+            results.add(rowData);
           }
         }
-        if (rowData.isNotEmpty) {
-          results.add(rowData);
-        }
+
+        sheetResults[sheetName] = results;
       }
 
-      return results;
+      return sheetResults;
     } catch (e) {
       print('Error loading file: $e');
       throw Exception(

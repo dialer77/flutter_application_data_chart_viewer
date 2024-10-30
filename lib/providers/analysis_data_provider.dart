@@ -5,10 +5,10 @@ import 'package:flutter_application_data_chart_viewer/repositories/analysis_data
 
 class AnalysisDataProvider extends ChangeNotifier {
   final AnalysisDataRepository _repository;
-  final Map<AnalysisDataType, List<AnalysisDataModel>> _dataMap = {
-    AnalysisDataType.paper: [],
-    AnalysisDataType.patent: [],
-    AnalysisDataType.patentAndPaper: [],
+  final Map<AnalysisDataType, Map<String, List<AnalysisDataModel>>> _dataMap = {
+    AnalysisDataType.paper: {},
+    AnalysisDataType.patent: {},
+    AnalysisDataType.patentAndPaper: {},
   };
   AnalysisDataType _currentDataType = AnalysisDataType.paper;
   bool _isInitialized = false;
@@ -18,7 +18,8 @@ class AnalysisDataProvider extends ChangeNotifier {
   AnalysisDataProvider(this._repository);
 
   bool get isInitialized => _isInitialized;
-  List<AnalysisDataModel> get currentData => _dataMap[_currentDataType] ?? [];
+  Map<String, List<AnalysisDataModel>> get currentData =>
+      _dataMap[_currentDataType] ?? {};
   AnalysisDataType get currentDataType => _currentDataType;
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -31,10 +32,12 @@ class AnalysisDataProvider extends ChangeNotifier {
       notifyListeners();
 
       // 모든 데이터 타입에 대해 데이터 로드
-      const dataType = AnalysisDataType.paper;
-      final rawData = await _repository.loadAnalysisData(dataType);
-      _dataMap[dataType] =
-          rawData.map((map) => AnalysisDataModel.fromMap(map)).toList();
+      for (var dataType in AnalysisDataType.values) {
+        final rawData = await _repository.loadAnalysisData(dataType);
+        _dataMap[dataType] = rawData.map((sheetName, sheetData) => MapEntry(
+            sheetName,
+            sheetData.map((map) => AnalysisDataModel.fromMap(map)).toList()));
+      }
 
       _isInitialized = true;
       _error = null;
@@ -53,18 +56,23 @@ class AnalysisDataProvider extends ChangeNotifier {
   }
 
   List<AnalysisDataModel> getDataByCategory(AnalysisCategory category) {
-    return currentData.where((data) => data.category == category).toList();
+    return currentData.values
+        .expand((list) => list)
+        .where((data) => data.category == category)
+        .toList();
   }
 
   List<AnalysisDataModel> getDataBySubCategory(
       AnalysisSubCategory subCategory) {
-    return currentData
+    return currentData.values
+        .expand((list) => list)
         .where((data) => data.subCategory == subCategory)
         .toList();
   }
 
   // 특정 DB의 데이터만 가져오기
-  List<AnalysisDataModel> getDataByDataType(AnalysisDataType dataType) {
-    return _dataMap[dataType] ?? [];
+  Map<String, List<AnalysisDataModel>> getDataByDataType(
+      AnalysisDataType dataType) {
+    return _dataMap[dataType] ?? {};
   }
 }

@@ -21,10 +21,10 @@ class AnalysisDataModel {
 
   factory AnalysisDataModel.fromMap(Map<String, dynamic> map) {
     return AnalysisDataModel(
-      code: map['CODE'],
-      codeName: map['CODE_NAME'],
-      country: map['COUNTRY'],
-      name: map['NAME'],
+      code: map['CODE'].toString(),
+      codeName: map['CODE_NAME'].toString(),
+      country: map['COUNTRY'].toString(),
+      name: map['NAME'].toString(),
       category: AnalysisCategory.industryTech,
       subCategory: AnalysisSubCategory.techTrend,
       // category: AnalysisCategory.values.firstWhere(

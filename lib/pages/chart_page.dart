@@ -100,55 +100,55 @@ class _ChartPageState extends State<ChartPage>
                         borderRadius: BorderRadius.circular(10),
                       ),
                       padding: const EdgeInsets.all(16),
-                      child: Column(
+                      child: const Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SectionWidget(
+                          SectionWidget(
                             sectionType: SectionType.analysisData,
                           ),
-                          const SectionWidget(
+                          SectionWidget(
                             sectionType: SectionType.analysisPeriod,
                           ),
-                          const SectionWidget(
+                          SectionWidget(
                             sectionType: SectionType.technologyList,
                           ),
-                          const SizedBox(height: 20),
-                          const Text(
+                          SizedBox(height: 20),
+                          Text(
                             '데이터 미리보기:',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          Expanded(
-                            child: Consumer<AnalysisDataProvider>(
-                              builder: (context, provider, child) {
-                                final data =
-                                    provider.getDataByCategory(widget.category);
-                                return ListView.builder(
-                                  itemCount: data.length,
-                                  itemBuilder: (context, index) {
-                                    final item = data[index];
-                                    return Card(
-                                      child: ListTile(
-                                        title: Text('ID: ${item.code}'),
-                                        subtitle: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text('Name: ${item.name}'),
-                                            Text(
-                                                'Sub Category: ${item.subCategory}'),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          ),
+                          SizedBox(height: 10),
+                          // Expanded(
+                          //   child: Consumer<AnalysisDataProvider>(
+                          //     builder: (context, provider, child) {
+                          //       final data =
+                          //           provider.getDataByCategory(widget.category);
+                          //       return ListView.builder(
+                          //         itemCount: data.length,
+                          //         itemBuilder: (context, index) {
+                          //           final item = data[index];
+                          //           return Card(
+                          //             child: ListTile(
+                          //               title: Text('ID: ${item.code}'),
+                          //               subtitle: Column(
+                          //                 crossAxisAlignment:
+                          //                     CrossAxisAlignment.start,
+                          //                 children: [
+                          //                   Text('Name: ${item.name}'),
+                          //                   Text(
+                          //                       'Sub Category: ${item.subCategory}'),
+                          //                 ],
+                          //               ),
+                          //             ),
+                          //           );
+                          //         },
+                          //       );
+                          //     },
+                          //   ),
+                          // ),
                         ],
                       ),
                     ),

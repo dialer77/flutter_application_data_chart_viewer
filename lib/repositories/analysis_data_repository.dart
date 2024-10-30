@@ -59,4 +59,45 @@ class AnalysisDataRepository {
           'Failed to load ${dataType.name} database: ${e.toString()}');
     }
   }
+
+  // 데이터 코드 목록 추출 (예: TCN, TCI 등)
+  Set<String> extractDataCodes(Map<String, List<Map<String, dynamic>>> data) {
+    Set<String> codes = {};
+
+    for (var sheetData in data.values) {
+      if (sheetData.isNotEmpty) {
+        final sampleRow = sheetData.first;
+        for (var key in sampleRow.keys) {
+          if (key.contains('_')) {
+            final code = key.split('_')[0];
+            codes.add(code);
+          }
+        }
+      }
+    }
+
+    return codes;
+  }
+
+  // 연도 범위 추출
+  (int, int) extractYearRange(Map<String, List<Map<String, dynamic>>> data) {
+    int minYear = 9999;
+    int maxYear = 0;
+
+    for (var sheetData in data.values) {
+      if (sheetData.isNotEmpty) {
+        final sampleRow = sheetData.first;
+        for (var key in sampleRow.keys) {
+          if (key.contains('_')) {
+            final yearStr = key.split('_')[1];
+            final year = 2000 + int.parse(yearStr);
+            minYear = year < minYear ? year : minYear;
+            maxYear = year > maxYear ? year : maxYear;
+          }
+        }
+      }
+    }
+
+    return (minYear, maxYear);
+  }
 }

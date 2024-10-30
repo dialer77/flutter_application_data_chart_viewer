@@ -34,9 +34,12 @@ class AnalysisDataProvider extends ChangeNotifier {
       // 모든 데이터 타입에 대해 데이터 로드
       for (var dataType in AnalysisDataType.values) {
         final rawData = await _repository.loadAnalysisData(dataType);
-        _dataMap[dataType] = rawData.map((sheetName, sheetData) => MapEntry(
+        _dataMap[dataType] = rawData.map(
+          (sheetName, rawItems) => MapEntry(
             sheetName,
-            sheetData.map((map) => AnalysisDataModel.fromMap(map)).toList()));
+            rawItems.map((item) => AnalysisDataModel.fromMap(item)).toList(),
+          ),
+        );
       }
 
       _isInitialized = true;
@@ -55,24 +58,42 @@ class AnalysisDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<AnalysisDataModel> getDataByCategory(AnalysisCategory category) {
-    return currentData.values
-        .expand((list) => list)
-        .where((data) => data.category == category)
-        .toList();
-  }
+  // List<AnalysisDataModel> getDataByCategory(AnalysisCategory category) {
+  //   return currentData.values
+  //       .expand((list) => list)
+  //       .where((data) => data.category == category)
+  //       .toList();
+  // }
 
-  List<AnalysisDataModel> getDataBySubCategory(
-      AnalysisSubCategory subCategory) {
-    return currentData.values
-        .expand((list) => list)
-        .where((data) => data.subCategory == subCategory)
-        .toList();
-  }
+  // List<AnalysisDataModel> getDataBySubCategory(
+  //     AnalysisSubCategory subCategory) {
+  //   return currentData.values
+  //       .expand((list) => list)
+  //       .where((data) => data.subCategory == subCategory)
+  //       .toList();
+  // }
 
   // 특정 DB의 데이터만 가져오기
   Map<String, List<AnalysisDataModel>> getDataByDataType(
       AnalysisDataType dataType) {
     return _dataMap[dataType] ?? {};
+  }
+
+  List<AnalysisDataModel> getDataByYearAndCode(int year, String dataCode) {
+    return currentData.values
+        .expand((list) => list)
+        .where((data) => data.getValue(dataCode, year) != null)
+        .toList();
+  }
+
+  Map<String, double> getYearlyDataForCode(String code) {
+    for (var sheetData in currentData.values) {
+      for (var data in sheetData) {
+        if (data.codeInfo.code == code) {
+          return data.yearlyValues;
+        }
+      }
+    }
+    return {};
   }
 }

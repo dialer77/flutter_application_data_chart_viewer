@@ -13,7 +13,7 @@ class MainPage extends StatelessWidget {
     final analysisProvider = context.read<AnalysisDataProvider>();
 
     // 현재 선택된 DB의 카테고리별 데이터 가져오기
-    final categoryData = analysisProvider.getDataByCategory(category);
+    // final categoryData = analysisProvider.getDataByCategory(category);
 
     context.read<ContentController>().changeContent(category);
   }

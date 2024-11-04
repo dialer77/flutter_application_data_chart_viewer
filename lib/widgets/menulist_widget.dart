@@ -12,7 +12,7 @@ class MenuListWidget extends StatefulWidget {
     required this.analysisCategory,
     this.onSubCategorySelected,
   })  : analysisDataTypes = _getAnalysisDataTypes(analysisCategory),
-        analysisSubCategories = _getAnalysisSubCategories(analysisCategory);
+        analysisSubCategories = getAnalysisSubCategories(analysisCategory);
 
   static List<AnalysisDataType> _getAnalysisDataTypes(
       AnalysisCategory category) {
@@ -38,7 +38,7 @@ class MenuListWidget extends StatefulWidget {
     }
   }
 
-  static List<AnalysisSubCategory> _getAnalysisSubCategories(
+  static List<AnalysisSubCategory> getAnalysisSubCategories(
       AnalysisCategory category) {
     switch (category) {
       case AnalysisCategory.industryTech:

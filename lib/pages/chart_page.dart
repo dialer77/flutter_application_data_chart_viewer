@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/section_widget.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/analysis_data_widget.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/menulist_widget.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/techlist_widget.dart';
 import 'package:provider/provider.dart';
 import '../controllers/content_controller.dart';
 
@@ -18,6 +20,7 @@ class _ChartPageState extends State<ChartPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  List<AnalysisSubCategory> _subCategories = [];
 
   @override
   void initState() {
@@ -33,6 +36,42 @@ class _ChartPageState extends State<ChartPage>
     );
 
     _controller.forward();
+    _subCategories = MenuListWidget.getAnalysisSubCategories(widget.category);
+  }
+
+  Widget _buildSubCategoryButtons() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: _subCategories.map((subCategory) {
+          return Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 16, 72, 98),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () {
+                print('Selected: ${subCategory.toString()}');
+              },
+              child: Text(
+                subCategory.toString(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
   }
 
   @override
@@ -44,6 +83,7 @@ class _ChartPageState extends State<ChartPage>
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
           width: 300,
@@ -100,58 +140,46 @@ class _ChartPageState extends State<ChartPage>
                         borderRadius: BorderRadius.circular(10),
                       ),
                       padding: const EdgeInsets.all(16),
-                      child: const Column(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SectionWidget(
-                            sectionType: SectionType.analysisData,
-                          ),
-                          SectionWidget(
-                            sectionType: SectionType.analysisPeriod,
-                          ),
-                          SectionWidget(
-                            sectionType: SectionType.technologyList,
-                          ),
-                          SizedBox(height: 20),
-                          Text(
-                            '데이터 미리보기:',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          // Expanded(
-                          //   child: Consumer<AnalysisDataProvider>(
-                          //     builder: (context, provider, child) {
-                          //       final data =
-                          //           provider.getDataByCategory(widget.category);
-                          //       return ListView.builder(
-                          //         itemCount: data.length,
-                          //         itemBuilder: (context, index) {
-                          //           final item = data[index];
-                          //           return Card(
-                          //             child: ListTile(
-                          //               title: Text('ID: ${item.code}'),
-                          //               subtitle: Column(
-                          //                 crossAxisAlignment:
-                          //                     CrossAxisAlignment.start,
-                          //                 children: [
-                          //                   Text('Name: ${item.name}'),
-                          //                   Text(
-                          //                       'Sub Category: ${item.subCategory}'),
-                          //                 ],
-                          //               ),
-                          //             ),
-                          //           );
-                          //         },
-                          //       );
-                          //     },
-                          //   ),
-                          // ),
+                          AnalysisDataWidget(category: widget.category),
+                          const SizedBox(height: 20),
+                          TechListWidget(category: widget.category),
+                          const SizedBox(height: 20),
                         ],
                       ),
                     ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 50, 20, 0),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: _buildSubCategoryButtons(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  color: Colors.grey[200],
+                  margin: const EdgeInsets.all(20),
+                  child: const Center(
+                    child: Text('차트가 표시될 영역'),
                   ),
                 ),
               ),

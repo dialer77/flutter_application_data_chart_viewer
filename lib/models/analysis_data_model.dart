@@ -5,42 +5,60 @@ class CodeInfo {
   final String codeName;
   final String country;
   final String name;
+  final String scode;
+  final String market;
+  final int year;
+
   final AnalysisCategory category;
   final AnalysisSubCategory subCategory;
+  final TechListType techType;
 
   CodeInfo({
     required this.code,
     required this.codeName,
     required this.country,
     required this.name,
+    required this.scode,
+    required this.market,
+    required this.year,
     required this.category,
     required this.subCategory,
+    required this.techType,
   });
 }
 
 class AnalysisDataModel {
   final CodeInfo codeInfo;
-  final Map<String, double> yearlyValues; // "TCN_00" -> value
 
   AnalysisDataModel({
     required this.codeInfo,
-    required this.yearlyValues,
   });
 
-  double? getValue(String dataCode, int year) {
-    final key = '${dataCode}_${year.toString().substring(2)}';
-    return yearlyValues[key];
-  }
+  factory AnalysisDataModel.fromMap(
+      String sheetName, Map<String, dynamic> map) {
+    String code = map['CODE'].toString();
+    String codeName = map['CODE_NAME'].toString();
+    String country = map['COUNTRY'].toString();
+    String name = map['NAME'].toString();
+    String scode = map['SCODE'].toString();
+    String market = map['MARKET'].toString();
 
-  factory AnalysisDataModel.fromMap(Map<String, dynamic> map) {
-    final codeInfo = CodeInfo(
-      code: map['CODE'].toString(),
-      codeName: map['CODE_NAME'].toString(),
-      country: map['COUNTRY'].toString(),
-      name: map['NAME'].toString(),
-      category: AnalysisCategory.industryTech, // 필요에 따라 수정
-      subCategory: AnalysisSubCategory.techTrend, // 필요에 따라 수정
-    );
+    for (var key in map.keys) {
+      if (key.contains('_')) {
+        final codeInfo = CodeInfo(
+          code: code,
+          codeName: codeName,
+          country: country,
+          name: name,
+          scode: scode,
+          market: market,
+          year: int.parse(map['YEAR'].toString()),
+          category: AnalysisCategory.industryTech, // 필요에 따라 수정
+          subCategory: AnalysisSubCategory.techTrend, // 필요에 따라 수정
+          techType: TechListType.lc, // 필요에 따라 수정
+        );
+      }
+    }
 
     final yearlyValues = <String, double>{};
     map.forEach((key, value) {
@@ -52,7 +70,6 @@ class AnalysisDataModel {
 
     return AnalysisDataModel(
       codeInfo: codeInfo,
-      yearlyValues: yearlyValues,
     );
   }
 }

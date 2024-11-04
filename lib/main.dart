@@ -6,6 +6,7 @@ import 'controllers/content_controller.dart';
 import 'package:provider/provider.dart';
 import 'repositories/analysis_data_repository.dart';
 import 'providers/analysis_data_provider.dart';
+import 'providers/analysis_state_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +31,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => AnalysisStateProvider()),
         ChangeNotifierProvider.value(
           value: dataProvider,
         ),

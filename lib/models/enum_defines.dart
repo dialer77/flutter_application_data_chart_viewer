@@ -50,3 +50,15 @@ enum AnalysisSubCategory {
   @override
   String toString() => label;
 }
+
+enum TechListType {
+  lc('LC'),
+  mc('MC'),
+  sc('SC');
+
+  final String label;
+  const TechListType(this.label);
+
+  @override
+  String toString() => label;
+}

@@ -37,7 +37,9 @@ class AnalysisDataProvider extends ChangeNotifier {
         _dataMap[dataType] = rawData.map(
           (sheetName, rawItems) => MapEntry(
             sheetName,
-            rawItems.map((item) => AnalysisDataModel.fromMap(item)).toList(),
+            rawItems
+                .map((item) => AnalysisDataModel.fromMap(sheetName, item))
+                .toList(),
           ),
         );
       }
@@ -77,23 +79,5 @@ class AnalysisDataProvider extends ChangeNotifier {
   Map<String, List<AnalysisDataModel>> getDataByDataType(
       AnalysisDataType dataType) {
     return _dataMap[dataType] ?? {};
-  }
-
-  List<AnalysisDataModel> getDataByYearAndCode(int year, String dataCode) {
-    return currentData.values
-        .expand((list) => list)
-        .where((data) => data.getValue(dataCode, year) != null)
-        .toList();
-  }
-
-  Map<String, double> getYearlyDataForCode(String code) {
-    for (var sheetData in currentData.values) {
-      for (var data in sheetData) {
-        if (data.codeInfo.code == code) {
-          return data.yearlyValues;
-        }
-      }
-    }
-    return {};
   }
 }

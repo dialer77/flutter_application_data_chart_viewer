@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
+import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_state_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -76,6 +77,9 @@ class _AnalysisDataWidgetState extends State<AnalysisDataWidget> {
                       onChanged: (AnalysisDataType? value) {
                         if (value != null) {
                           provider.setSelectedDataType(value);
+                          context
+                              .read<AnalysisDataProvider>()
+                              .changeDataType(value);
                         }
                       },
                     ),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
+import 'package:flutter_application_data_chart_viewer/providers/analysis_state_provider.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/analysis_data_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/menulist_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/techlist_widget.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart_widget.dart';
 import 'package:provider/provider.dart';
 import '../controllers/content_controller.dart';
 
@@ -21,6 +23,7 @@ class _ChartPageState extends State<ChartPage>
   late AnimationController _controller;
   late Animation<double> _animation;
   List<AnalysisSubCategory> _subCategories = [];
+  AnalysisSubCategory? _selectedSubCategory;
 
   @override
   void initState() {
@@ -37,6 +40,11 @@ class _ChartPageState extends State<ChartPage>
 
     _controller.forward();
     _subCategories = MenuListWidget.getAnalysisSubCategories(widget.category);
+
+    // 첫 번째 서브카테고리를 기본값으로 설정
+    if (_subCategories.isNotEmpty) {
+      _selectedSubCategory = _subCategories.first;
+    }
   }
 
   Widget _buildSubCategoryButtons() {
@@ -44,11 +52,15 @@ class _ChartPageState extends State<ChartPage>
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: _subCategories.map((subCategory) {
+          final isSelected = _selectedSubCategory == subCategory;
           return Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 16, 72, 98),
+                backgroundColor: isSelected
+                    ? Colors.blue // 선택된 항목의 배경색
+                    : const Color.fromARGB(255, 16, 72, 98), // 기본 배경색
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 16,
@@ -58,13 +70,24 @@ class _ChartPageState extends State<ChartPage>
                 ),
               ),
               onPressed: () {
+                setState(() {
+                  // 이미 선택된 항목을 다시 클릭하면 선택 해제
+                  if (_selectedSubCategory == subCategory) {
+                    _selectedSubCategory = null;
+                  } else {
+                    _selectedSubCategory = subCategory;
+                  }
+                });
                 print('Selected: ${subCategory.toString()}');
               },
               child: Text(
                 subCategory.toString(),
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
+                  fontWeight: isSelected
+                      ? FontWeight.bold
+                      : FontWeight.normal, // 선택된 항목의 텍스트를 굵게
                 ),
               ),
             ),
@@ -82,6 +105,8 @@ class _ChartPageState extends State<ChartPage>
 
   @override
   Widget build(BuildContext context) {
+    final stateProvider = context.watch<AnalysisStateProvider>();
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -146,7 +171,62 @@ class _ChartPageState extends State<ChartPage>
                           AnalysisDataWidget(category: widget.category),
                           const SizedBox(height: 20),
                           TechListWidget(category: widget.category),
-                          const SizedBox(height: 20),
+                          const Spacer(),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    const Color.fromARGB(255, 16, 72, 98),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 15),
+                              ),
+                              onPressed: () {
+                                final stateProvider =
+                                    context.read<AnalysisStateProvider>();
+                                final dataProvider =
+                                    context.read<AnalysisDataProvider>();
+
+                                // 현재 선택된 값들 확인
+                                if (_selectedSubCategory == null) {
+                                  // 서브카테고리가 선택되지 않았을 때 처리
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text('서브카테고리를 선택해주세요')),
+                                  );
+                                  return;
+                                }
+
+                                if (stateProvider.selectedDataCode == null) {
+                                  // LC 코드가 선택되지 않았을 때 처리
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text('LC 코드를 선택해주세요')),
+                                  );
+                                  return;
+                                }
+
+                                // 차트 데이터 갱신 및 표시
+                                stateProvider.showChart();
+
+                                // 디버그 출력
+                                print(
+                                    '차트 갱신: Category=${widget.category}, SubCategory=$_selectedSubCategory, LC=${stateProvider.selectedDataCode}');
+                              },
+                              child: const Text(
+                                '실행',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -174,15 +254,17 @@ class _ChartPageState extends State<ChartPage>
                   ],
                 ),
               ),
-              Expanded(
-                child: Container(
-                  color: Colors.grey[200],
-                  margin: const EdgeInsets.all(20),
-                  child: const Center(
-                    child: Text('차트가 표시될 영역'),
+              if (stateProvider.isChartVisible)
+                Expanded(
+                  child: Container(
+                    color: Colors.grey[200],
+                    margin: const EdgeInsets.all(20),
+                    child: ChartWidget(
+                      category: widget.category,
+                      selectedSubCategory: _selectedSubCategory,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),

@@ -7,10 +7,8 @@ class CodeInfo {
   final String name;
   final String scode;
   final String market;
-  final int year;
+  final String sheetName;
 
-  final AnalysisCategory category;
-  final AnalysisSubCategory subCategory;
   final TechListType techType;
 
   CodeInfo({
@@ -20,18 +18,18 @@ class CodeInfo {
     required this.name,
     required this.scode,
     required this.market,
-    required this.year,
-    required this.category,
-    required this.subCategory,
+    required this.sheetName,
     required this.techType,
   });
 }
 
 class AnalysisDataModel {
   final CodeInfo codeInfo;
+  final Map<String, Map<int, double>> analysisDatas;
 
   AnalysisDataModel({
     required this.codeInfo,
+    required this.analysisDatas,
   });
 
   factory AnalysisDataModel.fromMap(
@@ -43,33 +41,59 @@ class AnalysisDataModel {
     String scode = map['SCODE'].toString();
     String market = map['MARKET'].toString();
 
+    TechListType techType = TechListType.lc;
+    List<String> sheetNameSplit = sheetName.split(' ');
+    switch (sheetNameSplit[0].substring(1, 3)) {
+      case "LC":
+        techType = TechListType.lc;
+        break;
+      case "MC":
+        techType = TechListType.mc;
+        break;
+      case "SC":
+        techType = TechListType.sc;
+        break;
+    }
+
+    final codeInfo = CodeInfo(
+      code: code,
+      codeName: codeName,
+      country: country,
+      name: name,
+      scode: scode,
+      market: market,
+      sheetName: sheetNameSplit.sublist(1).join(''),
+      techType: techType,
+    );
+
+    final Map<String, Map<int, double>> analysisDatas = {};
+
     for (var key in map.keys) {
-      if (key.contains('_')) {
-        final codeInfo = CodeInfo(
-          code: code,
-          codeName: codeName,
-          country: country,
-          name: name,
-          scode: scode,
-          market: market,
-          year: int.parse(map['YEAR'].toString()),
-          category: AnalysisCategory.industryTech, // 필요에 따라 수정
-          subCategory: AnalysisSubCategory.techTrend, // 필요에 따라 수정
-          techType: TechListType.lc, // 필요에 따라 수정
-        );
+      if (key.contains('_') && key != "CODE_NAME") {
+        int year = 0;
+        String dataCode = "";
+        if (int.tryParse(key) != null) {
+          year = int.parse(key);
+        } else {
+          dataCode = key.split('_').first;
+          year = int.parse(key.split('_').last);
+        }
+        year += 2000;
+
+        if (analysisDatas[dataCode] == null) {
+          analysisDatas[dataCode] = {
+            year: double.tryParse(map[key].toString()) ?? 0.0
+          };
+        } else {
+          analysisDatas[dataCode]![year] =
+              double.tryParse(map[key].toString()) ?? 0.0;
+        }
       }
     }
 
-    final yearlyValues = <String, double>{};
-    map.forEach((key, value) {
-      if (!['CODE', 'CODE_NAME', 'COUNTRY', 'NAME'].contains(key) &&
-          value != null) {
-        yearlyValues[key] = double.tryParse(value.toString()) ?? 0.0;
-      }
-    });
-
     return AnalysisDataModel(
       codeInfo: codeInfo,
+      analysisDatas: analysisDatas,
     );
   }
 }

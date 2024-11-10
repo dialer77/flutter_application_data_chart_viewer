@@ -51,7 +51,7 @@ class _AnalysisDataWidgetState extends State<AnalysisDataWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AnalysisStateProvider>();
+    final provider = context.watch<AnalysisDataProvider>();
     final availableOptions = _getAvailableOptions();
 
     return Column(
@@ -76,10 +76,9 @@ class _AnalysisDataWidgetState extends State<AnalysisDataWidget> {
                       groupValue: provider.selectedDataType,
                       onChanged: (AnalysisDataType? value) {
                         if (value != null) {
-                          provider.setSelectedDataType(value);
                           context
                               .read<AnalysisDataProvider>()
-                              .changeDataType(value);
+                              .selectDataType(value);
                         }
                       },
                     ),

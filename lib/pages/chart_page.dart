@@ -3,6 +3,7 @@ import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_state_provider.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/analysis_data_widget.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/analysis_taget_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/menulist_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/techlist_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart_widget.dart';
@@ -172,6 +173,15 @@ class _ChartPageState extends State<ChartPage>
                           AnalysisDataWidget(category: widget.category),
                           const SizedBox(height: 20),
                           TechListWidget(category: widget.category),
+                          if (widget.category == AnalysisCategory.countryTech ||
+                              widget.category == AnalysisCategory.companyTech ||
+                              widget.category == AnalysisCategory.academicTech)
+                            Column(
+                              children: [
+                                const SizedBox(height: 20),
+                                AnalysisTargetWidget(category: widget.category),
+                              ],
+                            ),
                           const SizedBox(height: 20),
                           const Spacer(),
                           const AnalysisPeriodWidget(),
@@ -192,8 +202,6 @@ class _ChartPageState extends State<ChartPage>
                               onPressed: () {
                                 final stateProvider =
                                     context.read<AnalysisStateProvider>();
-                                final dataProvider =
-                                    context.read<AnalysisDataProvider>();
 
                                 // 현재 선택된 값들 확인
                                 if (_selectedSubCategory == null) {
@@ -213,13 +221,8 @@ class _ChartPageState extends State<ChartPage>
                                   );
                                   return;
                                 }
-
                                 // 차트 데이터 갱신 및 표시
                                 stateProvider.showChart();
-
-                                // 디버그 출력
-                                print(
-                                    '차트 갱신: Category=${widget.category}, SubCategory=$_selectedSubCategory, LC=${stateProvider.selectedDataCode}');
                               },
                               child: const Text(
                                 '실행',

@@ -1,6 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_application_data_chart_viewer/models/analysis_data_model.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/repositories/analysis_data_repository.dart';
@@ -12,7 +10,21 @@ class AnalysisDataProvider extends ChangeNotifier {
     AnalysisDataType.patent: [],
     AnalysisDataType.patentAndPaper: [],
   };
-  AnalysisDataType _currentDataType = AnalysisDataType.paper;
+
+  AnalysisDataType _selectedDataType = AnalysisDataType.paper;
+  AnalysisDataType get selectedDataType => _selectedDataType;
+  void selectDataType(AnalysisDataType dataType) {
+    _selectedDataType = dataType;
+    notifyListeners();
+  }
+
+  AnalysisCategory _selectedCategory = AnalysisCategory.countryTech;
+  AnalysisCategory get selectedCategory => _selectedCategory;
+  void selectCategory(AnalysisCategory category) {
+    _selectedCategory = category;
+    notifyListeners();
+  }
+
   bool _isInitialized = false;
   bool _isLoading = false;
   String? _error;
@@ -20,8 +32,8 @@ class AnalysisDataProvider extends ChangeNotifier {
   AnalysisDataProvider(this._repository);
 
   bool get isInitialized => _isInitialized;
-  List<AnalysisDataModel> get currentData => _dataMap[_currentDataType] ?? [];
-  AnalysisDataType get currentDataType => _currentDataType;
+  List<AnalysisDataModel> get currentData => _dataMap[_selectedDataType] ?? [];
+
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -49,11 +61,6 @@ class AnalysisDataProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
-  }
-
-  void changeDataType(AnalysisDataType dataType) {
-    _currentDataType = dataType;
-    notifyListeners();
   }
 
   // 카테고리별 시트 이름 매핑
@@ -98,19 +105,19 @@ class AnalysisDataProvider extends ChangeNotifier {
     if (category == AnalysisCategory.industryTech) {
       switch (subCategory) {
         case AnalysisSubCategory.techTrend:
-          if (currentDataType == AnalysisDataType.patent) {
+          if (selectedDataType == AnalysisDataType.patent) {
             return 'PAN';
-          } else if (currentDataType == AnalysisDataType.paper) {
+          } else if (selectedDataType == AnalysisDataType.paper) {
             return 'TPN';
           }
         case AnalysisSubCategory.techInnovationIndex:
-          if (currentDataType == AnalysisDataType.patent) {
+          if (selectedDataType == AnalysisDataType.patent) {
             if (techListType == TechListType.lc) {
               return 'PCN';
             } else {
               return 'PCI';
             }
-          } else if (currentDataType == AnalysisDataType.paper) {
+          } else if (selectedDataType == AnalysisDataType.paper) {
             if (techListType == TechListType.lc) {
               return 'TCN';
             } else {
@@ -120,9 +127,9 @@ class AnalysisDataProvider extends ChangeNotifier {
         case AnalysisSubCategory.marketExpansionIndex:
           return 'PFI';
         case AnalysisSubCategory.rdInvestmentIndex:
-          if (currentDataType == AnalysisDataType.patent) {
+          if (selectedDataType == AnalysisDataType.patent) {
             return 'PAI';
-          } else if (currentDataType == AnalysisDataType.paper) {
+          } else if (selectedDataType == AnalysisDataType.paper) {
             return 'TPI';
           }
         default:
@@ -131,23 +138,23 @@ class AnalysisDataProvider extends ChangeNotifier {
     } else if (category == AnalysisCategory.countryTech) {
       switch (subCategory) {
         case AnalysisSubCategory.countryTrend:
-          if (currentDataType == AnalysisDataType.patent) {
+          if (selectedDataType == AnalysisDataType.patent) {
             return 'PAN';
-          } else if (currentDataType == AnalysisDataType.paper) {
+          } else if (selectedDataType == AnalysisDataType.paper) {
             return 'TPN';
           }
         case AnalysisSubCategory.techInnovationIndex:
-          if (currentDataType == AnalysisDataType.patent) {
+          if (selectedDataType == AnalysisDataType.patent) {
             return 'PCI';
-          } else if (currentDataType == AnalysisDataType.paper) {
+          } else if (selectedDataType == AnalysisDataType.paper) {
             return 'TCI';
           }
         case AnalysisSubCategory.marketExpansionIndex:
           return 'PFI';
         case AnalysisSubCategory.rdInvestmentIndex:
-          if (currentDataType == AnalysisDataType.patent) {
+          if (selectedDataType == AnalysisDataType.patent) {
             return 'PAI';
-          } else if (currentDataType == AnalysisDataType.paper) {
+          } else if (selectedDataType == AnalysisDataType.paper) {
             return 'TPI';
           }
         default:

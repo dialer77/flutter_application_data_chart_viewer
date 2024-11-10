@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 
 class AnalysisStateProvider extends ChangeNotifier {
-  AnalysisDataType _selectedDataType = AnalysisDataType.patent;
   TechListType _selectedTechListType = TechListType.lc;
   String? _selectedDataCode;
   Set<String> _dataCodes = {};
@@ -15,7 +14,6 @@ class AnalysisStateProvider extends ChangeNotifier {
   bool get isChartVisible => _isChartVisible;
 
   // Getters
-  AnalysisDataType get selectedDataType => _selectedDataType;
   TechListType get selectedTechListType => _selectedTechListType;
   String? get selectedDataCode => _selectedDataCode;
   Set<String> get dataCodes => _dataCodes;
@@ -51,12 +49,6 @@ class AnalysisStateProvider extends ChangeNotifier {
     _startYear = start;
     _endYear = end;
     refreshChart(); // 차트 갱신 요청
-    notifyListeners();
-  }
-
-  // Setters with notification
-  void setSelectedDataType(AnalysisDataType type) {
-    _selectedDataType = type;
     notifyListeners();
   }
 
@@ -115,13 +107,10 @@ class AnalysisStateProvider extends ChangeNotifier {
     // 기존 초기화 코드
     switch (category) {
       case AnalysisCategory.techGap:
-        _selectedDataType = AnalysisDataType.patent;
         _selectedTechListType = TechListType.lc;
       case AnalysisCategory.academicTech:
-        _selectedDataType = AnalysisDataType.paper;
         _selectedTechListType = TechListType.mc;
       default:
-        _selectedDataType = AnalysisDataType.patent;
         _selectedTechListType = TechListType.lc;
     }
 

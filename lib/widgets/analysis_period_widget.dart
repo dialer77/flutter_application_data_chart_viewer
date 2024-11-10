@@ -54,7 +54,7 @@ class _AnalysisPeriodWidgetState extends State<AnalysisPeriodWidget> {
             Expanded(
               child: RangeSlider(
                 values: _currentRangeValues,
-                min: (currentYear - 20).toDouble(),
+                min: (currentYear - 10).toDouble(),
                 max: currentYear.toDouble(),
                 divisions: 20,
                 labels: RangeLabels(

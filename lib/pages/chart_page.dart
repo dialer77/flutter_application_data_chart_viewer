@@ -6,6 +6,7 @@ import 'package:flutter_application_data_chart_viewer/widgets/analysis_data_widg
 import 'package:flutter_application_data_chart_viewer/widgets/menulist_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/techlist_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart_widget.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/analysis_period_widget.dart';
 import 'package:provider/provider.dart';
 import '../controllers/content_controller.dart';
 
@@ -171,7 +172,10 @@ class _ChartPageState extends State<ChartPage>
                           AnalysisDataWidget(category: widget.category),
                           const SizedBox(height: 20),
                           TechListWidget(category: widget.category),
+                          const SizedBox(height: 20),
                           const Spacer(),
+                          const AnalysisPeriodWidget(),
+                          const SizedBox(height: 20),
                           SizedBox(
                             width: double.infinity,
                             height: 50,

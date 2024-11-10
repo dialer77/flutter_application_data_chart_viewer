@@ -24,6 +24,36 @@ class AnalysisStateProvider extends ChangeNotifier {
   Set<String> get scDataCodes => _scDataCodes;
   Set<String> get selectedScDataCodes => _selectedScDataCodes;
 
+  // 연도 범위 상태 추가
+  final int _currentYear = DateTime.now().year;
+  int _startYear;
+  int _endYear;
+
+  // 생성자에서 초기값 설정
+  AnalysisStateProvider()
+      : _startYear = DateTime.now().year - 10,
+        _endYear = DateTime.now().year;
+
+  // Getters for year range
+  int get startYear => _startYear;
+  int get endYear => _endYear;
+  int get currentYear => _currentYear;
+
+  // Setter for year range
+  void setYearRange(int start, int end) {
+    // 유효성 검사
+    if (start > end) return;
+    if (start < _currentYear - 20) return; // 최대 20년 전까지만 허용
+    if (end > _currentYear) return; // 현재 년도까지만 허용
+
+    if (start == _startYear && end == _endYear) return; // 변경사항 없으면 리턴
+
+    _startYear = start;
+    _endYear = end;
+    refreshChart(); // 차트 갱신 요청
+    notifyListeners();
+  }
+
   // Setters with notification
   void setSelectedDataType(AnalysisDataType type) {
     _selectedDataType = type;
@@ -80,9 +110,9 @@ class AnalysisStateProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Initialize with category
+  // Initialize with category 메서드 수정
   void initializeWithCategory(AnalysisCategory category) {
-    // Set default data type
+    // 기존 초기화 코드
     switch (category) {
       case AnalysisCategory.techGap:
         _selectedDataType = AnalysisDataType.patent;
@@ -94,6 +124,11 @@ class AnalysisStateProvider extends ChangeNotifier {
         _selectedDataType = AnalysisDataType.patent;
         _selectedTechListType = TechListType.lc;
     }
+
+    // 연도 범위 초기화 추가
+    _startYear = _currentYear - 10; // 기본값: 10년 전
+    _endYear = _currentYear; // 기본값: 현재 년도
+
     notifyListeners();
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_application_data_chart_viewer/models/analysis_data_model.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/repositories/analysis_data_repository.dart';
@@ -60,14 +61,14 @@ class AnalysisDataProvider extends ChangeNotifier {
     switch (category) {
       case AnalysisCategory.industryTech:
         return '기술트렌드';
+      case AnalysisCategory.countryTech:
+        return '국가트렌드';
+      case AnalysisCategory.companyTech:
+        return '기업트렌드';
+      case AnalysisCategory.academicTech:
+        return '기관트렌드';
       case AnalysisCategory.techGap:
         return 'TechGap';
-      case AnalysisCategory.countryTech:
-        return 'CountryTech';
-      case AnalysisCategory.companyTech:
-        return 'CompanyTech';
-      case AnalysisCategory.academicTech:
-        return 'AcademicTech';
       case AnalysisCategory.techCompetition:
         return 'TechCompetition';
       case AnalysisCategory.techAssessment:
@@ -117,17 +118,83 @@ class AnalysisDataProvider extends ChangeNotifier {
             }
           }
         case AnalysisSubCategory.marketExpansionIndex:
-          if (currentDataType == AnalysisDataType.patent) {
-            return 'CPN';
-          } else if (currentDataType == AnalysisDataType.paper) {
-            return 'CPN';
-          }
+          return 'PFI';
         case AnalysisSubCategory.rdInvestmentIndex:
           if (currentDataType == AnalysisDataType.patent) {
-            return 'CPN';
+            return 'PAI';
           } else if (currentDataType == AnalysisDataType.paper) {
-            return 'CPN';
+            return 'TPI';
           }
+        default:
+          return null;
+      }
+    } else if (category == AnalysisCategory.countryTech) {
+      switch (subCategory) {
+        case AnalysisSubCategory.countryTrend:
+          if (currentDataType == AnalysisDataType.patent) {
+            return 'PAN';
+          } else if (currentDataType == AnalysisDataType.paper) {
+            return 'TPN';
+          }
+        case AnalysisSubCategory.techInnovationIndex:
+          if (currentDataType == AnalysisDataType.patent) {
+            return 'PCI';
+          } else if (currentDataType == AnalysisDataType.paper) {
+            return 'TCI';
+          }
+        case AnalysisSubCategory.marketExpansionIndex:
+          return 'PFI';
+        case AnalysisSubCategory.rdInvestmentIndex:
+          if (currentDataType == AnalysisDataType.patent) {
+            return 'PAI';
+          } else if (currentDataType == AnalysisDataType.paper) {
+            return 'TPI';
+          }
+        default:
+          return null;
+      }
+    } else if (category == AnalysisCategory.companyTech) {
+      switch (subCategory) {
+        case AnalysisSubCategory.companyTrend:
+          return 'PAN';
+        case AnalysisSubCategory.techInnovationIndex:
+          return 'PCI';
+        case AnalysisSubCategory.marketExpansionIndex:
+          return 'PFI';
+        case AnalysisSubCategory.rdInvestmentIndex:
+          return 'PAI';
+        default:
+          return null;
+      }
+    } else if (category == AnalysisCategory.academicTech) {
+      switch (subCategory) {
+        case AnalysisSubCategory.academicTrend:
+          return 'TPN';
+        case AnalysisSubCategory.techInnovationIndex:
+          return 'TCI';
+        case AnalysisSubCategory.rdInvestmentIndex:
+          return 'TPI';
+        default:
+          return null;
+      }
+    } else if (category == AnalysisCategory.techCompetition) {
+      switch (subCategory) {
+        case AnalysisSubCategory.techTrend:
+          return 'CPN';
+        default:
+          return null;
+      }
+    } else if (category == AnalysisCategory.techAssessment) {
+      switch (subCategory) {
+        case AnalysisSubCategory.techTrend:
+          return 'CPN';
+        default:
+          return null;
+      }
+    } else if (category == AnalysisCategory.techGap) {
+      switch (subCategory) {
+        case AnalysisSubCategory.techTrend:
+          return 'CPN';
         default:
           return null;
       }
@@ -142,6 +209,8 @@ class AnalysisDataProvider extends ChangeNotifier {
     required AnalysisSubCategory subCategory,
     required String? selectedLcCode,
   }) {
+    if (selectedLcCode == null) return {};
+
     // 선택된 LC 코드에 해당하는 데이터 찾기
     final data = currentData.firstWhere(
       (data) => data.codeInfo.codeName == selectedLcCode,

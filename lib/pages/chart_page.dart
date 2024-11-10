@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
-import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_state_provider.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/analysis_data_widget.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/analysis_taget_widget.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/analysis_target_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/menulist_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/techlist_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart_widget.dart';
@@ -213,7 +212,7 @@ class _ChartPageState extends State<ChartPage>
                                   return;
                                 }
 
-                                if (stateProvider.selectedDataCode == null) {
+                                if (stateProvider.selectedLcDataCode == null) {
                                   // LC 코드가 선택되지 않았을 때 처리
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(

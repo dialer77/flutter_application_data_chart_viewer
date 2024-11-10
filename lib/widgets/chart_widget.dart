@@ -26,7 +26,7 @@ class ChartWidget extends StatelessWidget {
     final endYear = stateProvider.endYear;
 
     // 디버그 출력 추가
-    print('ChartWidget - Current LC Code: ${stateProvider.selectedDataCode}');
+    print('ChartWidget - Current LC Code: ${stateProvider.selectedLcDataCode}');
 
     // 데이터 로딩 중일 때
     if (dataProvider.isLoading) {
@@ -60,39 +60,65 @@ class ChartWidget extends StatelessWidget {
     final selectedCodes = switch (stateProvider.selectedTechListType) {
       TechListType.mc => stateProvider.selectedMcDataCodes,
       TechListType.sc => stateProvider.selectedScDataCodes,
-      _ => {stateProvider.selectedDataCode},
+      _ => {stateProvider.selectedLcDataCode!},
     };
+
+    if (selectedCodes.isEmpty && category != AnalysisCategory.countryTech) {
+      return const Center(child: Text('코드를 선택해주세요'));
+    }
 
     final codePrefix =
         stateProvider.selectedTechListType == TechListType.mc ? 'MC' : 'SC';
 
-    if (selectedCodes.isEmpty) {
-      return Center(child: Text('$codePrefix 코드를 선택해주세요'));
-    }
-
     // 지수 타입일 때는 하나의 차트에 모든 라인 표시
     if (isIndexType) {
-      return SingleChartWidget(
-        category: category,
-        selectedSubCategory: selectedSubCategory,
-        codeTitle: '$codePrefix 지수 추세',
-        dataCode: null,
-        height: 400,
-        selectedCodes: selectedCodes
-            .whereType<String>()
-            .toList(), // Filter out null values
-        startYear: startYear,
-        endYear: endYear,
-      );
+      final techCode = switch (stateProvider.selectedTechListType) {
+        TechListType.mc => stateProvider.selectedMcDataCode,
+        TechListType.sc => stateProvider.selectedScDataCode,
+        _ => stateProvider.selectedLcDataCode,
+      };
+      if (category == AnalysisCategory.countryTech) {
+        return SingleChartWidget(
+          category: category,
+          selectedSubCategory: selectedSubCategory,
+          codeTitle: '$codePrefix 지수 추세',
+          selectedTechListType: stateProvider.selectedTechListType,
+          techCode: techCode,
+          height: 400,
+          countries: dataProvider.selectedCountries.toList(),
+          startYear: startYear,
+          endYear: endYear,
+        );
+      } else {
+        final techCode = switch (stateProvider.selectedTechListType) {
+          TechListType.mc => stateProvider.selectedMcDataCodes.first,
+          TechListType.sc => stateProvider.selectedScDataCodes.first,
+          _ => stateProvider.selectedLcDataCode,
+        };
+        return SingleChartWidget(
+          category: category,
+          selectedSubCategory: selectedSubCategory,
+          codeTitle: '$codePrefix 지수 추세',
+          selectedTechListType: stateProvider.selectedTechListType,
+          techCode: techCode,
+          height: 400,
+          selectedCodes: selectedCodes as List<String>?,
+          startYear: startYear,
+          endYear: endYear,
+        );
+      }
     }
 
     // 지수가 아닐 때는 기존 로직 유지
-    if (selectedCodes.length == 1) {
+    if (selectedCodes.length == 1 &&
+        (category != AnalysisCategory.countryTech ||
+            dataProvider.selectedCountries.length == 1)) {
       return SingleChartWidget(
         category: category,
         selectedSubCategory: selectedSubCategory,
         codeTitle: '$codePrefix: ${selectedCodes.first}',
-        dataCode: selectedCodes.first,
+        selectedTechListType: stateProvider.selectedTechListType,
+        techCode: selectedCodes.first,
         height: 250,
         startYear: startYear,
         endYear: endYear,
@@ -100,7 +126,12 @@ class ChartWidget extends StatelessWidget {
     }
 
     const itemsPerRow = 2;
-    final codes = selectedCodes.toList();
+    List<String> codes;
+    if (category == AnalysisCategory.countryTech) {
+      codes = dataProvider.selectedCountries.toList();
+    } else {
+      codes = selectedCodes.whereType<String>().toList();
+    }
 
     return SingleChildScrollView(
       child: Column(
@@ -118,16 +149,38 @@ class ChartWidget extends StatelessWidget {
                           left: j % itemsPerRow == 0 ? 0 : 4,
                           right: j % itemsPerRow == itemsPerRow - 1 ? 0 : 4,
                         ),
-                        child: SingleChartWidget(
-                          category: category,
-                          selectedSubCategory: selectedSubCategory,
-                          codeTitle: '$codePrefix: ${codes[j]}',
-                          dataCode: codes[j],
-                          height: 300,
-                          maxYRatio: 1.6,
-                          startYear: startYear,
-                          endYear: endYear,
-                        ),
+                        child: category == AnalysisCategory.countryTech
+                            ? SingleChartWidget(
+                                category: category,
+                                selectedSubCategory: selectedSubCategory,
+                                selectedTechListType:
+                                    stateProvider.selectedTechListType,
+                                techCode: switch (
+                                    stateProvider.selectedTechListType) {
+                                  TechListType.mc =>
+                                    stateProvider.selectedMcDataCodes.first,
+                                  TechListType.sc =>
+                                    stateProvider.selectedScDataCodes.first,
+                                  _ => stateProvider.selectedLcDataCode,
+                                },
+                                codeTitle: codes[j],
+                                country: codes[j],
+                                height: 300,
+                                maxYRatio: 1.6,
+                                startYear: startYear,
+                                endYear: endYear,
+                              )
+                            : SingleChartWidget(
+                                category: category,
+                                selectedSubCategory: selectedSubCategory,
+                                selectedTechListType:
+                                    stateProvider.selectedTechListType,
+                                codeTitle: codes[j],
+                                techCode: codes[j],
+                                height: 300,
+                                startYear: startYear,
+                                endYear: endYear,
+                              ),
                       ),
                     ),
                   if (i + itemsPerRow > codes.length)
@@ -138,16 +191,5 @@ class ChartWidget extends StatelessWidget {
         ],
       ),
     );
-
-    // LC 타입일 때 (기존 코드)
-    // return SingleChartWidget(
-    //   category = category,
-    //   selectedSubCategory = selectedSubCategory,
-    //   codeTitle = 'LC: ${stateProvider.selectedDataCode}',
-    //   dataCode = stateProvider.selectedDataCode,
-    //   height = 300,
-    //   startYear = startYear,
-    //   endYear = endYear,
-    // );
   }
 }

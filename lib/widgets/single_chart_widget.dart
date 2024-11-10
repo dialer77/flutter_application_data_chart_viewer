@@ -9,8 +9,11 @@ class SingleChartWidget extends StatelessWidget {
   final AnalysisCategory category;
   final AnalysisSubCategory? selectedSubCategory;
   final String codeTitle;
-  final String? dataCode;
+  final TechListType? selectedTechListType;
+  final String? techCode;
   final List<String>? selectedCodes;
+  final String? country;
+  final List<String>? countries;
   final double height;
   final double maxYRatio;
   final int startYear;
@@ -21,8 +24,11 @@ class SingleChartWidget extends StatelessWidget {
     required this.category,
     required this.selectedSubCategory,
     required this.codeTitle,
-    required this.dataCode,
+    required this.selectedTechListType,
+    this.techCode,
     this.selectedCodes,
+    this.country,
+    this.countries,
     this.height = 400,
     this.maxYRatio = 1.2,
     required this.startYear,
@@ -46,7 +52,14 @@ class SingleChartWidget extends StatelessWidget {
       );
     }
 
-    if (isIndexType && selectedCodes != null) {
+    List<String> chartLoopCodes = [];
+    if (selectedCodes != null) {
+      chartLoopCodes.addAll(selectedCodes!);
+    } else if (countries != null) {
+      chartLoopCodes.addAll(countries!);
+    }
+
+    if (isIndexType && chartLoopCodes.isNotEmpty) {
       // 여러 코드의 데이터를 모두 가져옴
       double maxValue = 0;
       final allTrendLines = <LineChartBarData>[];
@@ -61,15 +74,28 @@ class SingleChartWidget extends StatelessWidget {
       ];
 
       // 첫 번째 유효한 데이터에서 years 가져오기
-      for (final code in selectedCodes!) {
-        final chartData = filterChartData(dataProvider.getChartData(
-          category: category,
-          subCategory: selectedSubCategory!,
-          selectedLcCode: code,
-        ));
-        if (chartData.isNotEmpty) {
-          years = chartData.keys.toList()..sort();
-          break;
+      if (chartLoopCodes.isNotEmpty) {
+        for (final code in chartLoopCodes) {
+          final chartData = filterChartData(
+            category == AnalysisCategory.countryTech
+                ? dataProvider.getChartData(
+                    category: category,
+                    subCategory: selectedSubCategory!,
+                    techListType: selectedTechListType!,
+                    techCode: techCode ?? selectedCodes![0],
+                    country: code,
+                  )
+                : dataProvider.getChartData(
+                    category: category,
+                    subCategory: selectedSubCategory!,
+                    techListType: selectedTechListType!,
+                    techCode: code,
+                  ),
+          );
+          if (chartData.isNotEmpty) {
+            years = chartData.keys.toList()..sort();
+            break;
+          }
         }
       }
 
@@ -78,157 +104,165 @@ class SingleChartWidget extends StatelessWidget {
       }
 
       // 각 코드별 추세선 생성
-      for (var i = 0; i < selectedCodes!.length; i++) {
-        final code = selectedCodes![i];
-        final chartData = filterChartData(dataProvider.getChartData(
-          category: category,
-          subCategory: selectedSubCategory!,
-          selectedLcCode: code,
-        ));
+      if (chartLoopCodes.isNotEmpty) {
+        for (var i = 0; i < chartLoopCodes.length; i++) {
+          final code = chartLoopCodes[i];
+          final chartData = filterChartData(dataProvider.getChartData(
+            category: category,
+            subCategory: selectedSubCategory!,
+            techListType: selectedTechListType!,
+            techCode: category == AnalysisCategory.countryTech
+                ? techCode ?? selectedCodes![0]
+                : code,
+            country: category == AnalysisCategory.countryTech ? code : null,
+          ));
 
-        if (chartData.isEmpty) continue;
+          if (chartData.isEmpty) continue;
 
-        final currentMax = chartData.values.reduce(max);
-        maxValue = max(maxValue, currentMax);
+          final currentMax = chartData.values.reduce(max);
+          maxValue = max(maxValue, currentMax);
 
-        final trendLineSpots = calculateTrendLine(chartData, years);
-        allTrendLines.add(
-          LineChartBarData(
-            spots: trendLineSpots,
-            isCurved: true,
-            color: colors[i % colors.length],
-            barWidth: 2,
-            dotData: const FlDotData(show: false),
-            isStrokeCapRound: true,
-            belowBarData: BarAreaData(show: false),
+          final trendLineSpots = calculateTrendLine(chartData, years);
+          allTrendLines.add(
+            LineChartBarData(
+              spots: trendLineSpots,
+              isCurved: true,
+              color: colors[i % colors.length],
+              barWidth: 2,
+              dotData: const FlDotData(show: false),
+              isStrokeCapRound: true,
+              belowBarData: BarAreaData(show: false),
+            ),
+          );
+        }
+
+        final interval = calculateInterval(maxValue);
+
+        return SizedBox(
+          height: height,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.only(left: 40, bottom: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        codeTitle,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // 범례 표시
+                    ...chartLoopCodes.asMap().entries.map((entry) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 2,
+                              color: colors[entry.key % colors.length],
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              entry.value,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.only(
+                    top: 16,
+                    left: 40,
+                    right: 16,
+                    bottom: 24,
+                  ),
+                  child: LineChart(
+                    LineChartData(
+                      gridData: const FlGridData(show: false),
+                      titlesData: FlTitlesData(
+                        show: true,
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) {
+                              final index = value.toInt();
+                              if (index >= 0 && index < years.length) {
+                                return Text(years[index].toString());
+                              }
+                              return const Text('');
+                            },
+                            reservedSize: 24,
+                          ),
+                        ),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            interval: interval,
+                            getTitlesWidget: (value, meta) {
+                              if (value % interval != 0) {
+                                return const SizedBox.shrink();
+                              }
+                              return SizedBox(
+                                width: 40,
+                                child: Text(
+                                  value.toInt().toString(),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                  textAlign: TextAlign.right,
+                                ),
+                              );
+                            },
+                            reservedSize: 40,
+                          ),
+                        ),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                      ),
+                      borderData: FlBorderData(show: true),
+                      lineBarsData: allTrendLines,
+                      minY: 0,
+                      maxY: maxValue * maxYRatio,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       }
-
-      final interval = calculateInterval(maxValue);
-
-      return SizedBox(
-        height: height,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.only(left: 40, bottom: 8),
-              child: Row(
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      codeTitle,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  // 범례 표시
-                  ...selectedCodes!.asMap().entries.map((entry) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 12,
-                            height: 2,
-                            color: colors[entry.key % colors.length],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            entry.value,
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.only(
-                  top: 16,
-                  left: 40,
-                  right: 16,
-                  bottom: 24,
-                ),
-                child: LineChart(
-                  LineChartData(
-                    gridData: const FlGridData(show: false),
-                    titlesData: FlTitlesData(
-                      show: true,
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          getTitlesWidget: (value, meta) {
-                            final index = value.toInt();
-                            if (index >= 0 && index < years.length) {
-                              return Text(years[index].toString());
-                            }
-                            return const Text('');
-                          },
-                          reservedSize: 24,
-                        ),
-                      ),
-                      leftTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          interval: interval,
-                          getTitlesWidget: (value, meta) {
-                            if (value % interval != 0) {
-                              return const SizedBox.shrink();
-                            }
-                            return SizedBox(
-                              width: 40,
-                              child: Text(
-                                value.toInt().toString(),
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
-                                textAlign: TextAlign.right,
-                              ),
-                            );
-                          },
-                          reservedSize: 40,
-                        ),
-                      ),
-                      rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                    ),
-                    borderData: FlBorderData(show: true),
-                    lineBarsData: allTrendLines,
-                    minY: 0,
-                    maxY: maxValue * maxYRatio,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
     }
 
     // 지수 타입이 아닐 때 (기존 Bar 차트)
     final chartData = filterChartData(dataProvider.getChartData(
       category: category,
       subCategory: selectedSubCategory!,
-      selectedLcCode: dataCode,
+      techListType: selectedTechListType!,
+      techCode: techCode ?? selectedCodes![0],
+      country: country,
     ));
 
     if (chartData.isEmpty) {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
-import 'package:flutter_application_data_chart_viewer/repositories/analysis_data_repository.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_state_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -28,42 +27,38 @@ class _TechListWidgetState extends State<TechListWidget> {
   }
 
   Future<void> _loadDataCodes() async {
-    try {
-      if (!mounted) return; // 위젯이 dispose된 경우 처리 중단
+    if (!mounted) return; // 위젯이 dispose된 경우 처리 중단
 
-      final stateProvider = context.read<AnalysisStateProvider>();
-      final dataProvider = context.read<AnalysisDataProvider>();
+    final stateProvider = context.read<AnalysisStateProvider>();
+    final dataProvider = context.read<AnalysisDataProvider>();
 
-      // 데이터가 아직 로드되지 않았다면 로드
-      if (!dataProvider.isInitialized) {
-        await dataProvider.loadAllData();
-      }
-
-      if (!mounted) return; // 비동기 작업 후 위젯이 여전히 유효한지 확인
-
-      // LC 데이터 코드 로드
-      final codes = dataProvider.getDataCodeNames(
-        widget.category,
-        TechListType.lc,
-      );
-      stateProvider.setDataCodes(codes.toSet());
-
-      // MC 데이터 코드 로드
-      final mcCodes = dataProvider.getDataCodeNames(
-        widget.category,
-        TechListType.mc,
-      );
-      stateProvider.setMcDataCodes(mcCodes.toSet());
-
-      // SC 데이터 코드 로드
-      final scCodes = dataProvider.getDataCodeNames(
-        widget.category,
-        TechListType.sc,
-      );
-      stateProvider.setScDataCodes(scCodes.toSet());
-    } catch (e) {
-      print('Error loading data codes: $e');
+    // 데이터가 아직 로드되지 않았다면 로드
+    if (!dataProvider.isInitialized) {
+      await dataProvider.loadAllData();
     }
+
+    if (!mounted) return; // 비동기 작업 후 위젯이 여전히 유효한지 확인
+
+    // LC 데이터 코드 로드
+    final codes = dataProvider.getDataCodeNames(
+      widget.category,
+      TechListType.lc,
+    );
+    stateProvider.setLcDataCodes(codes.toSet());
+
+    // MC 데이터 코드 로드
+    final mcCodes = dataProvider.getDataCodeNames(
+      widget.category,
+      TechListType.mc,
+    );
+    stateProvider.setMcDataCodes(mcCodes.toSet());
+
+    // SC 데이터 코드 로드
+    final scCodes = dataProvider.getDataCodeNames(
+      widget.category,
+      TechListType.sc,
+    );
+    stateProvider.setScDataCodes(scCodes.toSet());
   }
 
   List<TechListType> _getAvailableOptions() {
@@ -89,116 +84,108 @@ class _TechListWidgetState extends State<TechListWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // LC 컨트롤 (단일 선택)
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-              child: const Text(
-                'LC',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            Expanded(
-              child: DropdownButton<String>(
-                isExpanded: true,
-                value: provider.selectedDataCode,
-                items: provider.dataCodes
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  print('Selected LC Code: $newValue');
-                  provider.setSelectedDataCode(newValue);
-                },
-              ),
-            ),
-            const SizedBox(width: 10),
-          ],
-        ),
-        // MC 다중 선택 컨트롤
+        _buildDropdownControl(
+            'LC',
+            provider.selectedLcDataCode,
+            provider.lcDataCodes,
+            (newValue) => provider.setSelectedDataCode(newValue)),
+
+        // MC 컨트롤
         if (provider.selectedTechListType == TechListType.mc ||
             provider.selectedTechListType == TechListType.sc)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 80, // LC/MC/SC 텍스트를 위한 고정 너비
-                padding: const EdgeInsets.fromLTRB(10, 10, 0, 0),
-                child: const Text(
+          widget.category == AnalysisCategory.countryTech
+              ? _buildDropdownControl(
                   'MC',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 10),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  height: 150,
-                  child: ListView(
-                    children: provider.mcDataCodes.map((code) {
-                      return CheckboxListTile(
-                        title: Text(code),
-                        value: provider.selectedMcDataCodes.contains(code),
-                        onChanged: (bool? value) {
-                          provider.toggleMcDataCode(code);
-                        },
-                        dense: true,
-                        controlAffinity: ListTileControlAffinity.leading,
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10), // 오른쪽 여백
-            ],
-          ),
-        // SC 다중 선택 컨트롤
+                  provider.selectedMcDataCode,
+                  provider.mcDataCodes,
+                  (newValue) => provider.setSelectedMcDataCode(newValue))
+              : _buildCheckboxList('MC', provider.mcDataCodes,
+                  provider.selectedMcDataCodes, provider.toggleMcDataCode),
+
+        // SC 컨트롤
         if (provider.selectedTechListType == TechListType.sc)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 80, // LC/MC/SC 텍스트를 위한 고정 너비
-                padding: const EdgeInsets.fromLTRB(10, 10, 0, 0),
-                child: const Text(
+          widget.category == AnalysisCategory.countryTech
+              ? _buildDropdownControl(
                   'SC',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 10),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  height: 150,
-                  child: ListView(
-                    children: provider.scDataCodes.map((code) {
-                      return CheckboxListTile(
-                        title: Text(code),
-                        value: provider.selectedScDataCodes.contains(code),
-                        onChanged: (bool? value) {
-                          provider.toggleScDataCode(code);
-                        },
-                        dense: true,
-                        controlAffinity: ListTileControlAffinity.leading,
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10), // 오른쪽 여백
-            ],
+                  provider.selectedScDataCode,
+                  provider.scDataCodes,
+                  (newValue) => provider.setSelectedScDataCode(newValue))
+              : _buildCheckboxList('SC', provider.scDataCodes,
+                  provider.selectedScDataCodes, provider.toggleScDataCode),
+      ],
+    );
+  }
+
+  // 드롭다운 컨트롤을 위한 헬퍼 메서드
+  Widget _buildDropdownControl(String label, String? selectedValue,
+      Set<String> items, Function(String?) onChanged) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 80,
+          padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+          child: Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
+        ),
+        Expanded(
+          child: DropdownButton<String>(
+            isExpanded: true,
+            value: selectedValue,
+            items: items.map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            onChanged: onChanged,
+          ),
+        ),
+        const SizedBox(width: 10),
+      ],
+    );
+  }
+
+  // 체크박스 리스트를 위한 헬퍼 메서드
+  Widget _buildCheckboxList(String label, Set<String> items,
+      Set<String> selectedItems, Function(String) onChanged) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 80, // LC/MC/SC 텍스트를 위한 고정 너비
+          padding: const EdgeInsets.fromLTRB(10, 10, 0, 0),
+          child: Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        Expanded(
+          child: Container(
+            margin: const EdgeInsets.only(top: 10),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            height: 150,
+            child: ListView(
+              children: items.map((code) {
+                return CheckboxListTile(
+                  title: Text(code),
+                  value: selectedItems.contains(code),
+                  onChanged: (bool? value) {
+                    onChanged(code);
+                  },
+                  dense: true,
+                  controlAffinity: ListTileControlAffinity.leading,
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10), // 오른쪽 여백
       ],
     );
   }

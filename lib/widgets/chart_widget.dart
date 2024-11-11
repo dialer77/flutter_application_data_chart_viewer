@@ -176,11 +176,12 @@ class ChartWidget extends StatelessWidget {
                                     dataProvider.selectedTechListType,
                                 techCode: switch (
                                     dataProvider.selectedTechListType) {
+                                  TechListType.lc =>
+                                    dataProvider.selectedLcDataCode,
                                   TechListType.mc =>
-                                    dataProvider.selectedMcDataCodes.first,
+                                    dataProvider.selectedMcDataCode,
                                   TechListType.sc =>
-                                    dataProvider.selectedScDataCodes.first,
-                                  _ => dataProvider.selectedLcDataCode,
+                                    dataProvider.selectedScDataCode,
                                 },
                                 codeTitle: codes[j],
                                 country: codes[j],

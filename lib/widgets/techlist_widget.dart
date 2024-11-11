@@ -70,7 +70,7 @@ class _TechListWidgetState extends State<TechListWidget> {
           return [TechListType.lc, TechListType.mc, TechListType.sc];
         }
       case AnalysisCategory.countryTech:
-        return [TechListType.lc, TechListType.mc];
+        return [TechListType.lc, TechListType.mc, TechListType.sc];
       case AnalysisCategory.companyTech:
         return [TechListType.lc];
       case AnalysisCategory.academicTech:

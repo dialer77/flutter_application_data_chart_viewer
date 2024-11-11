@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
-import 'package:flutter_application_data_chart_viewer/providers/analysis_state_provider.dart';
+import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/analysis_data_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/analysis_target_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/menulist_widget.dart';
@@ -72,14 +72,11 @@ class _ChartPageState extends State<ChartPage>
               ),
               onPressed: () {
                 setState(() {
-                  // 이미 선택된 항목을 다시 클릭하면 선택 해제
-                  if (_selectedSubCategory == subCategory) {
-                    _selectedSubCategory = null;
-                  } else {
-                    _selectedSubCategory = subCategory;
-                  }
+                  _selectedSubCategory = subCategory;
+                  context
+                      .read<AnalysisDataProvider>()
+                      .setSelectedSubCategory(subCategory);
                 });
-                print('Selected: ${subCategory.toString()}');
               },
               child: Text(
                 subCategory.toString(),
@@ -106,7 +103,7 @@ class _ChartPageState extends State<ChartPage>
 
   @override
   Widget build(BuildContext context) {
-    final stateProvider = context.watch<AnalysisStateProvider>();
+    final dataProvider = context.watch<AnalysisDataProvider>();
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,8 +196,8 @@ class _ChartPageState extends State<ChartPage>
                                     const EdgeInsets.symmetric(vertical: 15),
                               ),
                               onPressed: () {
-                                final stateProvider =
-                                    context.read<AnalysisStateProvider>();
+                                final dataProvider =
+                                    context.read<AnalysisDataProvider>();
 
                                 // 현재 선택된 값들 확인
                                 if (_selectedSubCategory == null) {
@@ -212,7 +209,7 @@ class _ChartPageState extends State<ChartPage>
                                   return;
                                 }
 
-                                if (stateProvider.selectedLcDataCode == null) {
+                                if (dataProvider.selectedLcDataCode == null) {
                                   // LC 코드가 선택되지 않았을 때 처리
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
@@ -221,7 +218,7 @@ class _ChartPageState extends State<ChartPage>
                                   return;
                                 }
                                 // 차트 데이터 갱신 및 표시
-                                stateProvider.showChart();
+                                dataProvider.showChart();
                               },
                               child: const Text(
                                 '실행',
@@ -260,7 +257,7 @@ class _ChartPageState extends State<ChartPage>
                   ],
                 ),
               ),
-              if (stateProvider.isChartVisible)
+              if (dataProvider.isChartVisible)
                 Expanded(
                   child: Container(
                     color: Colors.grey[200],

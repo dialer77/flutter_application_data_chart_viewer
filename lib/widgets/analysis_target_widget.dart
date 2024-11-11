@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_data_chart_viewer/controllers/content_controller.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
-import 'package:flutter_application_data_chart_viewer/providers/analysis_state_provider.dart';
 import 'package:provider/provider.dart';
 
 class AnalysisTargetWidget extends StatefulWidget {
@@ -23,7 +23,7 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
     // build 과정이 끝난 후 초기화하도록 수정
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context
-          .read<AnalysisStateProvider>()
+          .read<AnalysisDataProvider>()
           .initializeWithCategory(widget.category);
     });
   }
@@ -38,7 +38,7 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AnalysisDataProvider>();
+    final dataProvider = context.watch<AnalysisDataProvider>();
     final availableOptions = _getAvailableOptions();
 
     return Column(
@@ -63,10 +63,11 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
                 children: [
                   Radio<AnalysisCategory>(
                     value: option,
-                    groupValue: provider.selectedCategory,
+                    groupValue: dataProvider.selectedCategory,
                     onChanged: (AnalysisCategory? value) {
                       if (value != null) {
-                        provider.selectCategory(value);
+                        dataProvider.setSelectedCategory(value);
+                        context.read<ContentController>().changeContent(value);
                       }
                     },
                   ),
@@ -74,13 +75,13 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
                       ? '국가'
                       : option == AnalysisCategory.companyTech
                           ? '기업'
-                          : '학계'),
+                          : '대학'),
                 ],
               ),
             );
           }).toList(),
         ),
-        if (provider.selectedCategory == AnalysisCategory.countryTech)
+        if (dataProvider.selectedCategory == AnalysisCategory.countryTech)
           Container(
             margin: const EdgeInsets.only(top: 10),
             decoration: BoxDecoration(
@@ -89,24 +90,24 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
             ),
             height: 150,
             child: ListView(
-              children: provider
+              children: dataProvider
                   .getAvailableCountries(
                       context
-                          .watch<AnalysisStateProvider>()
+                          .watch<AnalysisDataProvider>()
                           .selectedTechListType,
-                      context.watch<AnalysisStateProvider>().selectedTechCode)
+                      context.watch<AnalysisDataProvider>().selectedTechCode)
                   .map((country) {
                 return CheckboxListTile(
                   title: Text(country),
-                  value: provider.selectedCountries.contains(country),
+                  value: dataProvider.selectedCountries.contains(country),
                   onChanged: (bool? value) {
                     if (value != null) {
-                      provider.toggleCountrySelection(
+                      dataProvider.toggleCountrySelection(
                         country,
                         context
-                            .read<AnalysisStateProvider>()
+                            .read<AnalysisDataProvider>()
                             .selectedTechListType,
-                        context.read<AnalysisStateProvider>().selectedTechCode,
+                        context.read<AnalysisDataProvider>().selectedTechCode,
                       );
                     }
                   },

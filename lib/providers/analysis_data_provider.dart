@@ -6,21 +6,220 @@ import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/repositories/analysis_data_repository.dart';
 
 class AnalysisDataProvider extends ChangeNotifier {
+// State declarations
+  AnalysisCategory _selectedCategory = AnalysisCategory.industryTech;
+  AnalysisSubCategory _selectedSubCategory = AnalysisSubCategory.techTrend;
+
+  TechListType _selectedTechListType = TechListType.lc;
+  String? _selectedLcDataCode;
+  String? _selectedMcDataCode;
+  String? _selectedScDataCode;
+  Set<String> _lcDataCodes = {};
+  Set<String> _mcDataCodes = {};
+  Set<String> _scDataCodes = {};
+  Set<String> _selectedMcDataCodes = {};
+  Set<String> _selectedScDataCodes = {};
+  bool _isChartVisible = false;
+  bool _shouldRefreshChart = false;
+
+  // Year related state
+  final int _currentYear = DateTime.now().year;
+  late int _startYear;
+  late int _endYear;
+
+  // Getters
+  AnalysisCategory get selectedCategory => _selectedCategory;
+  AnalysisSubCategory get selectedSubCategory => _selectedSubCategory;
+
+  TechListType get selectedTechListType => _selectedTechListType;
+  String? get selectedLcDataCode => _selectedLcDataCode;
+  String? get selectedMcDataCode => _selectedMcDataCode;
+  String? get selectedScDataCode => _selectedScDataCode;
+  Set<String> get lcDataCodes => _lcDataCodes;
+  Set<String> get mcDataCodes => _mcDataCodes;
+  Set<String> get scDataCodes => _scDataCodes;
+  Set<String> get selectedMcDataCodes => _selectedMcDataCodes;
+  Set<String> get selectedScDataCodes => _selectedScDataCodes;
+  bool get isChartVisible => _isChartVisible;
+  bool get shouldRefreshChart => _shouldRefreshChart;
+  int get startYear => _startYear;
+  int get endYear => _endYear;
+  int get currentYear => _currentYear;
+
+  String? get selectedTechCode {
+    if (_selectedTechListType == TechListType.lc) {
+      return _selectedLcDataCode;
+    } else if (_selectedTechListType == TechListType.mc) {
+      return _selectedMcDataCode;
+    } else {
+      return _selectedScDataCode;
+    }
+  }
+
+  // Setters and state update methods
+  void setSelectedCategory(AnalysisCategory category) {
+    _selectedCategory = category;
+    notifyListeners();
+  }
+
+  void setSelectedSubCategory(AnalysisSubCategory subCategory) {
+    if (subCategory == AnalysisSubCategory.marketExpansionIndex &&
+        _selectedCategory == AnalysisCategory.industryTech) {
+      _selectedDataType = AnalysisDataType.patent;
+      if (_selectedTechListType == TechListType.lc) {
+        _selectedTechListType = TechListType.mc;
+      }
+    }
+
+    _selectedSubCategory = subCategory;
+    notifyListeners();
+  }
+
+  void setSelectedTechListType(TechListType type) {
+    _selectedTechListType = type;
+    notifyListeners();
+  }
+
+  void setSelectedLcDataCode(String? code) {
+    _selectedLcDataCode = code;
+    notifyListeners();
+  }
+
+  void setSelectedMcDataCode(String? code) {
+    _selectedMcDataCode = code;
+    notifyListeners();
+  }
+
+  void setSelectedScDataCode(String? code) {
+    _selectedScDataCode = code;
+    notifyListeners();
+  }
+
+  void setLcDataCodes(Set<String> codes) {
+    _lcDataCodes = codes;
+    if (codes.isNotEmpty &&
+        (_selectedLcDataCode == null || !codes.contains(_selectedLcDataCode))) {
+      _selectedLcDataCode = codes.first;
+    }
+    notifyListeners();
+  }
+
+  void setMcDataCodes(Set<String> codes) {
+    _mcDataCodes = codes;
+    _selectedMcDataCodes = {};
+    notifyListeners();
+  }
+
+  void setScDataCodes(Set<String> codes) {
+    _scDataCodes = codes;
+    _selectedScDataCodes = {};
+    notifyListeners();
+  }
+
+  void toggleMcDataCode(String code) {
+    if (_selectedMcDataCodes.contains(code)) {
+      _selectedMcDataCodes.remove(code);
+    } else {
+      _selectedMcDataCodes.add(code);
+    }
+    notifyListeners();
+  }
+
+  void toggleScDataCode(String code) {
+    if (_selectedScDataCodes.contains(code)) {
+      _selectedScDataCodes.remove(code);
+    } else {
+      _selectedScDataCodes.add(code);
+    }
+    notifyListeners();
+  }
+
+  void setYearRange(int start, int end) {
+    if (start > end) return;
+    if (start < _currentYear - 20) return;
+    if (end > _currentYear) return;
+    if (start == _startYear && end == _endYear) return;
+
+    _startYear = start;
+    _endYear = end;
+    refreshChart();
+    notifyListeners();
+  }
+
+  // Chart visibility methods
+  void showChart() {
+    _isChartVisible = true;
+    notifyListeners();
+  }
+
+  void hideChart() {
+    _isChartVisible = false;
+    notifyListeners();
+  }
+
+  void refreshChart() {
+    _shouldRefreshChart = true;
+    notifyListeners();
+    _shouldRefreshChart = false;
+  }
+
+  // Category initialization
+  void initializeWithCategory(AnalysisCategory category) {
+    switch (category) {
+      case AnalysisCategory.industryTech:
+        _selectedSubCategory = AnalysisSubCategory.techTrend;
+        _selectedTechListType = TechListType.lc;
+        _selectedLcDataCode =
+            getDataCodeNames(category, _selectedTechListType).first;
+        break;
+      case AnalysisCategory.countryTech:
+        _selectedSubCategory = AnalysisSubCategory.countryTrend;
+        _selectedTechListType = TechListType.lc;
+        _selectedLcDataCode =
+            getDataCodeNames(category, _selectedTechListType).first;
+        break;
+      case AnalysisCategory.companyTech:
+        _selectedDataType = AnalysisDataType.patent;
+        _selectedSubCategory = AnalysisSubCategory.companyTrend;
+        _selectedTechListType = TechListType.lc;
+        _selectedLcDataCode =
+            getDataCodeNames(category, _selectedTechListType).first;
+        break;
+      case AnalysisCategory.academicTech:
+        _selectedSubCategory = AnalysisSubCategory.academicTrend;
+        _selectedTechListType = TechListType.lc;
+        _selectedLcDataCode =
+            getDataCodeNames(category, _selectedTechListType).first;
+        break;
+      case AnalysisCategory.techGap:
+        _selectedTechListType = TechListType.lc;
+        _selectedLcDataCode = lcDataCodes.first;
+      default:
+        _selectedTechListType = TechListType.lc;
+        _selectedLcDataCode = lcDataCodes.first;
+    }
+
+    _startYear = _currentYear - 10;
+    _endYear = _currentYear;
+
+    notifyListeners();
+  }
+
   // === Repository ===
   final AnalysisDataRepository _repository;
-  AnalysisDataProvider(this._repository);
+  AnalysisDataProvider(this._repository) {
+    _startYear = DateTime.now().year - 10;
+    _endYear = DateTime.now().year;
+  }
 
   // === State Variables ===
   // Data Type
-  AnalysisDataType _selectedDataType = AnalysisDataType.paper;
+  AnalysisDataType _selectedDataType = AnalysisDataType.patent;
   final Map<AnalysisDataType, List<AnalysisDataModel>> _dataMap = {
     AnalysisDataType.paper: [],
     AnalysisDataType.patent: [],
     AnalysisDataType.patentAndPaper: [],
   };
-
-  // Category
-  AnalysisCategory _selectedCategory = AnalysisCategory.countryTech;
 
   // Countries
   final Set<String> _selectedCountries = {};
@@ -36,12 +235,9 @@ class AnalysisDataProvider extends ChangeNotifier {
   AnalysisDataType get selectedDataType => _selectedDataType;
   List<AnalysisDataModel> get currentData => _dataMap[_selectedDataType] ?? [];
 
-  // Category
-  AnalysisCategory get selectedCategory => _selectedCategory;
-
   // Countries
-  Set<String> get availableCountries {
-    if (_selectedCategory != AnalysisCategory.countryTech) return {};
+  Set<String> availableCountries(AnalysisCategory category) {
+    if (category != AnalysisCategory.countryTech) return {};
 
     final Map<String, double> countryScores = {};
     for (var data in currentData) {
@@ -70,16 +266,6 @@ class AnalysisDataProvider extends ChangeNotifier {
   // Data Type
   void selectDataType(AnalysisDataType dataType) {
     _selectedDataType = dataType;
-    notifyListeners();
-  }
-
-  // Category
-  void selectCategory(AnalysisCategory category) {
-    _selectedCategory = category;
-    if (category == AnalysisCategory.countryTech) {
-      _isInitialCountrySelection = true;
-      initializeCountrySelection();
-    }
     notifyListeners();
   }
 
@@ -214,12 +400,16 @@ class AnalysisDataProvider extends ChangeNotifier {
   List<String> getDataCodeNames(
       AnalysisCategory category, TechListType techListType) {
     final sheetName = getCategorySheetName(category);
-    return currentData
-        .where((data) =>
-            data.codeInfo.sheetName == sheetName &&
-            data.codeInfo.techType == techListType)
-        .map((data) => data.codeInfo.codeName)
+
+    var filteredData = currentData
+        .where((data) => data.codeInfo.sheetName == sheetName)
         .toList();
+
+    filteredData = filteredData
+        .where((data) => data.codeInfo.techType == techListType)
+        .toList();
+
+    return filteredData.map((data) => data.codeInfo.codeName).toList();
   }
 
   // Year Range
@@ -357,11 +547,21 @@ class AnalysisDataProvider extends ChangeNotifier {
   void initializeCountrySelection() {
     if (!_isInitialCountrySelection) return;
 
+    //currentData 에서 Category 가 countryTech 인 데이터만 가져오기
+    final countryData = currentData
+        .where((data) =>
+            data.codeInfo.sheetName ==
+            getCategorySheetName(AnalysisCategory.countryTech))
+        .toList();
+
+    // countryData 에서 TechListType 이 lc 인 데이터만 가져오기
+
     final Map<String, double> countryScores = {};
     for (var data in currentData) {
       if (data.codeInfo.sheetName ==
           getCategorySheetName(AnalysisCategory.countryTech)) {
-        data.analysisDatas.forEach((country, yearData) {
+        var filteredData = data.analysisDatas;
+        filteredData.forEach((country, yearData) {
           final latestYear = yearData.keys.reduce((a, b) => a > b ? a : b);
           countryScores[country] = yearData[latestYear] ?? 0.0;
         });

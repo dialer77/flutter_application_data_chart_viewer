@@ -16,6 +16,7 @@ class SingleChartWidget extends StatelessWidget {
   final List<String>? countries;
   final double height;
   final double maxYRatio;
+  final Color? chartColor;
   final int startYear;
   final int endYear;
 
@@ -31,6 +32,7 @@ class SingleChartWidget extends StatelessWidget {
     this.countries,
     this.height = 400,
     this.maxYRatio = 1.2,
+    this.chartColor,
     required this.startYear,
     required this.endYear,
   });
@@ -381,7 +383,7 @@ class SingleChartWidget extends StatelessWidget {
                             barRods: [
                               BarChartRodData(
                                 toY: value,
-                                color: Colors.blue,
+                                color: chartColor ?? Colors.blue,
                                 width: 16,
                                 borderRadius: BorderRadius.circular(4),
                               ),

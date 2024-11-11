@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_data_chart_viewer/providers/analysis_state_provider.dart';
+import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:provider/provider.dart';
 
 class AnalysisPeriodWidget extends StatefulWidget {
@@ -20,7 +20,7 @@ class _AnalysisPeriodWidgetState extends State<AnalysisPeriodWidget> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = context.read<AnalysisStateProvider>();
+      final provider = context.read<AnalysisDataProvider>();
       setState(() {
         _currentRangeValues = RangeValues(
           provider.startYear.toDouble(),
@@ -32,7 +32,7 @@ class _AnalysisPeriodWidgetState extends State<AnalysisPeriodWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AnalysisStateProvider>();
+    final provider = context.watch<AnalysisDataProvider>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

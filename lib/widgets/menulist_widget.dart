@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
-import 'package:flutter_application_data_chart_viewer/providers/analysis_state_provider.dart';
+import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:provider/provider.dart';
 
 class MenuListWidget extends StatefulWidget {
@@ -108,8 +108,8 @@ class _MenuListWidgetState extends State<MenuListWidget>
   }
 
   void _handleTap() {
-    final stateProvider =
-        Provider.of<AnalysisStateProvider>(context, listen: false);
+    final dataProvider =
+        Provider.of<AnalysisDataProvider>(context, listen: false);
 
     final RenderBox? renderBox =
         _categoryKey.currentContext?.findRenderObject() as RenderBox?;
@@ -124,7 +124,7 @@ class _MenuListWidgetState extends State<MenuListWidget>
     _controller.forward();
 
     Future.delayed(const Duration(milliseconds: 1000), () {
-      stateProvider.showChart();
+      dataProvider.showChart();
       widget.onSubCategorySelected?.call(widget.analysisCategory);
     });
   }

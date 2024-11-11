@@ -9,13 +9,9 @@ class ContentController extends ChangeNotifier {
   Widget get currentContent => _history.last;
 
   void changeContent(AnalysisCategory category) {
-    // Widget newContent;
-    // if (pageNumber == 0) {
-    //   newContent = MainPage();
-    // } else {
-    //   newContent = ChartPage(pageNumber: pageNumber, title: title);
-    // }
-    // _history.add(newContent);
+    if (_history.last is ChartPage) {
+      _history.removeLast();
+    }
     _history.add(ChartPage(category: category));
     notifyListeners();
   }

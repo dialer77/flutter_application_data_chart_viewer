@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
-import 'package:flutter_application_data_chart_viewer/providers/analysis_state_provider.dart';
 import 'package:provider/provider.dart';
 
 class TechListWidget extends StatefulWidget {
@@ -29,7 +28,6 @@ class _TechListWidgetState extends State<TechListWidget> {
   Future<void> _loadDataCodes() async {
     if (!mounted) return; // 위젯이 dispose된 경우 처리 중단
 
-    final stateProvider = context.read<AnalysisStateProvider>();
     final dataProvider = context.read<AnalysisDataProvider>();
 
     // 데이터가 아직 로드되지 않았다면 로드
@@ -44,32 +42,39 @@ class _TechListWidgetState extends State<TechListWidget> {
       widget.category,
       TechListType.lc,
     );
-    stateProvider.setLcDataCodes(codes.toSet());
+    dataProvider.setLcDataCodes(codes.toSet());
 
     // MC 데이터 코드 로드
     final mcCodes = dataProvider.getDataCodeNames(
       widget.category,
       TechListType.mc,
     );
-    stateProvider.setMcDataCodes(mcCodes.toSet());
+    dataProvider.setMcDataCodes(mcCodes.toSet());
 
     // SC 데이터 코드 로드
     final scCodes = dataProvider.getDataCodeNames(
       widget.category,
       TechListType.sc,
     );
-    stateProvider.setScDataCodes(scCodes.toSet());
+    dataProvider.setScDataCodes(scCodes.toSet());
   }
 
   List<TechListType> _getAvailableOptions() {
+    final provider = context.watch<AnalysisDataProvider>();
     switch (widget.category) {
+      case AnalysisCategory.industryTech:
+        if (provider.selectedSubCategory ==
+            AnalysisSubCategory.marketExpansionIndex) {
+          return [TechListType.mc, TechListType.sc];
+        } else {
+          return [TechListType.lc, TechListType.mc, TechListType.sc];
+        }
       case AnalysisCategory.countryTech:
         return [TechListType.lc, TechListType.mc];
       case AnalysisCategory.companyTech:
         return [TechListType.lc];
       case AnalysisCategory.academicTech:
         return [TechListType.mc];
-      case AnalysisCategory.industryTech:
       case AnalysisCategory.techCompetition:
       case AnalysisCategory.techAssessment:
       case AnalysisCategory.techGap:
@@ -78,7 +83,7 @@ class _TechListWidgetState extends State<TechListWidget> {
   }
 
   Widget _buildAdditionalControls() {
-    final provider = context.watch<AnalysisStateProvider>();
+    final provider = context.watch<AnalysisDataProvider>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,7 +93,7 @@ class _TechListWidgetState extends State<TechListWidget> {
             'LC',
             provider.selectedLcDataCode,
             provider.lcDataCodes,
-            (newValue) => provider.setSelectedDataCode(newValue)),
+            (newValue) => provider.setSelectedLcDataCode(newValue)),
 
         // MC 컨트롤
         if (provider.selectedTechListType == TechListType.mc ||
@@ -169,7 +174,7 @@ class _TechListWidgetState extends State<TechListWidget> {
               border: Border.all(color: Colors.grey),
               borderRadius: BorderRadius.circular(4),
             ),
-            height: 150,
+            height: 120,
             child: ListView(
               children: items.map((code) {
                 return CheckboxListTile(
@@ -192,7 +197,7 @@ class _TechListWidgetState extends State<TechListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AnalysisStateProvider>();
+    final provider = context.watch<AnalysisDataProvider>();
     final availableOptions = _getAvailableOptions();
 
     return Column(
@@ -210,20 +215,32 @@ class _TechListWidgetState extends State<TechListWidget> {
           thickness: 1,
         ),
         Row(
-          children: availableOptions
-              .expand((option) => [
-                    Radio<TechListType>(
-                      value: option,
-                      groupValue: provider.selectedTechListType,
-                      onChanged: (TechListType? value) {
-                        provider.setSelectedTechListType(value!);
-                      },
-                    ),
-                    Text(option.toString()),
-                    const SizedBox(width: 30), // Radio 버튼들 사이의 간격 추가
-                  ])
-              .toList()
-            ..removeLast(), // 마지막 SizedBox 제거
+          children: [
+            ...TechListType.values.map(
+              (option) => Opacity(
+                opacity: availableOptions.contains(option) ? 1.0 : 0.0,
+                child: Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Radio<TechListType>(
+                        value: option,
+                        groupValue: provider.selectedTechListType,
+                        onChanged: availableOptions.contains(option)
+                            ? (TechListType? value) {
+                                provider.setSelectedTechListType(value!);
+                              }
+                            : null,
+                      ),
+                      Text(option.toString()),
+                      const SizedBox(width: 20),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
         _buildAdditionalControls(),
       ],

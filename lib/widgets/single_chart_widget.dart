@@ -17,8 +17,6 @@ class SingleChartWidget extends StatelessWidget {
   final double height;
   final double maxYRatio;
   final Color? chartColor;
-  final int startYear;
-  final int endYear;
 
   const SingleChartWidget({
     super.key,
@@ -33,8 +31,6 @@ class SingleChartWidget extends StatelessWidget {
     this.height = 400,
     this.maxYRatio = 1.2,
     this.chartColor,
-    required this.startYear,
-    required this.endYear,
   });
 
   @override
@@ -48,9 +44,14 @@ class SingleChartWidget extends StatelessWidget {
 
     // 차트 데이터를 연도 범위로 필터링
     Map<int, double> filterChartData(Map<int, double> data) {
+      final provider = context.read<AnalysisDataProvider>();
       return Map.fromEntries(
         data.entries
-            .where((entry) => entry.key >= startYear && entry.key <= endYear),
+            .where((entry) =>
+                entry.key >= provider.startYear &&
+                entry.key <= provider.endYear)
+            .toList()
+          ..sort((a, b) => a.key.compareTo(b.key)),
       );
     }
 
@@ -275,167 +276,170 @@ class SingleChartWidget extends StatelessWidget {
     final maxValue = chartData.values.reduce(max);
     final interval = calculateInterval(maxValue);
 
-    return SizedBox(
-      height: height,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.only(left: 40, bottom: 8),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                codeTitle,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+      ),
+      child: SizedBox(
+        height: height,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.only(left: 40, bottom: 8),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  codeTitle,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
-          ),
-          Expanded(
-            child: Stack(
-              children: [
-                Container(
-                  padding: const EdgeInsets.only(
-                    top: 16,
-                    left: 40,
-                    right: 16,
-                    bottom: 24,
-                  ),
-                  child: BarChart(
-                    BarChartData(
-                      alignment: BarChartAlignment.spaceAround,
-                      maxY: maxValue * maxYRatio,
-                      barTouchData: BarTouchData(
-                        enabled: true,
-                        touchTooltipData: BarTouchTooltipData(
-                          tooltipBgColor: Colors.transparent,
-                          getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                            return BarTooltipItem(
-                              rod.toY.toInt().toString(),
-                              const TextStyle(
-                                color: Colors.black,
-                                fontSize: 12,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      titlesData: FlTitlesData(
-                        show: true,
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            getTitlesWidget: (value, meta) {
-                              final index = value.toInt();
-                              if (index >= 0 && index < years.length) {
-                                return Text(years[index].toString());
-                              }
-                              return const Text('');
-                            },
-                            reservedSize: 24,
-                          ),
-                        ),
-                        leftTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            interval: interval,
-                            getTitlesWidget: (value, meta) {
-                              if (value % interval != 0) {
-                                return const SizedBox.shrink();
-                              }
-                              return SizedBox(
-                                width: 40,
-                                child: Text(
-                                  value.toInt().toString(),
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                  ),
-                                  textAlign: TextAlign.right,
+            Expanded(
+              child: Stack(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.only(
+                      top: 16,
+                      left: 40,
+                      right: 16,
+                      bottom: 24,
+                    ),
+                    child: BarChart(
+                      BarChartData(
+                        alignment: BarChartAlignment.spaceAround,
+                        maxY: maxValue * maxYRatio,
+                        barTouchData: BarTouchData(
+                          enabled: true,
+                          touchTooltipData: BarTouchTooltipData(
+                            tooltipBgColor: Colors.transparent,
+                            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                              return BarTooltipItem(
+                                rod.toY.toInt().toString(),
+                                const TextStyle(
+                                  color: Colors.black,
                                 ),
                               );
                             },
-                            reservedSize: 40,
                           ),
                         ),
-                        rightTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
+                        titlesData: FlTitlesData(
+                          show: true,
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              getTitlesWidget: (value, meta) {
+                                final index = value.toInt();
+                                if (index >= 0 && index < years.length) {
+                                  return Text(years[index].toString());
+                                }
+                                return const Text('');
+                              },
+                              reservedSize: 24,
+                            ),
+                          ),
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              interval: interval,
+                              getTitlesWidget: (value, meta) {
+                                if (value % interval != 0) {
+                                  return const SizedBox.shrink();
+                                }
+                                return SizedBox(
+                                  width: 40,
+                                  child: Text(
+                                    value.toInt().toString(),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                    textAlign: TextAlign.right,
+                                  ),
+                                );
+                              },
+                              reservedSize: 40,
+                            ),
+                          ),
+                          rightTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          topTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
                         ),
-                        topTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                      ),
-                      gridData: const FlGridData(show: false),
-                      borderData: FlBorderData(show: true),
-                      barGroups: List.generate(
-                        chartData.length,
-                        (index) {
-                          final year = years[index];
-                          final value = chartData[year]!;
+                        gridData: const FlGridData(show: false),
+                        borderData: FlBorderData(show: true),
+                        barGroups: years.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final year = entry.value;
+                          final value = chartData[year] ?? 0.0;
+
                           return BarChartGroupData(
                             x: index,
                             barRods: [
                               BarChartRodData(
-                                toY: value,
-                                color: chartColor ?? Colors.blue,
-                                width: 16,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
+                                  toY: value,
+                                  color: chartColor ?? Colors.blue,
+                                  width: 16,
+                                  borderRadius: BorderRadius.circular(4)),
                             ],
-                            showingTooltipIndicators: [0],
+                            showingTooltipIndicators: [],
                           );
-                        },
+                        }).toList(),
                       ),
                     ),
                   ),
-                ),
-                // CAGR 추세선
-                Container(
-                  padding: const EdgeInsets.only(
-                    top: 16,
-                    left: 40,
-                    right: 16,
-                    bottom: 24,
-                  ),
-                  child: LineChart(
-                    LineChartData(
-                      gridData: const FlGridData(show: false),
-                      titlesData: const FlTitlesData(show: false),
-                      borderData: FlBorderData(show: false),
-                      lineBarsData: [
-                        LineChartBarData(
-                          spots: years.map((year) {
-                            final yearDiff = year - years.first;
-                            final startValue = chartData[years.first]!;
-                            final expectedValue =
-                                startValue * pow(1 + 0.125, yearDiff);
-                            return FlSpot(
-                                years.indexOf(year).toDouble(), expectedValue);
-                          }).toList(),
-                          isCurved: true,
-                          color: Colors.red,
-                          dotData: const FlDotData(show: false),
-                          dashArray: [5, 5],
-                          barWidth: 2,
-                        ),
-                      ],
-                      minX: -1,
-                      maxX: years.length.toDouble(),
-                      minY: 0,
-                      maxY: maxValue * maxYRatio,
+                  // CAGR 추세선
+                  Container(
+                    padding: const EdgeInsets.only(
+                      top: 16,
+                      left: 40,
+                      right: 16,
+                      bottom: 24,
+                    ),
+                    child: LineChart(
+                      LineChartData(
+                        gridData: const FlGridData(show: false),
+                        titlesData: const FlTitlesData(show: false),
+                        borderData: FlBorderData(show: false),
+                        lineBarsData: [
+                          LineChartBarData(
+                            spots: years.map((year) {
+                              final yearDiff = year - years.first;
+                              final startValue = chartData[years.first]!;
+                              final expectedValue =
+                                  startValue * pow(1 + 0.125, yearDiff);
+                              return FlSpot(years.indexOf(year).toDouble(),
+                                  expectedValue);
+                            }).toList(),
+                            isCurved: true,
+                            color: Colors.red,
+                            dotData: const FlDotData(show: false),
+                            dashArray: [5, 5],
+                            barWidth: 2,
+                          ),
+                        ],
+                        minX: -1,
+                        maxX: years.length.toDouble(),
+                        minY: 0,
+                        maxY: maxValue * maxYRatio,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

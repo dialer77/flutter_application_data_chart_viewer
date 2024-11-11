@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/analysis_data_model.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/repositories/analysis_data_repository.dart';
@@ -23,7 +23,6 @@ class AnalysisDataProvider extends ChangeNotifier {
   bool _shouldRefreshChart = false;
 
   // Year related state
-  final int _currentYear = DateTime.now().year;
   late int _startYear;
   late int _endYear;
 
@@ -44,15 +43,14 @@ class AnalysisDataProvider extends ChangeNotifier {
   bool get shouldRefreshChart => _shouldRefreshChart;
   int get startYear => _startYear;
   int get endYear => _endYear;
-  int get currentYear => _currentYear;
 
   String? get selectedTechCode {
     if (_selectedTechListType == TechListType.lc) {
       return _selectedLcDataCode;
     } else if (_selectedTechListType == TechListType.mc) {
-      return _selectedMcDataCode;
+      return _selectedMcDataCode ?? _selectedMcDataCodes.first;
     } else {
-      return _selectedScDataCode;
+      return _selectedScDataCode ?? _selectedScDataCodes.first;
     }
   }
 
@@ -136,13 +134,10 @@ class AnalysisDataProvider extends ChangeNotifier {
 
   void setYearRange(int start, int end) {
     if (start > end) return;
-    if (start < _currentYear - 20) return;
-    if (end > _currentYear) return;
     if (start == _startYear && end == _endYear) return;
 
     _startYear = start;
     _endYear = end;
-    refreshChart();
     notifyListeners();
   }
 
@@ -199,8 +194,9 @@ class AnalysisDataProvider extends ChangeNotifier {
         _selectedLcDataCode = lcDataCodes.first;
     }
 
-    _startYear = _currentYear - 10;
-    _endYear = _currentYear;
+    RangeValues yearRange = getYearRange();
+    _startYear = yearRange.start.toInt();
+    _endYear = yearRange.end.toInt();
 
     notifyListeners();
   }
@@ -208,8 +204,8 @@ class AnalysisDataProvider extends ChangeNotifier {
   // === Repository ===
   final AnalysisDataRepository _repository;
   AnalysisDataProvider(this._repository) {
-    _startYear = DateTime.now().year - 10;
-    _endYear = DateTime.now().year;
+    _startYear = 0;
+    _endYear = 0;
   }
 
   // === State Variables ===
@@ -413,11 +409,35 @@ class AnalysisDataProvider extends ChangeNotifier {
   }
 
   // Year Range
-  (int, int) getYearRange() {
+  RangeValues getYearRange() {
     int minYear = 9999;
     int maxYear = 0;
+    //currentData 에서 selectedCategory 에 해당하는 데이터만 찾고
+    var filteredData = currentData
+        .where((data) =>
+            data.codeInfo.sheetName == getCategorySheetName(selectedCategory))
+        .toList();
 
-    for (var data in currentData) {
+    //filteredData 에서 techListType 과 techCode 에 해당하는 데이터만 찾고
+    filteredData = filteredData
+        .where((data) =>
+            data.codeInfo.techType == selectedTechListType &&
+            data.codeInfo.codeName == selectedTechCode)
+        .toList();
+
+    //filteredData 에서 SubCategory 에 해당하는 데이터만 찾고
+    var dataCode = getDataCode(
+      category: selectedCategory,
+      techListType: selectedTechListType,
+      subCategory: selectedSubCategory,
+    );
+
+    // dataCode와 key가 일치하는 데이터에서 연도 정보를 찾아 최소/최대 연도를 구한다
+    filteredData = filteredData
+        .where((data) => data.analysisDatas.keys.contains(dataCode))
+        .toList();
+
+    for (var data in filteredData) {
       for (var yearData in data.analysisDatas.values) {
         for (var year in yearData.keys) {
           minYear = year < minYear ? year : minYear;
@@ -426,7 +446,7 @@ class AnalysisDataProvider extends ChangeNotifier {
       }
     }
 
-    return (minYear, maxYear);
+    return RangeValues(minYear.toDouble(), maxYear.toDouble());
   }
 
   // Data Code

@@ -11,20 +11,20 @@ class AnalysisPeriodWidget extends StatefulWidget {
 
 class _AnalysisPeriodWidgetState extends State<AnalysisPeriodWidget> {
   final int currentYear = DateTime.now().year;
-  RangeValues _currentRangeValues = RangeValues(
-    DateTime.now().year - 10.0,
-    DateTime.now().year.toDouble(),
-  );
+  RangeValues _currentRangeValues = const RangeValues(0, 0);
 
   @override
   void initState() {
     super.initState();
+    final provider = context.read<AnalysisDataProvider>();
+    _currentRangeValues = provider.getYearRange();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<AnalysisDataProvider>();
       setState(() {
-        _currentRangeValues = RangeValues(
-          provider.startYear.toDouble(),
-          provider.endYear.toDouble(),
+        provider.setYearRange(
+          _currentRangeValues.start.toInt(),
+          _currentRangeValues.end.toInt(),
         );
       });
     });
@@ -50,21 +50,22 @@ class _AnalysisPeriodWidgetState extends State<AnalysisPeriodWidget> {
         ),
         Row(
           children: [
-            Text('${_currentRangeValues.start.round()}년'),
+            Text('${provider.startYear}년'),
             Expanded(
               child: RangeSlider(
-                values: _currentRangeValues,
-                min: (currentYear - 10).toDouble(),
-                max: currentYear.toDouble(),
-                divisions: 20,
+                values: RangeValues(
+                  provider.startYear.toDouble(),
+                  provider.endYear.toDouble(),
+                ),
+                min: _currentRangeValues.start,
+                max: _currentRangeValues.end,
+                divisions: _currentRangeValues.end.toInt() -
+                    _currentRangeValues.start.toInt(),
                 labels: RangeLabels(
-                  _currentRangeValues.start.round().toString(),
-                  _currentRangeValues.end.round().toString(),
+                  provider.startYear.toString(),
+                  provider.endYear.toString(),
                 ),
                 onChanged: (RangeValues values) {
-                  setState(() {
-                    _currentRangeValues = values;
-                  });
                   provider.setYearRange(
                     values.start.round(),
                     values.end.round(),
@@ -72,7 +73,7 @@ class _AnalysisPeriodWidgetState extends State<AnalysisPeriodWidget> {
                 },
               ),
             ),
-            Text('${_currentRangeValues.end.round()}년'),
+            Text('${provider.endYear}년'),
           ],
         ),
       ],

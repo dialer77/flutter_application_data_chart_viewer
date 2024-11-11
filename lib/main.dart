@@ -10,15 +10,23 @@ import 'providers/analysis_data_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows) {
-    setWindowTitle('Flutter Demo');
-    setWindowMinSize(const Size(1920, 1080));
-    setWindowMaxSize(const Size(1920, 1080));
+    setWindowTitle('InnoPatent Analytics v4.5');
+    setWindowMinSize(const Size(800, 600));
     getCurrentScreen().then((screen) {
-      setWindowFrame(Rect.fromCenter(
-        center: screen!.frame.center,
-        width: 1920,
-        height: 1080,
-      ));
+      if (screen != null) {
+        final screenFrame = screen.frame;
+        const initialSize = Size(1920, 1080);
+
+        final left = (screenFrame.width - initialSize.width) / 2;
+        final top = (screenFrame.height - initialSize.height) / 2;
+
+        setWindowFrame(Rect.fromLTWH(
+          left + screenFrame.left,
+          top + screenFrame.top,
+          initialSize.width,
+          initialSize.height,
+        ));
+      }
     });
   }
 

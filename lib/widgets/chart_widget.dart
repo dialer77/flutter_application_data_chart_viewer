@@ -82,8 +82,6 @@ class ChartWidget extends StatelessWidget {
               techCode: techCode,
               height: 400,
               countries: dataProvider.selectedCountries.toList(),
-              startYear: startYear,
-              endYear: endYear,
             ),
           ],
         );
@@ -101,8 +99,6 @@ class ChartWidget extends StatelessWidget {
           techCode: techCode,
           height: 400,
           selectedCodes: selectedCodes.whereType<String>().toList(),
-          startYear: startYear,
-          endYear: endYear,
         );
       }
     }
@@ -114,12 +110,10 @@ class ChartWidget extends StatelessWidget {
       return SingleChartWidget(
         category: category,
         selectedSubCategory: selectedSubCategory,
-        codeTitle: '$codePrefix: ${selectedCodes.first}',
+        codeTitle: dataProvider.selectedTechCode!,
         selectedTechListType: dataProvider.selectedTechListType,
-        techCode: selectedCodes.first,
+        techCode: selectedCodes.first!,
         height: 250,
-        startYear: startYear,
-        endYear: endYear,
       );
     }
 
@@ -190,8 +184,6 @@ class ChartWidget extends StatelessWidget {
                                 height: 300,
                                 maxYRatio: 1.6,
                                 chartColor: chartColors[j % chartColors.length],
-                                startYear: startYear,
-                                endYear: endYear,
                               )
                             : SingleChartWidget(
                                 category: category,
@@ -202,8 +194,6 @@ class ChartWidget extends StatelessWidget {
                                 techCode: codes[j],
                                 height: 300,
                                 chartColor: chartColors[j % chartColors.length],
-                                startYear: startYear,
-                                endYear: endYear,
                               ),
                       ),
                     ),

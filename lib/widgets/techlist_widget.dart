@@ -70,7 +70,7 @@ class _TechListWidgetState extends State<TechListWidget> {
           return [TechListType.lc, TechListType.mc, TechListType.sc];
         }
       case AnalysisCategory.countryTech:
-        return [TechListType.lc, TechListType.mc];
+        return [TechListType.lc, TechListType.mc, TechListType.sc];
       case AnalysisCategory.companyTech:
         return [TechListType.lc];
       case AnalysisCategory.academicTech:
@@ -219,24 +219,22 @@ class _TechListWidgetState extends State<TechListWidget> {
             ...TechListType.values.map(
               (option) => Opacity(
                 opacity: availableOptions.contains(option) ? 1.0 : 0.0,
-                child: Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Radio<TechListType>(
-                        value: option,
-                        groupValue: provider.selectedTechListType,
-                        onChanged: availableOptions.contains(option)
-                            ? (TechListType? value) {
-                                provider.setSelectedTechListType(value!);
-                              }
-                            : null,
-                      ),
-                      Text(option.toString()),
-                      const SizedBox(width: 20),
-                    ],
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Radio<TechListType>(
+                      value: option,
+                      groupValue: provider.selectedTechListType,
+                      onChanged: availableOptions.contains(option)
+                          ? (TechListType? value) {
+                              provider.setSelectedTechListType(value!);
+                            }
+                          : null,
+                    ),
+                    Text(option.toString()),
+                    const SizedBox(width: 20),
+                  ],
                 ),
               ),
             ),

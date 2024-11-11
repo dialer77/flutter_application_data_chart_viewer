@@ -79,25 +79,23 @@ class _AnalysisDataWidgetState extends State<AnalysisDataWidget> {
             ...AnalysisDataType.values.map(
               (option) => Opacity(
                 opacity: availableOptions.contains(option) ? 1.0 : 0.0,
-                child: Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Radio<AnalysisDataType>(
-                        value: option,
-                        groupValue: provider.selectedDataType,
-                        onChanged: (AnalysisDataType? value) {
-                          if (value != null) {
-                            context
-                                .read<AnalysisDataProvider>()
-                                .selectDataType(value);
-                          }
-                        },
-                      ),
-                      Text(option.toString()),
-                    ],
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Radio<AnalysisDataType>(
+                      value: option,
+                      groupValue: provider.selectedDataType,
+                      onChanged: (AnalysisDataType? value) {
+                        if (value != null) {
+                          context
+                              .read<AnalysisDataProvider>()
+                              .selectDataType(value);
+                        }
+                      },
+                    ),
+                    Text(option.toString()),
+                  ],
                 ),
               ),
             ),

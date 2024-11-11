@@ -167,21 +167,21 @@ class _ChartPageState extends State<ChartPage>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           AnalysisDataWidget(category: widget.category),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 10),
                           TechListWidget(category: widget.category),
                           if (widget.category == AnalysisCategory.countryTech ||
                               widget.category == AnalysisCategory.companyTech ||
                               widget.category == AnalysisCategory.academicTech)
                             Column(
                               children: [
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 10),
                                 AnalysisTargetWidget(category: widget.category),
                               ],
                             ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 10),
                           const Spacer(),
                           const AnalysisPeriodWidget(),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 10),
                           SizedBox(
                             width: double.infinity,
                             height: 50,

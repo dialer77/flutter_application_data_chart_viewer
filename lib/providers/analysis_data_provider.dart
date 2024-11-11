@@ -547,15 +547,6 @@ class AnalysisDataProvider extends ChangeNotifier {
   void initializeCountrySelection() {
     if (!_isInitialCountrySelection) return;
 
-    //currentData 에서 Category 가 countryTech 인 데이터만 가져오기
-    final countryData = currentData
-        .where((data) =>
-            data.codeInfo.sheetName ==
-            getCategorySheetName(AnalysisCategory.countryTech))
-        .toList();
-
-    // countryData 에서 TechListType 이 lc 인 데이터만 가져오기
-
     final Map<String, double> countryScores = {};
     for (var data in currentData) {
       if (data.codeInfo.sheetName ==

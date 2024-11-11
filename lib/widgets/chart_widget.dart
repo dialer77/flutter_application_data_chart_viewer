@@ -23,8 +23,6 @@ class ChartWidget extends StatelessWidget {
     final startYear = dataProvider.startYear;
     final endYear = dataProvider.endYear;
 
-    print('ChartWidget - Current LC Code: ${dataProvider.selectedLcDataCode}');
-
     // 데이터 로딩 중일 때
     if (dataProvider.isLoading) {
       return const Center(
@@ -74,16 +72,20 @@ class ChartWidget extends StatelessWidget {
         _ => dataProvider.selectedLcDataCode,
       };
       if (category == AnalysisCategory.countryTech) {
-        return SingleChartWidget(
-          category: category,
-          selectedSubCategory: selectedSubCategory,
-          codeTitle: '$codePrefix 지수 추세',
-          selectedTechListType: dataProvider.selectedTechListType,
-          techCode: techCode,
-          height: 400,
-          countries: dataProvider.selectedCountries.toList(),
-          startYear: startYear,
-          endYear: endYear,
+        return Column(
+          children: [
+            SingleChartWidget(
+              category: category,
+              selectedSubCategory: selectedSubCategory,
+              codeTitle: '$codePrefix 지수 추세',
+              selectedTechListType: dataProvider.selectedTechListType,
+              techCode: techCode,
+              height: 400,
+              countries: dataProvider.selectedCountries.toList(),
+              startYear: startYear,
+              endYear: endYear,
+            ),
+          ],
         );
       } else {
         final techCode = switch (dataProvider.selectedTechListType) {
@@ -176,11 +178,12 @@ class ChartWidget extends StatelessWidget {
                                     dataProvider.selectedTechListType,
                                 techCode: switch (
                                     dataProvider.selectedTechListType) {
+                                  TechListType.lc =>
+                                    dataProvider.selectedLcDataCode,
                                   TechListType.mc =>
-                                    dataProvider.selectedMcDataCodes.first,
+                                    dataProvider.selectedMcDataCode,
                                   TechListType.sc =>
-                                    dataProvider.selectedScDataCodes.first,
-                                  _ => dataProvider.selectedLcDataCode,
+                                    dataProvider.selectedScDataCode,
                                 },
                                 codeTitle: codes[j],
                                 country: codes[j],

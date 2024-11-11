@@ -24,9 +24,7 @@ class AnalysisDataRepository {
 
     try {
       final bytes = await rootBundle.load(path);
-      final stopwatch = Stopwatch()..start();
       final excel = Excel.decodeBytes(bytes.buffer.asUint8List());
-      print('Excel decoding took: ${stopwatch.elapsedMilliseconds}ms');
 
       final Map<String, List<Map<String, dynamic>>> sheetResults = {};
 
@@ -54,7 +52,6 @@ class AnalysisDataRepository {
 
       return sheetResults;
     } catch (e) {
-      print('Error loading file: $e');
       throw Exception(
           'Failed to load ${dataType.name} database: ${e.toString()}');
     }

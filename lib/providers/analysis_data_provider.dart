@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/analysis_data_model.dart';
@@ -11,14 +12,10 @@ class AnalysisDataProvider extends ChangeNotifier {
   AnalysisSubCategory _selectedSubCategory = AnalysisSubCategory.techTrend;
 
   TechListType _selectedTechListType = TechListType.lc;
-  String? _selectedLcDataCode;
-  String? _selectedMcDataCode;
-  String? _selectedScDataCode;
-  Set<String> _lcDataCodes = {};
-  Set<String> _mcDataCodes = {};
-  Set<String> _scDataCodes = {};
-  Set<String> _selectedMcDataCodes = {};
-  Set<String> _selectedScDataCodes = {};
+  String? _selectedLcTechCode;
+  final Set<String> _selectedMcTechCodes = {};
+  final Set<String> _selectedScTechCodes = {};
+
   bool _isChartVisible = false;
   bool _shouldRefreshChart = false;
 
@@ -31,14 +28,9 @@ class AnalysisDataProvider extends ChangeNotifier {
   AnalysisSubCategory get selectedSubCategory => _selectedSubCategory;
 
   TechListType get selectedTechListType => _selectedTechListType;
-  String? get selectedLcDataCode => _selectedLcDataCode;
-  String? get selectedMcDataCode => _selectedMcDataCode;
-  String? get selectedScDataCode => _selectedScDataCode;
-  Set<String> get lcDataCodes => _lcDataCodes;
-  Set<String> get mcDataCodes => _mcDataCodes;
-  Set<String> get scDataCodes => _scDataCodes;
-  Set<String> get selectedMcDataCodes => _selectedMcDataCodes;
-  Set<String> get selectedScDataCodes => _selectedScDataCodes;
+  String? get selectedLcTechCode => _selectedLcTechCode;
+  Set<String> get selectedMcTechCodes => _selectedMcTechCodes;
+  Set<String> get selectedScTechCodes => _selectedScTechCodes;
   bool get isChartVisible => _isChartVisible;
   bool get shouldRefreshChart => _shouldRefreshChart;
   int get startYear => _startYear;
@@ -46,11 +38,22 @@ class AnalysisDataProvider extends ChangeNotifier {
 
   String? get selectedTechCode {
     if (_selectedTechListType == TechListType.lc) {
-      return _selectedLcDataCode;
+      return _selectedLcTechCode;
     } else if (_selectedTechListType == TechListType.mc) {
-      return _selectedMcDataCode ?? _selectedMcDataCodes.first;
+      return _selectedMcTechCodes.first;
     } else {
-      return _selectedScDataCode ?? _selectedScDataCodes.first;
+      return _selectedScTechCodes.first;
+    }
+  }
+
+  List<String> get selectedTechCodes {
+    switch (_selectedTechListType) {
+      case TechListType.lc:
+        return [selectedLcTechCode ?? ''];
+      case TechListType.mc:
+        return [...selectedMcTechCodes]..sort();
+      case TechListType.sc:
+        return [...selectedScTechCodes]..sort();
     }
   }
 
@@ -79,55 +82,36 @@ class AnalysisDataProvider extends ChangeNotifier {
   }
 
   void setSelectedLcDataCode(String? code) {
-    _selectedLcDataCode = code;
+    _selectedLcTechCode = code;
     notifyListeners();
   }
 
-  void setSelectedMcDataCode(String? code) {
-    _selectedMcDataCode = code;
+  void setSelectedMcTechCodes(Set<String> codes) {
+    _selectedMcTechCodes.clear();
+    _selectedMcTechCodes.addAll(codes);
     notifyListeners();
   }
 
-  void setSelectedScDataCode(String? code) {
-    _selectedScDataCode = code;
-    notifyListeners();
-  }
-
-  void setLcDataCodes(Set<String> codes) {
-    _lcDataCodes = codes;
-    if (codes.isNotEmpty &&
-        (_selectedLcDataCode == null || !codes.contains(_selectedLcDataCode))) {
-      _selectedLcDataCode = codes.first;
+  void toggleMcTechCode(String code) {
+    if (_selectedMcTechCodes.contains(code)) {
+      _selectedMcTechCodes.remove(code);
+    } else {
+      _selectedMcTechCodes.add(code);
     }
     notifyListeners();
   }
 
-  void setMcDataCodes(Set<String> codes) {
-    _mcDataCodes = codes;
-    _selectedMcDataCodes = {};
+  void setSelectedScTechCodes(Set<String> codes) {
+    _selectedScTechCodes.clear();
+    _selectedScTechCodes.addAll(codes);
     notifyListeners();
   }
 
-  void setScDataCodes(Set<String> codes) {
-    _scDataCodes = codes;
-    _selectedScDataCodes = {};
-    notifyListeners();
-  }
-
-  void toggleMcDataCode(String code) {
-    if (_selectedMcDataCodes.contains(code)) {
-      _selectedMcDataCodes.remove(code);
+  void toggleScTechCode(String code) {
+    if (_selectedScTechCodes.contains(code)) {
+      _selectedScTechCodes.remove(code);
     } else {
-      _selectedMcDataCodes.add(code);
-    }
-    notifyListeners();
-  }
-
-  void toggleScDataCode(String code) {
-    if (_selectedScDataCodes.contains(code)) {
-      _selectedScDataCodes.remove(code);
-    } else {
-      _selectedScDataCodes.add(code);
+      _selectedScTechCodes.add(code);
     }
     notifyListeners();
   }
@@ -164,34 +148,28 @@ class AnalysisDataProvider extends ChangeNotifier {
       case AnalysisCategory.industryTech:
         _selectedSubCategory = AnalysisSubCategory.techTrend;
         _selectedTechListType = TechListType.lc;
-        _selectedLcDataCode =
-            getDataCodeNames(category, _selectedTechListType).first;
+        _selectedLcTechCode = getDataCodeNames(_selectedTechListType).first;
         break;
       case AnalysisCategory.countryTech:
         _selectedSubCategory = AnalysisSubCategory.countryTrend;
         _selectedTechListType = TechListType.lc;
-        _selectedLcDataCode =
-            getDataCodeNames(category, _selectedTechListType).first;
+        _selectedLcTechCode = getDataCodeNames(_selectedTechListType).first;
         break;
       case AnalysisCategory.companyTech:
         _selectedDataType = AnalysisDataType.patent;
         _selectedSubCategory = AnalysisSubCategory.companyTrend;
         _selectedTechListType = TechListType.lc;
-        _selectedLcDataCode =
-            getDataCodeNames(category, _selectedTechListType).first;
+        _selectedLcTechCode = getDataCodeNames(_selectedTechListType).first;
         break;
       case AnalysisCategory.academicTech:
         _selectedSubCategory = AnalysisSubCategory.academicTrend;
         _selectedTechListType = TechListType.lc;
-        _selectedLcDataCode =
-            getDataCodeNames(category, _selectedTechListType).first;
+        _selectedLcTechCode = getDataCodeNames(_selectedTechListType).first;
         break;
       case AnalysisCategory.techGap:
         _selectedTechListType = TechListType.lc;
-        _selectedLcDataCode = lcDataCodes.first;
       default:
         _selectedTechListType = TechListType.lc;
-        _selectedLcDataCode = lcDataCodes.first;
     }
 
     RangeValues yearRange = getYearRange();
@@ -295,54 +273,36 @@ class AnalysisDataProvider extends ChangeNotifier {
 
   // 차트 데이터 가져오기
   Map<int, double> getChartData({
-    required AnalysisCategory category,
-    required AnalysisSubCategory subCategory,
-    required TechListType techListType,
-    required String techCode,
+    String? techCode,
     String? country,
   }) {
     // currentData 에서 국가 데이터만 반환
     var filterData = currentData
-        .where(
-            (data) => data.codeInfo.sheetName == getCategorySheetName(category))
+        .where((data) =>
+            data.codeInfo.sheetName == getCategorySheetName(_selectedCategory))
         .toList();
 
     // filterData 에서 techListType 과 techCode 에 해당하는 데이터만 반환
     filterData = filterData
         .where((data) =>
-            data.codeInfo.techType == techListType &&
+            data.codeInfo.techType == selectedTechListType &&
             data.codeInfo.codeName == techCode)
         .toList();
 
-    var dataCode = getDataCode(
-      category: category,
-      techListType: techListType,
-      subCategory: subCategory,
-    );
+    if (country != null) {
+      filterData =
+          filterData.where((data) => data.codeInfo.country == country).toList();
+    }
 
-    // filterData 에서 dataCode 에 해당하는 데이터만 반환
+    var dataCode = getDataCode();
+    if (dataCode == null) return {};
+
+    // filterData 의 내용중 analysisDatas 의 key값이 dataCode 인 데이터만 반환
     filterData = filterData
-        .where((data) => data.analysisDatas.keys.contains(dataCode))
+        .where((data) => data.analysisDatas.containsKey(dataCode))
         .toList();
 
-    if (category == AnalysisCategory.countryTech &&
-        _selectedCountries.contains(country)) {
-      final data = filterData.firstWhere(
-        (data) => data.codeInfo.country == country,
-        orElse: () => throw Exception('Selected country not found'),
-      );
-
-      return data.analysisDatas[dataCode] ?? {};
-    } else {
-      final data = filterData.firstWhere(
-        (data) => data.codeInfo.codeName == techCode,
-        orElse: () => throw Exception('Selected LC code not found'),
-      );
-
-      if (dataCode == null) return {};
-
-      return data.analysisDatas[dataCode] ?? {};
-    }
+    return filterData.first.analysisDatas[dataCode] ?? {};
   }
 
   // === Data Loading Methods ===
@@ -393,9 +353,8 @@ class AnalysisDataProvider extends ChangeNotifier {
   }
 
   // Data Code Names
-  List<String> getDataCodeNames(
-      AnalysisCategory category, TechListType techListType) {
-    final sheetName = getCategorySheetName(category);
+  Set<String> getDataCodeNames(TechListType techListType) {
+    final sheetName = getCategorySheetName(_selectedCategory);
 
     var filteredData = currentData
         .where((data) => data.codeInfo.sheetName == sheetName)
@@ -405,7 +364,8 @@ class AnalysisDataProvider extends ChangeNotifier {
         .where((data) => data.codeInfo.techType == techListType)
         .toList();
 
-    return filteredData.map((data) => data.codeInfo.codeName).toList();
+    return SplayTreeSet<String>.from(
+        filteredData.map((data) => data.codeInfo.codeName));
   }
 
   // Year Range
@@ -425,13 +385,7 @@ class AnalysisDataProvider extends ChangeNotifier {
             data.codeInfo.codeName == selectedTechCode)
         .toList();
 
-    //filteredData 에서 SubCategory 에 해당하는 데이터만 찾고
-    var dataCode = getDataCode(
-      category: selectedCategory,
-      techListType: selectedTechListType,
-      subCategory: selectedSubCategory,
-    );
-
+    var dataCode = getDataCode();
     // dataCode와 key가 일치하는 데이터에서 연도 정보를 찾아 최소/최대 연도를 구한다
     filteredData = filteredData
         .where((data) => data.analysisDatas.keys.contains(dataCode))
@@ -450,13 +404,9 @@ class AnalysisDataProvider extends ChangeNotifier {
   }
 
   // Data Code
-  String? getDataCode({
-    required AnalysisCategory category,
-    required TechListType techListType,
-    required AnalysisSubCategory subCategory,
-  }) {
-    if (category == AnalysisCategory.industryTech) {
-      switch (subCategory) {
+  String? getDataCode() {
+    if (selectedCategory == AnalysisCategory.industryTech) {
+      switch (selectedSubCategory) {
         case AnalysisSubCategory.techTrend:
           if (selectedDataType == AnalysisDataType.patent) {
             return 'PAN';
@@ -465,13 +415,13 @@ class AnalysisDataProvider extends ChangeNotifier {
           }
         case AnalysisSubCategory.techInnovationIndex:
           if (selectedDataType == AnalysisDataType.patent) {
-            if (techListType == TechListType.lc) {
+            if (selectedTechListType == TechListType.lc) {
               return 'PCN';
             } else {
               return 'PCI';
             }
           } else if (selectedDataType == AnalysisDataType.paper) {
-            if (techListType == TechListType.lc) {
+            if (selectedTechListType == TechListType.lc) {
               return 'TCN';
             } else {
               return 'TCI';
@@ -488,8 +438,8 @@ class AnalysisDataProvider extends ChangeNotifier {
         default:
           return null;
       }
-    } else if (category == AnalysisCategory.countryTech) {
-      switch (subCategory) {
+    } else if (selectedCategory == AnalysisCategory.countryTech) {
+      switch (selectedSubCategory) {
         case AnalysisSubCategory.countryTrend:
           if (selectedDataType == AnalysisDataType.patent) {
             return 'PAN';
@@ -513,8 +463,8 @@ class AnalysisDataProvider extends ChangeNotifier {
         default:
           return null;
       }
-    } else if (category == AnalysisCategory.companyTech) {
-      switch (subCategory) {
+    } else if (selectedCategory == AnalysisCategory.companyTech) {
+      switch (selectedSubCategory) {
         case AnalysisSubCategory.companyTrend:
           return 'PAN';
         case AnalysisSubCategory.techInnovationIndex:
@@ -526,8 +476,8 @@ class AnalysisDataProvider extends ChangeNotifier {
         default:
           return null;
       }
-    } else if (category == AnalysisCategory.academicTech) {
-      switch (subCategory) {
+    } else if (selectedCategory == AnalysisCategory.academicTech) {
+      switch (selectedSubCategory) {
         case AnalysisSubCategory.academicTrend:
           return 'TPN';
         case AnalysisSubCategory.techInnovationIndex:
@@ -537,22 +487,22 @@ class AnalysisDataProvider extends ChangeNotifier {
         default:
           return null;
       }
-    } else if (category == AnalysisCategory.techCompetition) {
-      switch (subCategory) {
+    } else if (selectedCategory == AnalysisCategory.techCompetition) {
+      switch (selectedSubCategory) {
         case AnalysisSubCategory.techTrend:
           return 'CPN';
         default:
           return null;
       }
-    } else if (category == AnalysisCategory.techAssessment) {
-      switch (subCategory) {
+    } else if (selectedCategory == AnalysisCategory.techAssessment) {
+      switch (selectedSubCategory) {
         case AnalysisSubCategory.techTrend:
           return 'CPN';
         default:
           return null;
       }
-    } else if (category == AnalysisCategory.techGap) {
-      switch (subCategory) {
+    } else if (selectedCategory == AnalysisCategory.techGap) {
+      switch (selectedSubCategory) {
         case AnalysisSubCategory.techTrend:
           return 'CPN';
         default:
@@ -607,5 +557,32 @@ class AnalysisDataProvider extends ChangeNotifier {
       }
     }
     return countries;
+  }
+
+  // 코드별 색상 매핑을 저장할 맵
+  final Map<String, Color> _codeColorMap = {};
+
+  // 사용할 색상 리스트
+  final List<Color> _defaultColors = [
+    Colors.red,
+    Colors.blue,
+    Colors.green,
+    Colors.orange,
+    Colors.purple,
+    Colors.teal,
+    Colors.pink,
+    Colors.brown,
+    Colors.indigo,
+    Colors.grey,
+  ];
+
+  // 코드에 대한 색상을 가져오거나 할당
+  Color getColorForCode(String code) {
+    if (!_codeColorMap.containsKey(code)) {
+      // 새로운 코드라면 다음 사용 가능한 색상 할당
+      final colorIndex = _codeColorMap.length % _defaultColors.length;
+      _codeColorMap[code] = _defaultColors[colorIndex];
+    }
+    return _codeColorMap[code]!;
   }
 }

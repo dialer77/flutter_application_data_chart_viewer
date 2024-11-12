@@ -217,7 +217,7 @@ class _ChartPageState extends State<ChartPage>
                                     return;
                                   }
 
-                                  if (dataProvider.selectedLcDataCode == null) {
+                                  if (dataProvider.selectedLcTechCode == null) {
                                     // LC 코드가 선택되지 않았을 때 처리
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(

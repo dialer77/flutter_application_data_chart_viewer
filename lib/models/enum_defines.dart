@@ -62,3 +62,8 @@ enum TechListType {
   @override
   String toString() => label;
 }
+
+enum CagrCalculationMode {
+  selectedPeriod, // 선택된 기간만 사용
+  fullPeriod, // 전체 기간 사용
+}

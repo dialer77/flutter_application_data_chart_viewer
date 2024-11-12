@@ -36,27 +36,6 @@ class _TechListWidgetState extends State<TechListWidget> {
     }
 
     if (!mounted) return; // 비동기 작업 후 위젯이 여전히 유효한지 확인
-
-    // LC 데이터 코드 로드
-    final codes = dataProvider.getDataCodeNames(
-      widget.category,
-      TechListType.lc,
-    );
-    dataProvider.setLcDataCodes(codes.toSet());
-
-    // MC 데이터 코드 로드
-    final mcCodes = dataProvider.getDataCodeNames(
-      widget.category,
-      TechListType.mc,
-    );
-    dataProvider.setMcDataCodes(mcCodes.toSet());
-
-    // SC 데이터 코드 로드
-    final scCodes = dataProvider.getDataCodeNames(
-      widget.category,
-      TechListType.sc,
-    );
-    dataProvider.setScDataCodes(scCodes.toSet());
   }
 
   List<TechListType> _getAvailableOptions() {
@@ -88,35 +67,46 @@ class _TechListWidgetState extends State<TechListWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // LC 컨트롤 (단일 선택)
-        _buildDropdownControl(
+        if (provider.selectedTechListType == TechListType.lc)
+          // LC 컨트롤 (단일 선택)
+          _buildDropdownControl(
             'LC',
-            provider.selectedLcDataCode,
-            provider.lcDataCodes,
-            (newValue) => provider.setSelectedLcDataCode(newValue)),
+            provider.selectedLcTechCode,
+            provider.getDataCodeNames(TechListType.lc),
+            (newValue) => provider.setSelectedLcDataCode(newValue),
+          ),
 
         // MC 컨트롤
-        if (provider.selectedTechListType == TechListType.mc ||
-            provider.selectedTechListType == TechListType.sc)
+        if (provider.selectedTechListType == TechListType.mc)
           widget.category == AnalysisCategory.countryTech
               ? _buildDropdownControl(
                   'MC',
-                  provider.selectedMcDataCode,
-                  provider.mcDataCodes,
-                  (newValue) => provider.setSelectedMcDataCode(newValue))
-              : _buildCheckboxList('MC', provider.mcDataCodes,
-                  provider.selectedMcDataCodes, provider.toggleMcDataCode),
+                  provider.selectedMcTechCodes.first,
+                  provider.getDataCodeNames(TechListType.mc),
+                  (newValue) => provider.setSelectedMcTechCodes({newValue!}),
+                )
+              : _buildCheckboxList(
+                  'MC',
+                  provider.getDataCodeNames(TechListType.mc),
+                  provider.selectedMcTechCodes,
+                  provider.toggleMcTechCode,
+                ),
 
         // SC 컨트롤
         if (provider.selectedTechListType == TechListType.sc)
           widget.category == AnalysisCategory.countryTech
               ? _buildDropdownControl(
                   'SC',
-                  provider.selectedScDataCode,
-                  provider.scDataCodes,
-                  (newValue) => provider.setSelectedScDataCode(newValue))
-              : _buildCheckboxList('SC', provider.scDataCodes,
-                  provider.selectedScDataCodes, provider.toggleScDataCode),
+                  provider.selectedScTechCodes.first,
+                  provider.getDataCodeNames(TechListType.sc),
+                  (newValue) => provider.setSelectedScTechCodes({newValue!}),
+                )
+              : _buildCheckboxList(
+                  'SC',
+                  provider.getDataCodeNames(TechListType.sc),
+                  provider.selectedScTechCodes,
+                  provider.toggleScTechCode,
+                ),
       ],
     );
   }

@@ -49,6 +49,9 @@ class _ChartPageState extends State<ChartPage>
   }
 
   Widget _buildSubCategoryButtons() {
+    _subCategories = MenuListWidget.getAnalysisSubCategories(widget.category);
+    _selectedSubCategory =
+        context.watch<AnalysisDataProvider>().selectedSubCategory;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -186,58 +189,8 @@ class _ChartPageState extends State<ChartPage>
                                       category: widget.category),
                                 ],
                               ),
-                            const SizedBox(height: 10),
                             const Spacer(),
                             const AnalysisPeriodWidget(),
-                            const SizedBox(height: 10),
-                            SizedBox(
-                              width: double.infinity,
-                              height: 50,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      const Color.fromARGB(255, 16, 72, 98),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 15),
-                                ),
-                                onPressed: () {
-                                  final dataProvider =
-                                      context.read<AnalysisDataProvider>();
-
-                                  // 현재 선택된 값들 확인
-                                  if (_selectedSubCategory == null) {
-                                    // 서브카테고리가 선택되지 않았을 때 처리
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text('서브카테고리를 선택해주세요')),
-                                    );
-                                    return;
-                                  }
-
-                                  if (dataProvider.selectedLcTechCode == null) {
-                                    // LC 코드가 선택되지 않았을 때 처리
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text('LC 코드를 선택해주세요')),
-                                    );
-                                    return;
-                                  }
-                                  // 차트 데이터 갱신 및 표시
-                                  dataProvider.showChart();
-                                },
-                                child: const Text(
-                                  '실행',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                       ),

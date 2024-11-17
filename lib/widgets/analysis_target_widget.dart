@@ -1,3 +1,4 @@
+import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/controllers/content_controller.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
@@ -88,26 +89,79 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
               border: Border.all(color: Colors.grey),
               borderRadius: BorderRadius.circular(4),
             ),
-            height: 150,
+            height: 300,
             child: ListView(
               children: dataProvider
                   .getAvailableCountries(
-                      context
-                          .watch<AnalysisDataProvider>()
-                          .selectedTechListType,
                       context.watch<AnalysisDataProvider>().selectedTechCode)
                   .map((country) {
                 return CheckboxListTile(
-                  title: Text(country),
+                  title: Row(
+                    children: [
+                      CountryFlag.fromCountryCode(
+                          country.replaceAll(RegExp(r'[\[\]]'), ''),
+                          height: 16,
+                          width: 24),
+                      Text(country),
+                    ],
+                  ),
                   value: dataProvider.selectedCountries.contains(country),
                   onChanged: (bool? value) {
                     if (value != null) {
                       dataProvider.toggleCountrySelection(
                         country,
-                        context
-                            .read<AnalysisDataProvider>()
-                            .selectedTechListType,
-                        context.read<AnalysisDataProvider>().selectedTechCode,
+                      );
+                    }
+                  },
+                  dense: true,
+                  controlAffinity: ListTileControlAffinity.leading,
+                );
+              }).toList(),
+            ),
+          ),
+        if (dataProvider.selectedCategory == AnalysisCategory.companyTech)
+          Container(
+            margin: const EdgeInsets.only(top: 10),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            height: 300,
+            child: ListView(
+              children: dataProvider.getAvailableCompanies().map((company) {
+                return CheckboxListTile(
+                  title: Text(company),
+                  value: dataProvider.selectedCompanies.contains(company),
+                  onChanged: (bool? value) {
+                    if (value != null) {
+                      dataProvider.toggleCompanySelection(
+                        company,
+                      );
+                    }
+                  },
+                  dense: true,
+                  controlAffinity: ListTileControlAffinity.leading,
+                );
+              }).toList(),
+            ),
+          ),
+        if (dataProvider.selectedCategory == AnalysisCategory.academicTech)
+          Container(
+            margin: const EdgeInsets.only(top: 10),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            height: 300,
+            child: ListView(
+              children: dataProvider.getAvailableAcademics().map((academic) {
+                return CheckboxListTile(
+                  title: Text(academic),
+                  value: dataProvider.selectedAcademics.contains(academic),
+                  onChanged: (bool? value) {
+                    if (value != null) {
+                      dataProvider.toggleAcademicSelection(
+                        academic,
                       );
                     }
                   },

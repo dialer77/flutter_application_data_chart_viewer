@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
@@ -49,11 +51,9 @@ class _TechListWidgetState extends State<TechListWidget> {
           return [TechListType.lc, TechListType.mc, TechListType.sc];
         }
       case AnalysisCategory.countryTech:
-        return [TechListType.lc, TechListType.mc, TechListType.sc];
       case AnalysisCategory.companyTech:
-        return [TechListType.lc];
       case AnalysisCategory.academicTech:
-        return [TechListType.mc];
+        return [TechListType.lc, TechListType.mc, TechListType.sc];
       case AnalysisCategory.techCompetition:
       case AnalysisCategory.techAssessment:
       case AnalysisCategory.techGap:
@@ -63,52 +63,52 @@ class _TechListWidgetState extends State<TechListWidget> {
 
   Widget _buildAdditionalControls() {
     final provider = context.watch<AnalysisDataProvider>();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (provider.selectedTechListType == TechListType.lc)
-          // LC 컨트롤 (단일 선택)
-          _buildDropdownControl(
-            'LC',
-            provider.selectedLcTechCode,
-            provider.getDataCodeNames(TechListType.lc),
-            (newValue) => provider.setSelectedLcDataCode(newValue),
-          ),
-
-        // MC 컨트롤
-        if (provider.selectedTechListType == TechListType.mc)
-          widget.category == AnalysisCategory.countryTech
-              ? _buildDropdownControl(
-                  'MC',
-                  provider.selectedMcTechCodes.first,
-                  provider.getDataCodeNames(TechListType.mc),
-                  (newValue) => provider.setSelectedMcTechCodes({newValue!}),
-                )
-              : _buildCheckboxList(
-                  'MC',
-                  provider.getDataCodeNames(TechListType.mc),
-                  provider.selectedMcTechCodes,
-                  provider.toggleMcTechCode,
-                ),
-
-        // SC 컨트롤
-        if (provider.selectedTechListType == TechListType.sc)
-          widget.category == AnalysisCategory.countryTech
-              ? _buildDropdownControl(
-                  'SC',
-                  provider.selectedScTechCodes.first,
-                  provider.getDataCodeNames(TechListType.sc),
-                  (newValue) => provider.setSelectedScTechCodes({newValue!}),
-                )
-              : _buildCheckboxList(
-                  'SC',
-                  provider.getDataCodeNames(TechListType.sc),
-                  provider.selectedScTechCodes,
-                  provider.toggleScTechCode,
-                ),
-      ],
-    );
+    if (provider.selectedTechListType == TechListType.lc) {
+      // LC 컨트롤 (단일 선택)
+      return _buildDropdownControl(
+        'LC',
+        provider.selectedLcTechCode,
+        provider.getDataCodeNames(TechListType.lc),
+        (newValue) => provider.setSelectedLcDataCode(newValue),
+      );
+    } else if (provider.selectedTechListType == TechListType.mc) {
+      if (widget.category == AnalysisCategory.countryTech ||
+          widget.category == AnalysisCategory.companyTech ||
+          widget.category == AnalysisCategory.academicTech) {
+        return _buildDropdownControl(
+          'MC',
+          provider.selectedMcTechCodes.firstOrNull,
+          provider.getDataCodeNames(TechListType.mc),
+          (newValue) => provider.setSelectedMcTechCodes({newValue!}),
+        );
+      } else {
+        return _buildCheckboxList(
+          'MC',
+          provider.getDataCodeNames(TechListType.mc),
+          provider.selectedMcTechCodes,
+          provider.toggleMcTechCode,
+        );
+      }
+    } else if (provider.selectedTechListType == TechListType.sc) {
+      if (widget.category == AnalysisCategory.countryTech ||
+          widget.category == AnalysisCategory.companyTech ||
+          widget.category == AnalysisCategory.academicTech) {
+        return _buildDropdownControl(
+          'SC',
+          provider.selectedScTechCodes.firstOrNull,
+          provider.getDataCodeNames(TechListType.sc),
+          (newValue) => provider.setSelectedScTechCodes({newValue!}),
+        );
+      } else {
+        return _buildCheckboxList(
+          'SC',
+          provider.getDataCodeNames(TechListType.sc),
+          provider.selectedScTechCodes,
+          provider.toggleScTechCode,
+        );
+      }
+    }
+    return const SizedBox();
   }
 
   // 드롭다운 컨트롤을 위한 헬퍼 메서드
@@ -164,7 +164,7 @@ class _TechListWidgetState extends State<TechListWidget> {
               border: Border.all(color: Colors.grey),
               borderRadius: BorderRadius.circular(4),
             ),
-            height: 120,
+            height: 300,
             child: ListView(
               children: items.map((code) {
                 return CheckboxListTile(

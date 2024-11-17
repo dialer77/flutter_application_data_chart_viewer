@@ -1,19 +1,22 @@
+import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 import 'dart:math';
 import '../models/enum_defines.dart';
 import '../providers/analysis_data_provider.dart';
+import 'package:decimal/decimal.dart'; // Decimal 패키지 임포트
 
 class SingleChartWidget extends StatelessWidget {
   final AnalysisCategory category;
   final AnalysisSubCategory? selectedSubCategory;
-  final String codeTitle;
-  final TechListType? selectedTechListType;
+  final String? chartTitle;
   final String? techCode;
   final List<String>? selectedCodes;
   final String? country;
   final List<String>? countries;
+  final String? targetName;
+  final List<String>? targetNames;
   final double height;
   final double width;
   final double maxYRatio;
@@ -24,15 +27,16 @@ class SingleChartWidget extends StatelessWidget {
     super.key,
     required this.category,
     required this.selectedSubCategory,
-    required this.codeTitle,
-    required this.selectedTechListType,
+    this.chartTitle,
     this.techCode,
     this.selectedCodes,
     this.country,
     this.countries,
+    this.targetName,
+    this.targetNames,
     this.height = 400,
     this.width = 400,
-    this.maxYRatio = 1.2,
+    this.maxYRatio = 1.6,
     this.chartColor,
     this.cagrMode = CagrCalculationMode.fullPeriod,
   });
@@ -51,6 +55,8 @@ class SingleChartWidget extends StatelessWidget {
       chartLoopCodes.addAll(selectedCodes!);
     } else if (countries != null) {
       chartLoopCodes.addAll(countries!);
+    } else if (targetNames != null) {
+      chartLoopCodes.addAll(targetNames!);
     }
 
     if (isIndexType && chartLoopCodes.isNotEmpty) {
@@ -63,6 +69,7 @@ class SingleChartWidget extends StatelessWidget {
   Widget _buildMultiLineChart(BuildContext context,
       AnalysisDataProvider dataProvider, List<String> chartLoopCodes) {
     double maxValue = 0;
+    double minValue = double.infinity;
     final allTrendLines = <LineChartBarData>[];
     List<int> years = [];
     final colors = [
@@ -80,6 +87,10 @@ class SingleChartWidget extends StatelessWidget {
         context,
         techCode ?? selectedCodes![0],
         category == AnalysisCategory.countryTech ? code : null,
+        category == AnalysisCategory.companyTech ||
+                category == AnalysisCategory.academicTech
+            ? code
+            : null,
       );
       if (chartData.isNotEmpty) {
         years = chartData.keys.toList()..sort();
@@ -94,16 +105,25 @@ class SingleChartWidget extends StatelessWidget {
       final code = chartLoopCodes[i];
       final chartData = _getFilteredChartData(
         context,
-        category == AnalysisCategory.countryTech
+        category == AnalysisCategory.countryTech ||
+                category == AnalysisCategory.companyTech ||
+                category == AnalysisCategory.academicTech
             ? techCode ?? selectedCodes![0]
             : code,
         category == AnalysisCategory.countryTech ? code : null,
+        category == AnalysisCategory.companyTech ||
+                category == AnalysisCategory.academicTech
+            ? code
+            : null,
       );
 
       if (chartData.isEmpty) continue;
 
       final currentMax = chartData.values.reduce(max);
       maxValue = max(maxValue, currentMax);
+
+      final currentMin = chartData.values.reduce(min);
+      minValue = min(minValue, currentMin);
 
       final trendLineSpots = calculateTrendLine(chartData, years);
       allTrendLines.add(
@@ -120,35 +140,47 @@ class SingleChartWidget extends StatelessWidget {
     }
 
     final interval = _calculateInterval(maxValue);
+    final maxYValue = maxValue * maxYRatio;
+    final double adjustedMinY = minValue < 0 ? 0 : minValue;
 
-    return SizedBox(
-      height: height,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildTitle(codeTitle),
-          _buildLegend(chartLoopCodes, colors),
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.only(
-                top: 16,
-                left: 40,
-                right: 16,
-                bottom: 24,
-              ),
-              child: LineChart(
-                LineChartData(
-                  gridData: const FlGridData(show: false),
-                  titlesData: _buildTitlesData(years, interval),
-                  borderData: FlBorderData(show: true),
-                  lineBarsData: allTrendLines,
-                  minY: 0,
-                  maxY: maxValue * maxYRatio,
+    return Container(
+      decoration: const BoxDecoration(color: Colors.white),
+      child: SizedBox(
+        height: height,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.only(
+                  top: 16,
+                  left: 40,
+                  right: 16,
+                  bottom: 24,
+                ),
+                child: LineChart(
+                  LineChartData(
+                    gridData: const FlGridData(show: false),
+                    titlesData: _buildTitlesData(years, interval),
+                    borderData: FlBorderData(
+                      show: true,
+                      border: const Border(
+                        left: BorderSide(color: Colors.grey),
+                        right: BorderSide(color: Colors.transparent),
+                        top: BorderSide(color: Colors.transparent),
+                        bottom: BorderSide(color: Colors.transparent),
+                      ),
+                    ),
+                    lineBarsData: allTrendLines,
+                    minY: adjustedMinY,
+                    maxY: maxYValue,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+            _buildLegend(chartLoopCodes, colors),
+          ],
+        ),
       ),
     );
   }
@@ -160,9 +192,14 @@ class SingleChartWidget extends StatelessWidget {
       context,
       techCode ?? selectedCodes![0],
       country,
+      targetName,
     );
 
     if (chartData.isEmpty) return const SizedBox.shrink();
+
+    // 최소값과 최대값 계산
+    final maxValue = chartData.values.reduce(max);
+    final interval = _calculateInterval(maxValue);
 
     // CAGR과 추세선 데이터 계산
     final (cagr, trendLineData) = _calculateCagrAndTrendLine(
@@ -172,8 +209,6 @@ class SingleChartWidget extends StatelessWidget {
     );
 
     final years = chartData.keys.toList()..sort();
-    final maxValue = chartData.values.reduce(max);
-    final interval = _calculateInterval(maxValue);
 
     return Container(
       decoration: const BoxDecoration(color: Colors.white),
@@ -182,15 +217,21 @@ class SingleChartWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTitle(codeTitle),
+            if (chartTitle != null) _buildTitle(chartTitle!, chartColor, true),
             Expanded(
-              child: Stack(
-                children: [
-                  _buildBarChart(context, years, chartData, maxValue, interval),
-                  _buildTrendLineOverlay(
-                      years, trendLineData, maxValue), // 미리 계산된 추세선 데이터 전달
-                  _buildCagrOverlay(cagr),
-                ],
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                ),
+                child: Stack(
+                  children: [
+                    _buildBarChart(
+                        context, years, chartData, maxValue, interval),
+                    _buildTrendLineOverlay(
+                        years, trendLineData, maxValue), // 미리 계산된 추세선 데이터 전달
+                    _buildCagrOverlay(cagr),
+                  ],
+                ),
               ),
             ),
           ],
@@ -232,6 +273,7 @@ class SingleChartWidget extends StatelessWidget {
         final fullData = dataProvider.getChartData(
           techCode: techCode ?? selectedCodes![0],
           country: country,
+          targetName: targetName,
         );
         final allYears = fullData.keys.toList()..sort();
 
@@ -292,7 +334,15 @@ class SingleChartWidget extends StatelessWidget {
           ),
           titlesData: _buildTitlesData(years, interval),
           gridData: const FlGridData(show: false),
-          borderData: FlBorderData(show: true),
+          borderData: FlBorderData(
+            show: true,
+            border: Border(
+              left: BorderSide(color: Colors.grey.shade400),
+              right: const BorderSide(color: Colors.transparent),
+              top: const BorderSide(color: Colors.transparent),
+              bottom: BorderSide(color: Colors.grey.shade400),
+            ),
+          ),
           barGroups: years.asMap().entries.map((entry) {
             final index = entry.key;
             final year = entry.value;
@@ -419,6 +469,9 @@ class SingleChartWidget extends StatelessWidget {
   /// 최대값을 기준으로 y축의 적절한 간격을 계산
   /// maxValue의 최고 자릿수보다 한 단계 낮은 10의 거듭제곱 값을 반환
   double _calculateInterval(double maxValue) {
+    // maxValue가 0이면 기본값 1 반환
+    if (maxValue <= 0) return 0.1;
+
     // 자릿수 계산을 위해 로그 사용
     final digitCount = (log(maxValue) / ln10).floor();
     final base = pow(10, digitCount - 1).toDouble();
@@ -435,7 +488,7 @@ class SingleChartWidget extends StatelessWidget {
   List<FlSpot> calculateTrendLine(Map<int, double> data, List<int> years) {
     if (years.length < 2) return [];
 
-    // 선형 회귀 계산을 위한 변수들
+    // 선형 회��� 계산을 위한 변수들
     double sumX = 0;
     double sumY = 0;
     double sumXY = 0;
@@ -465,26 +518,48 @@ class SingleChartWidget extends StatelessWidget {
 
   /// 두 값 사이의 연평균 성장률(CAGR)을 계산
   double calculateCAGR(double startValue, double endValue, int years) {
+    // startValue가 0인 경우 endValue를 years로 나눈 평균 증가율 반환
+    if (startValue == 0) {
+      return 0;
+    }
+
+    // CAGR = (최종값/초기값)^(1/기간) - 1
     return pow((endValue / startValue), 1 / years) - 1;
   }
 
   /// 차트 제목을 스타일링하여 생성
-  Widget _buildTitle(String title) {
+  Widget _buildTitle(String title, Color? textColor, bool isBarChart) {
+    // title -> 좌우 의 [] 제거하면 코드
+    String countryCode = title.replaceAll(RegExp(r'[\[\]]'), '');
+
     return Container(
       padding: const EdgeInsets.only(left: 80),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.blue[600],
+          color: isBarChart ? Colors.white : Colors.blue,
           borderRadius: BorderRadius.circular(4),
         ),
-        child: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (category == AnalysisCategory.countryTech) ...[
+              CountryFlag.fromCountryCode(
+                countryCode,
+                height: 16,
+                width: 24,
+              ),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: isBarChart ? textColor ?? Colors.blue : Colors.white,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -492,11 +567,16 @@ class SingleChartWidget extends StatelessWidget {
 
   /// 다중 선 차트를 위한 범례를 생성
   Widget _buildLegend(List<String> codes, List<Color> colors) {
-    return Row(
-      children: codes.asMap().entries.map((entry) {
-        return Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: Row(
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 1500), // 최대 너비 설정
+      child: Wrap(
+        // Wrap 사용
+        alignment: WrapAlignment.center, // 왼쪽 정렬
+        spacing: 8, // 자식 위젯 간의 간격
+        runSpacing: 4, // 줄 간의 간격
+        children: codes.asMap().entries.map((entry) {
+          return Row(
+            mainAxisSize: MainAxisSize.min, // Row의 크기를 최소로 설정
             children: [
               Container(
                 width: 12,
@@ -506,12 +586,12 @@ class SingleChartWidget extends StatelessWidget {
               const SizedBox(width: 4),
               Text(
                 entry.value,
-                style: const TextStyle(fontSize: 12),
+                style: const TextStyle(fontSize: 15),
               ),
             ],
-          ),
-        );
-      }).toList(),
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -519,7 +599,7 @@ class SingleChartWidget extends StatelessWidget {
   FlTitlesData _buildTitlesData(List<int> years, double interval) {
     return FlTitlesData(
       show: true,
-      // 하단 타이틀 (연도)
+      // 하단 타틀 (연도)
       bottomTitles: AxisTitles(
         sideTitles: SideTitles(
           showTitles: true,
@@ -547,8 +627,29 @@ class SingleChartWidget extends StatelessWidget {
         sideTitles: SideTitles(
           showTitles: true,
           getTitlesWidget: (value, meta) {
+            // value를 Decimal로 변환하고 소수점 두 자리로 반올림
+            final Decimal roundedValue =
+                Decimal.parse(value.toStringAsFixed(2)); // 소수점 두 자리로 반올림
+            final Decimal decimalInterval =
+                Decimal.parse(interval.toString()); // interval을 Decimal로 변환
+
+            if (roundedValue % decimalInterval != Decimal.zero) {
+              return const SizedBox.shrink(); // 최댓값일 경우 빈 위젯 반환
+            }
+            // roundedValue가 10 이상이면 정수로 표시
+            if (roundedValue >= Decimal.fromInt(10) ||
+                decimalInterval >= Decimal.fromInt(10)) {
+              return Text(
+                roundedValue.toString(), // 정수로 표시
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+              );
+            }
+            // roundedValue가 10보다 작으면 소수점 2자리까지 표시
             return Text(
-              value.toInt().toString(),
+              roundedValue.toStringAsFixed(2), // 소수점 2자리까지 표시
               style: const TextStyle(
                 fontSize: 12,
                 color: Colors.grey,
@@ -570,8 +671,8 @@ class SingleChartWidget extends StatelessWidget {
   }
 
   /// 선택된 매개변수에 따라 차트 데이터를 검색하고 필터링
-  Map<int, double> _getFilteredChartData(
-      BuildContext context, String techCode, String? country) {
+  Map<int, double> _getFilteredChartData(BuildContext context, String techCode,
+      String? country, String? targetName) {
     // 차트 데이터를 연도 범위로 필터링
     Map<int, double> filterChartData(Map<int, double> data) {
       final provider = context.read<AnalysisDataProvider>();
@@ -589,6 +690,7 @@ class SingleChartWidget extends StatelessWidget {
     return filterChartData(dataProvider.getChartData(
       techCode: techCode,
       country: country,
+      targetName: targetName,
     ));
   }
 }

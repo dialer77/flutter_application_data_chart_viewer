@@ -39,7 +39,12 @@ class _AnalysisDataWidgetState extends State<AnalysisDataWidget> {
           return [AnalysisDataType.patent, AnalysisDataType.paper];
         }
       case AnalysisCategory.countryTech:
-        return [AnalysisDataType.patent, AnalysisDataType.paper];
+        if (provider.selectedSubCategory ==
+            AnalysisSubCategory.marketExpansionIndex) {
+          return [AnalysisDataType.patent];
+        } else {
+          return [AnalysisDataType.patent, AnalysisDataType.paper];
+        }
       case AnalysisCategory.companyTech:
         return [AnalysisDataType.patent];
       case AnalysisCategory.academicTech:

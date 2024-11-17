@@ -37,6 +37,7 @@ dependencies:
   excel: ^2.1.0
   country_flags: ^2.2.0
   syncfusion_flutter_maps: ^24.1.47
+  path: ^1.9.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -100,6 +101,3 @@ flutter:
 
   assets:
     - assets/images/logo_amur_white_full.png
-    - assets/F_논문DB.xlsx
-    - assets/F_특허DB.xlsx
-    - assets/F_특허+논문DB.xlsx

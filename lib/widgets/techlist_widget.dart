@@ -53,7 +53,6 @@ class _TechListWidgetState extends State<TechListWidget> {
       case AnalysisCategory.countryTech:
       case AnalysisCategory.companyTech:
       case AnalysisCategory.academicTech:
-        return [TechListType.lc, TechListType.mc, TechListType.sc];
       case AnalysisCategory.techCompetition:
       case AnalysisCategory.techAssessment:
       case AnalysisCategory.techGap:
@@ -74,7 +73,8 @@ class _TechListWidgetState extends State<TechListWidget> {
     } else if (provider.selectedTechListType == TechListType.mc) {
       if (widget.category == AnalysisCategory.countryTech ||
           widget.category == AnalysisCategory.companyTech ||
-          widget.category == AnalysisCategory.academicTech) {
+          widget.category == AnalysisCategory.academicTech ||
+          widget.category == AnalysisCategory.techGap) {
         return _buildDropdownControl(
           'MC',
           provider.selectedMcTechCodes.firstOrNull,
@@ -92,7 +92,8 @@ class _TechListWidgetState extends State<TechListWidget> {
     } else if (provider.selectedTechListType == TechListType.sc) {
       if (widget.category == AnalysisCategory.countryTech ||
           widget.category == AnalysisCategory.companyTech ||
-          widget.category == AnalysisCategory.academicTech) {
+          widget.category == AnalysisCategory.academicTech ||
+          widget.category == AnalysisCategory.techGap) {
         return _buildDropdownControl(
           'SC',
           provider.selectedScTechCodes.firstOrNull,

@@ -6,7 +6,11 @@ import 'package:flutter_application_data_chart_viewer/providers/analysis_data_pr
 import 'package:provider/provider.dart';
 
 class ChartDataTable extends StatelessWidget {
-  const ChartDataTable({super.key});
+  final double? height;
+  const ChartDataTable({
+    super.key,
+    this.height = 440,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,12 +37,22 @@ class ChartDataTable extends StatelessWidget {
     final ScrollController horizontalController = ScrollController();
     final ScrollController verticalController = ScrollController();
 
+    DataTable dataTable;
+    if (dataProvider.selectedCategory == AnalysisCategory.countryTech ||
+        dataProvider.selectedCategory == AnalysisCategory.companyTech ||
+        dataProvider.selectedCategory == AnalysisCategory.academicTech) {
+      dataTable = _buildDataTableNormal(
+          dataProvider, years, techCode, countries, companies, academics);
+    } else {
+      var data = dataProvider.getTechCompetitionData();
+      dataTable = _buildDataTableTechCompetition(data);
+    }
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
       ),
       width: double.infinity,
-      height: 440,
+      height: height ?? 200,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Column(
         children: [
@@ -46,10 +60,6 @@ class ChartDataTable extends StatelessWidget {
             width: double.infinity,
             decoration: const BoxDecoration(
               color: Color.fromARGB(255, 16, 72, 98),
-            ),
-            child: const Center(
-              child: Text('Citation Index',
-                  style: TextStyle(fontSize: 16, color: Colors.white)),
             ),
           ),
           Expanded(
@@ -81,93 +91,7 @@ class ChartDataTable extends StatelessWidget {
                     controller: horizontalController,
                     scrollDirection: Axis.horizontal,
                     child: SizedBox(
-                      child: DataTable(
-                        headingRowColor: WidgetStateProperty.all(
-                            const Color.fromARGB(255, 16, 72, 98)),
-                        columns: [
-                          const DataColumn(
-                            label: Text('Rank',
-                                style: TextStyle(
-                                    fontSize: 12, color: Colors.white)),
-                          ),
-                          const DataColumn(
-                            label: Text('국가',
-                                style: TextStyle(
-                                    fontSize: 12, color: Colors.white)),
-                          ),
-                          if (dataProvider.selectedCategory ==
-                              AnalysisCategory.companyTech)
-                            const DataColumn(
-                              label: Text('기업',
-                                  style: TextStyle(
-                                      fontSize: 12, color: Colors.white)),
-                            ),
-                          if (dataProvider.selectedCategory ==
-                              AnalysisCategory.academicTech)
-                            const DataColumn(
-                              label: Text('대학',
-                                  style: TextStyle(
-                                      fontSize: 12, color: Colors.white)),
-                            ),
-                          ...List.generate(
-                              (years.end - years.start).toInt() + 1,
-                              (index) => DataColumn(
-                                  label: Text(
-                                      (years.start.toInt() + index).toString(),
-                                      style: const TextStyle(
-                                          fontSize: 12, color: Colors.white)))),
-                        ],
-                        rows: List<DataRow>.generate(countries.length, (index) {
-                          final tableData = dataProvider.getChartData(
-                              techCode: techCode,
-                              country: dataProvider.selectedCategory ==
-                                      AnalysisCategory.countryTech
-                                  ? countries[index]
-                                  : null,
-                              targetName: dataProvider.selectedCategory ==
-                                      AnalysisCategory.companyTech
-                                  ? companies[index]
-                                  : dataProvider.selectedCategory ==
-                                          AnalysisCategory.academicTech
-                                      ? academics[index]
-                                      : null);
-                          return DataRow(cells: [
-                            DataCell(Text((index + 1).toString())), // Rank
-                            DataCell(
-                              Row(
-                                children: [
-                                  CountryFlag.fromCountryCode(
-                                    countries[index]
-                                        .replaceAll(RegExp(r'[\[\]]'), ''),
-                                    height: 16,
-                                    width: 24,
-                                  ),
-                                  Text(countries[index]),
-                                ],
-                              ),
-                            ),
-                            if (dataProvider.selectedCategory ==
-                                AnalysisCategory.companyTech)
-                              DataCell(
-                                Text(companies[index]),
-                              ),
-                            if (dataProvider.selectedCategory ==
-                                AnalysisCategory.academicTech)
-                              DataCell(
-                                Text(academics[index]),
-                              ),
-                            ...List.generate(
-                              (years.end - years.start).toInt() + 1,
-                              (yearIndex) => DataCell(
-                                Text(
-                                    tableData[(years.start.toInt() + yearIndex)]
-                                            ?.toStringAsFixed(3) ??
-                                        '0.000'),
-                              ),
-                            ),
-                          ]);
-                        }),
-                      ),
+                      child: dataTable,
                     ),
                   ),
                 ),
@@ -175,6 +99,148 @@ class ChartDataTable extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  DataTable _buildDataTableNormal(
+      AnalysisDataProvider dataProvider,
+      RangeValues years,
+      String? techCode,
+      List<String> countries,
+      List<String> companies,
+      List<String> academics) {
+    var dataTable = DataTable(
+      headingRowColor:
+          WidgetStateProperty.all(const Color.fromARGB(255, 16, 72, 98)),
+      columns: [
+        const DataColumn(
+          label:
+              Text('Rank', style: TextStyle(fontSize: 12, color: Colors.white)),
+        ),
+        const DataColumn(
+          label:
+              Text('국가', style: TextStyle(fontSize: 12, color: Colors.white)),
+        ),
+        if (dataProvider.selectedCategory == AnalysisCategory.companyTech)
+          const DataColumn(
+            label:
+                Text('기업', style: TextStyle(fontSize: 12, color: Colors.white)),
+          ),
+        if (dataProvider.selectedCategory == AnalysisCategory.academicTech)
+          const DataColumn(
+            label:
+                Text('대학', style: TextStyle(fontSize: 12, color: Colors.white)),
+          ),
+        ...List.generate(
+            (years.end - years.start).toInt() + 1,
+            (index) => DataColumn(
+                label: Text((years.start.toInt() + index).toString(),
+                    style:
+                        const TextStyle(fontSize: 12, color: Colors.white)))),
+      ],
+      rows: List<DataRow>.generate(countries.length, (index) {
+        final tableData = dataProvider.getChartData(
+            techCode: techCode,
+            country:
+                dataProvider.selectedCategory == AnalysisCategory.countryTech
+                    ? countries[index]
+                    : null,
+            targetName: dataProvider.selectedCategory ==
+                    AnalysisCategory.companyTech
+                ? companies[index]
+                : dataProvider.selectedCategory == AnalysisCategory.academicTech
+                    ? academics[index]
+                    : null);
+        return DataRow(cells: [
+          DataCell(Text((index + 1).toString())), // Rank
+          DataCell(
+            Row(
+              children: [
+                CountryFlag.fromCountryCode(
+                  countries[index].replaceAll(RegExp(r'[\[\]]'), ''),
+                  height: 16,
+                  width: 24,
+                ),
+                Text(countries[index]),
+              ],
+            ),
+          ),
+          if (dataProvider.selectedCategory == AnalysisCategory.companyTech)
+            DataCell(
+              Text(companies[index]),
+            ),
+          if (dataProvider.selectedCategory == AnalysisCategory.academicTech)
+            DataCell(
+              Text(academics[index]),
+            ),
+          ...List.generate(
+            (years.end - years.start).toInt() + 1,
+            (yearIndex) => DataCell(
+              Text(tableData[(years.start.toInt() + yearIndex)]
+                      ?.toStringAsFixed(3) ??
+                  '0.000'),
+            ),
+          ),
+        ]);
+      }),
+    );
+    return dataTable;
+  }
+
+  DataTable _buildDataTableTechCompetition(
+      Map<String, Map<String, double>> data) {
+    List<String> dataCodes = ['PAN', 'PFN', 'PCN', 'PAI', 'PFI', 'PCI', 'TC'];
+
+    return DataTable(
+      headingRowColor:
+          WidgetStateProperty.all(const Color.fromARGB(255, 16, 72, 98)),
+      columns: [
+        const DataColumn(
+          label:
+              Text('Rank', style: TextStyle(fontSize: 12, color: Colors.white)),
+        ),
+        const DataColumn(
+          label: Text('Contury',
+              style: TextStyle(fontSize: 12, color: Colors.white)),
+        ),
+        ...dataCodes.map(
+          (code) => DataColumn(
+            label: Text(code,
+                style: const TextStyle(fontSize: 12, color: Colors.white)),
+          ),
+        ),
+      ],
+      rows: List<DataRow>.generate(
+        data.keys.length,
+        (index) {
+          return DataRow(
+            cells: [
+              DataCell(Text((index + 1).toString())), // Rank
+              DataCell(
+                Row(
+                  children: [
+                    CountryFlag.fromCountryCode(
+                      data.keys
+                          .elementAt(index)
+                          .replaceAll(RegExp(r'[\[\]]'), ''),
+                      height: 16,
+                      width: 24,
+                    ),
+                    Text(data.keys.elementAt(index)),
+                  ],
+                ),
+              ),
+              ...dataCodes.map(
+                (code) => DataCell(
+                  Text(data[data.keys.elementAt(index)]?[code]
+                          ?.toStringAsFixed(3) ??
+                      '0.000'),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

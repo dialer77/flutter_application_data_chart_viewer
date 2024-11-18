@@ -95,7 +95,7 @@ class _AnalysisDataWidgetState extends State<AnalysisDataWidget> {
                         if (value != null) {
                           context
                               .read<AnalysisDataProvider>()
-                              .selectDataType(value);
+                              .setSelectedDataType(value);
                         }
                       },
                     ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart_data_table.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/country_map_widget.dart';
 import 'package:provider/provider.dart';
 import '../models/enum_defines.dart';
 import 'dart:math';
@@ -50,6 +51,23 @@ class ChartWidget extends StatelessWidget {
 
     final techCode = dataProvider.selectedTechCode;
     final techCodes = dataProvider.selectedTechCodes;
+
+    if (category == AnalysisCategory.techCompetition) {
+      return Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+        ),
+        width: double.infinity,
+        child: const Column(
+          children: [
+            ChartDataTable(),
+            CountryMapWidget(
+              countryCodes: ["KR", "US", "CN"],
+            ),
+          ],
+        ),
+      );
+    }
 
     if (techCode == '') {
       return Container(

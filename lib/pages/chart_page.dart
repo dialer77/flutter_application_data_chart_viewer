@@ -190,7 +190,9 @@ class _ChartPageState extends State<ChartPage>
                                 ],
                               ),
                             const Spacer(),
-                            const AnalysisPeriodWidget(),
+                            if (widget.category !=
+                                AnalysisCategory.techCompetition)
+                              const AnalysisPeriodWidget(),
                           ],
                         ),
                       ),

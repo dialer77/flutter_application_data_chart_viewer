@@ -252,7 +252,7 @@ class SingleChartWidget extends StatelessWidget {
         final years = chartData.keys.toList()..sort();
         final cagr = calculateCAGR(
           chartData[years.first] ?? 0,
-          chartData[years.last] ?? 0,
+          chartData[years.last - 1] ?? 0,
           years.last - years.first,
         );
 
@@ -279,7 +279,7 @@ class SingleChartWidget extends StatelessWidget {
 
         final fullDataCagr = calculateCAGR(
           fullData[allYears.first] ?? 0,
-          fullData[allYears.last] ?? 0,
+          fullData[allYears.last - 1] ?? 0,
           allYears.last - allYears.first,
         );
 
@@ -520,9 +520,8 @@ class SingleChartWidget extends StatelessWidget {
   double calculateCAGR(double startValue, double endValue, int years) {
     // startValue가 0인 경우 endValue를 years로 나눈 평균 증가율 반환
     if (startValue == 0) {
-      return 0;
+      startValue = 1;
     }
-
     // CAGR = (최종값/초기값)^(1/기간) - 1
     return pow((endValue / startValue), 1 / years) - 1;
   }

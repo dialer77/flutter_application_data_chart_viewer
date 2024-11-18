@@ -6,10 +6,49 @@ import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/repositories/analysis_data_repository.dart';
 
 class AnalysisDataProvider extends ChangeNotifier {
-// State declarations
+  // === Data Loading Methods ===
+  Future<void> loadAllData() async {
+    if (_isInitialized) return;
+
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      for (var dataType in AnalysisDataType.values) {
+        final rawData = await _repository.loadAnalysisData(dataType);
+        _dataMap[dataType] = rawData.entries
+            .expand((entry) => entry.value
+                .map((item) => AnalysisDataModel.fromMap(entry.key, item)))
+            .toList();
+      }
+
+      _isInitialized = true;
+      _error = null;
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  final Map<AnalysisDataType, List<AnalysisDataModel>> _dataMap = {
+    AnalysisDataType.paper: [],
+    AnalysisDataType.patent: [],
+    AnalysisDataType.patentAndPaper: [],
+  };
+  List<AnalysisDataModel> get currentData => _dataMap[_selectedDataType] ?? [];
+
+  final AnalysisDataRepository _repository;
+  AnalysisDataProvider(this._repository) {
+    _startYear = 0;
+    _endYear = 0;
+  }
+
+  // === State Variables ===
+  AnalysisDataType _selectedDataType = AnalysisDataType.patent;
   AnalysisCategory _selectedCategory = AnalysisCategory.industryTech;
   AnalysisSubCategory _selectedSubCategory = AnalysisSubCategory.techTrend;
-
   TechListType _selectedTechListType = TechListType.lc;
   String? _selectedLcTechCode;
   final Set<String> _selectedMcTechCodes = {};
@@ -22,10 +61,10 @@ class AnalysisDataProvider extends ChangeNotifier {
   late int _startYear;
   late int _endYear;
 
-  // Getters
+  // === Getters ===
+  AnalysisDataType get selectedDataType => _selectedDataType;
   AnalysisCategory get selectedCategory => _selectedCategory;
   AnalysisSubCategory get selectedSubCategory => _selectedSubCategory;
-
   TechListType get selectedTechListType => _selectedTechListType;
   String? get selectedLcTechCode => _selectedLcTechCode;
   Set<String> get selectedMcTechCodes => _selectedMcTechCodes;
@@ -56,7 +95,12 @@ class AnalysisDataProvider extends ChangeNotifier {
     }
   }
 
-  // Setters and state update methods
+  // === Setters ===
+  void setSelectedDataType(AnalysisDataType dataType) {
+    _selectedDataType = dataType;
+    notifyListeners();
+  }
+
   void setSelectedCategory(AnalysisCategory category) {
     if (category == AnalysisCategory.countryTech) {
       if (_selectedSubCategory == AnalysisSubCategory.companyTrend ||
@@ -109,27 +153,9 @@ class AnalysisDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleMcTechCode(String code) {
-    if (_selectedMcTechCodes.contains(code)) {
-      _selectedMcTechCodes.remove(code);
-    } else {
-      _selectedMcTechCodes.add(code);
-    }
-    notifyListeners();
-  }
-
   void setSelectedScTechCodes(Set<String> codes) {
     _selectedScTechCodes.clear();
     _selectedScTechCodes.addAll(codes);
-    notifyListeners();
-  }
-
-  void toggleScTechCode(String code) {
-    if (_selectedScTechCodes.contains(code)) {
-      _selectedScTechCodes.remove(code);
-    } else {
-      _selectedScTechCodes.add(code);
-    }
     notifyListeners();
   }
 
@@ -139,6 +165,24 @@ class AnalysisDataProvider extends ChangeNotifier {
 
     _startYear = start;
     _endYear = end;
+    notifyListeners();
+  }
+
+  void toggleMcTechCode(String code) {
+    if (_selectedMcTechCodes.contains(code)) {
+      _selectedMcTechCodes.remove(code);
+    } else {
+      _selectedMcTechCodes.add(code);
+    }
+    notifyListeners();
+  }
+
+  void toggleScTechCode(String code) {
+    if (_selectedScTechCodes.contains(code)) {
+      _selectedScTechCodes.remove(code);
+    } else {
+      _selectedScTechCodes.add(code);
+    }
     notifyListeners();
   }
 
@@ -197,39 +241,17 @@ class AnalysisDataProvider extends ChangeNotifier {
   }
 
   // === Repository ===
-  final AnalysisDataRepository _repository;
-  AnalysisDataProvider(this._repository) {
-    _startYear = 0;
-    _endYear = 0;
-  }
 
-  // === State Variables ===
-  // Data Type
-  AnalysisDataType _selectedDataType = AnalysisDataType.patent;
-  final Map<AnalysisDataType, List<AnalysisDataModel>> _dataMap = {
-    AnalysisDataType.paper: [],
-    AnalysisDataType.patent: [],
-    AnalysisDataType.patentAndPaper: [],
-  };
-
-  // Countries
   final Set<String> _selectedCountries = {};
 
-  // Companies
   final Set<String> _selectedCompanies = {};
 
-  // Academic Names
   final Set<String> _selectedAcademics = {};
 
   // Loading State
   bool _isInitialized = false;
   bool _isLoading = false;
   String? _error;
-
-  // === Getters ===
-  // Data Type
-  AnalysisDataType get selectedDataType => _selectedDataType;
-  List<AnalysisDataModel> get currentData => _dataMap[_selectedDataType] ?? [];
 
   // Countries
   Set<String> get selectedCountries {
@@ -248,7 +270,8 @@ class AnalysisDataProvider extends ChangeNotifier {
   double getCountryValue(String country) {
     double value = 0.0;
     for (var data in currentData) {
-      if (data.codeInfo.sheetName == getCategorySheetName(selectedCategory) &&
+      if (getCategorySheetNames(selectedCategory)
+              .contains(data.codeInfo.sheetName) &&
           data.codeInfo.techType == selectedTechListType &&
           data.codeInfo.codeName == selectedTechCode &&
           data.codeInfo.country == country) {
@@ -290,7 +313,8 @@ class AnalysisDataProvider extends ChangeNotifier {
   double getTargetNameValue(String targetName) {
     double value = 0.0;
     for (var data in currentData) {
-      if (data.codeInfo.sheetName == getCategorySheetName(selectedCategory) &&
+      if (getCategorySheetNames(selectedCategory)
+              .contains(data.codeInfo.sheetName) &&
           data.codeInfo.techType == selectedTechListType &&
           data.codeInfo.codeName == selectedTechCode &&
           data.codeInfo.name == targetName) {
@@ -311,13 +335,6 @@ class AnalysisDataProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   String? get error => _error;
-
-  // === State Update Methods ===
-  // Data Type
-  void selectDataType(AnalysisDataType dataType) {
-    _selectedDataType = dataType;
-    notifyListeners();
-  }
 
   // Countries
   void toggleCountrySelection(String country) {
@@ -349,16 +366,35 @@ class AnalysisDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Map<String, Map<String, double>> getTechCompetitionData() {
+    var countries = getAvailableCountriesFromTechCompetition(selectedTechCode);
+    List<String> dataCodes = ['PAN', 'PFN', 'PCN', 'PAI', 'PFI', 'PCI', 'TC'];
+    Map<String, Map<String, double>> data = {};
+    for (var country in countries) {
+      data[country] = {};
+      for (var dataCode in dataCodes) {
+        data[country]?[dataCode] = getChartData(
+                techCode: selectedTechCode,
+                country: country,
+                dataCode: dataCode)
+            .values
+            .last;
+      }
+    }
+    return data;
+  }
+
   // 차트 데이터 가져오기
   Map<int, double> getChartData({
     String? techCode,
     String? country,
     String? targetName,
+    String? dataCode,
   }) {
     // currentData 에서 국가 데이터만 반환
     var filterData = currentData
-        .where((data) =>
-            data.codeInfo.sheetName == getCategorySheetName(_selectedCategory))
+        .where((data) => getCategorySheetNames(selectedCategory)
+            .contains(data.codeInfo.sheetName))
         .toList();
 
     // filterData 에서 techListType 과 techCode 에 해당하는 데이터만 반환
@@ -384,70 +420,44 @@ class AnalysisDataProvider extends ChangeNotifier {
       default:
         break;
     }
-    var dataCode = getDataCode();
-    if (dataCode == null) return {};
+    String? finalDataCode = dataCode ?? getDataCode();
+    if (finalDataCode == null) return {};
 
     // filterData 의 내용중 analysisDatas 의 key값이 dataCode 인 데이터만 반환
     filterData = filterData
-        .where((data) => data.analysisDatas.containsKey(dataCode))
+        .where((data) => data.analysisDatas.containsKey(finalDataCode))
         .toList();
 
-    return filterData.first.analysisDatas[dataCode] ?? {};
-  }
-
-  // === Data Loading Methods ===
-  Future<void> loadAllData() async {
-    if (_isInitialized) return;
-
-    try {
-      _isLoading = true;
-      notifyListeners();
-
-      for (var dataType in AnalysisDataType.values) {
-        final rawData = await _repository.loadAnalysisData(dataType);
-        _dataMap[dataType] = rawData.entries
-            .expand((entry) => entry.value
-                .map((item) => AnalysisDataModel.fromMap(entry.key, item)))
-            .toList();
-      }
-
-      _isInitialized = true;
-      _error = null;
-    } catch (e) {
-      _error = e.toString();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
+    return filterData.first.analysisDatas[finalDataCode] ?? {};
   }
 
   // === Utility Methods ===
   // Category Sheet Name
-  String getCategorySheetName(AnalysisCategory category) {
+  List<String> getCategorySheetNames(AnalysisCategory category) {
     switch (category) {
       case AnalysisCategory.industryTech:
-        return '기술트렌드';
+        return ['기술트렌드'];
       case AnalysisCategory.countryTech:
-        return '국가트렌드';
+        return ['국가트렌드'];
       case AnalysisCategory.companyTech:
-        return '기업트렌드';
+        return ['기업트렌드'];
       case AnalysisCategory.academicTech:
-        return '기관트렌드';
-      case AnalysisCategory.techGap:
-        return 'TechGap';
+        return ['기관트렌드'];
       case AnalysisCategory.techCompetition:
-        return 'TechCompetition';
+        return ['국가과학기술진단', '기술진단'];
+      case AnalysisCategory.techGap:
+        return ['국가과학기술진단', '특허+논문과학기술진단'];
       case AnalysisCategory.techAssessment:
-        return 'TechAssessment';
+        return ['TechAssessment'];
     }
   }
 
   // Data Code Names
   Set<String> getDataCodeNames(TechListType techListType) {
-    final sheetName = getCategorySheetName(_selectedCategory);
+    final sheetNames = getCategorySheetNames(_selectedCategory);
 
     var filteredData = currentData
-        .where((data) => data.codeInfo.sheetName == sheetName)
+        .where((data) => sheetNames.contains(data.codeInfo.sheetName))
         .toList();
 
     filteredData = filteredData
@@ -464,8 +474,8 @@ class AnalysisDataProvider extends ChangeNotifier {
     int maxYear = 0;
     //currentData 에서 selectedCategory 에 해당하는 데이터만 찾고
     var filteredData = currentData
-        .where((data) =>
-            data.codeInfo.sheetName == getCategorySheetName(selectedCategory))
+        .where((data) => getCategorySheetNames(selectedCategory)
+            .contains(data.codeInfo.sheetName))
         .toList();
 
     //filteredData 에서 techListType 과 techCode 에 해당하는 데이터만 찾고
@@ -603,13 +613,43 @@ class AnalysisDataProvider extends ChangeNotifier {
     return null;
   }
 
+  Set<String> getAvailableCountriesFromTechCompetition(String? techCode) {
+    // currentData 에서 카테고리가  countryTech이고, techListType과 techCode가 일치하는 데이터를 찾는다
+    final Map<String, double> countries = {};
+    for (var data in currentData) {
+      if (getCategorySheetNames(AnalysisCategory.techCompetition)
+              .contains(data.codeInfo.sheetName) &&
+          data.codeInfo.techType == selectedTechListType &&
+          data.codeInfo.codeName == (techCode ?? selectedTechCode)) {
+        var dataCode = getDataCode();
+        if (dataCode == null) continue;
+
+        var yearData = data.analysisDatas[dataCode];
+        double value = 0.0;
+        if (yearData != null && yearData.isNotEmpty) {
+          value = yearData[yearData.keys.last] ?? 0.0;
+        }
+        countries[data.codeInfo.country] = value;
+      }
+    }
+
+    final sortedList = countries.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value))
+      ..map((e) => e.key).toList();
+    List<String> keyValue = [];
+    for (var entry in sortedList) {
+      keyValue.add(entry.key);
+    }
+    return keyValue.toSet();
+  }
+
   // === Methods ===
   Set<String> getAvailableCountries(String? techCode) {
     // currentData 에서 카테고리가  countryTech이고, techListType과 techCode가 일치하는 데이터를 찾는다
     final Map<String, double> countries = {};
     for (var data in currentData) {
-      if (data.codeInfo.sheetName ==
-              getCategorySheetName(AnalysisCategory.countryTech) &&
+      if (getCategorySheetNames(AnalysisCategory.countryTech)
+              .contains(data.codeInfo.sheetName) &&
           data.codeInfo.techType == selectedTechListType &&
           data.codeInfo.codeName == (techCode ?? selectedTechCode)) {
         var dataCode = getDataCode();
@@ -638,8 +678,8 @@ class AnalysisDataProvider extends ChangeNotifier {
     // currentData 에서 카테고리가  companyTech이고, techListType과 techCode가 일치하는 데이터를 찾는다
     final Map<String, double> companies = {};
     for (var data in currentData) {
-      if (data.codeInfo.sheetName ==
-              getCategorySheetName(AnalysisCategory.companyTech) &&
+      if (getCategorySheetNames(AnalysisCategory.companyTech)
+              .contains(data.codeInfo.sheetName) &&
           data.codeInfo.techType == selectedTechListType &&
           data.codeInfo.codeName == selectedTechCode) {
         var dataCode = getDataCode();
@@ -668,8 +708,8 @@ class AnalysisDataProvider extends ChangeNotifier {
     // currentData 에서 카테고리가  academicTech이고, techListType과 techCode가 일치하는 데이터를 찾는다
     final Map<String, double> academicNames = {};
     for (var data in currentData) {
-      if (data.codeInfo.sheetName ==
-              getCategorySheetName(AnalysisCategory.academicTech) &&
+      if (getCategorySheetNames(AnalysisCategory.academicTech)
+              .contains(data.codeInfo.sheetName) &&
           data.codeInfo.techType == selectedTechListType &&
           data.codeInfo.codeName == selectedTechCode) {
         var dataCode = getDataCode();

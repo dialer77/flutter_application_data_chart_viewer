@@ -80,6 +80,10 @@ class AnalysisDataModel {
         }
         year += 2000;
 
+        if (dataCode == "" || sheetName == "국가과학기술진단" || sheetName == "기술진단") {
+          print(sheetName);
+        }
+
         if (analysisDatas[dataCode] == null) {
           analysisDatas[dataCode] = {
             year: double.tryParse(map[key].toString()) ?? 0.0

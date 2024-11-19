@@ -45,7 +45,9 @@ class _TechListWidgetState extends State<TechListWidget> {
     switch (widget.category) {
       case AnalysisCategory.industryTech:
         if (provider.selectedSubCategory ==
-            AnalysisSubCategory.marketExpansionIndex) {
+                AnalysisSubCategory.marketExpansionIndex ||
+            provider.selectedSubCategory ==
+                AnalysisSubCategory.rdInvestmentIndex) {
           return [TechListType.mc, TechListType.sc];
         } else {
           return [TechListType.lc, TechListType.mc, TechListType.sc];

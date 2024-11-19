@@ -55,6 +55,7 @@ class AnalysisDataModel {
         break;
     }
 
+    String splitSheetName = sheetNameSplit.sublist(1).join('');
     final codeInfo = CodeInfo(
       code: code,
       codeName: codeName,
@@ -62,14 +63,16 @@ class AnalysisDataModel {
       name: name,
       scode: scode,
       market: market,
-      sheetName: sheetNameSplit.sublist(1).join(''),
+      sheetName: splitSheetName,
       techType: techType,
     );
 
     final Map<String, Map<int, double>> analysisDatas = {};
 
     for (var key in map.keys) {
-      if (key.contains('_') && key != "CODE_NAME") {
+      if (key.contains('_') &&
+          key != "CODE_NAME" &&
+          (int.tryParse(key) == null)) {
         int year = 0;
         String dataCode = "";
         if (int.tryParse(key) != null) {
@@ -80,9 +83,18 @@ class AnalysisDataModel {
         }
         year += 2000;
 
-        if (dataCode == "" || sheetName == "국가과학기술진단" || sheetName == "기술진단") {
-          print(sheetName);
+        if (analysisDatas[dataCode] == null) {
+          analysisDatas[dataCode] = {
+            year: double.tryParse(map[key].toString()) ?? 0.0
+          };
+        } else {
+          analysisDatas[dataCode]![year] =
+              double.tryParse(map[key].toString()) ?? 0.0;
         }
+      } else if (int.tryParse(key) != null) {
+        int year = int.parse(key);
+        String dataCode = "";
+        year = int.parse(key);
 
         if (analysisDatas[dataCode] == null) {
           analysisDatas[dataCode] = {

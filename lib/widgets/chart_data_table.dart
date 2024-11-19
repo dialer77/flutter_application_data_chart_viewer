@@ -139,51 +139,72 @@ class ChartDataTable extends StatelessWidget {
                     style:
                         const TextStyle(fontSize: 12, color: Colors.white)))),
       ],
-      rows: List<DataRow>.generate(countries.length, (index) {
-        final tableData = dataProvider.getChartData(
-            techCode: techCode,
-            country:
-                dataProvider.selectedCategory == AnalysisCategory.countryTech
-                    ? countries[index]
-                    : null,
-            targetName: dataProvider.selectedCategory ==
-                    AnalysisCategory.companyTech
-                ? companies[index]
-                : dataProvider.selectedCategory == AnalysisCategory.academicTech
-                    ? academics[index]
-                    : null);
-        return DataRow(cells: [
-          DataCell(Text((index + 1).toString())), // Rank
-          DataCell(
-            Row(
-              children: [
-                CountryFlag.fromCountryCode(
-                  countries[index].replaceAll(RegExp(r'[\[\]]'), ''),
-                  height: 16,
-                  width: 24,
+      rows: List<DataRow>.generate(
+        dataProvider.selectedCategory == AnalysisCategory.countryTech
+            ? countries.length
+            : dataProvider.selectedCategory == AnalysisCategory.companyTech
+                ? companies.length
+                : academics.length,
+        (index) {
+          final tableData = dataProvider.getChartData(
+              techCode: techCode,
+              country:
+                  dataProvider.selectedCategory == AnalysisCategory.countryTech
+                      ? countries[index]
+                      : null,
+              targetName:
+                  dataProvider.selectedCategory == AnalysisCategory.companyTech
+                      ? companies[index]
+                      : dataProvider.selectedCategory ==
+                              AnalysisCategory.academicTech
+                          ? academics[index]
+                          : null);
+          var countryCode = dataProvider.selectedCategory ==
+                  AnalysisCategory.countryTech
+              ? countries[index].replaceAll(RegExp(r'[\[\]]'), '')
+              : dataProvider.selectedCategory == AnalysisCategory.companyTech
+                  ? dataProvider
+                      .searchCountryCode(companies[index])
+                      .replaceAll(RegExp(r'[\[\]]'), '')
+                  : dataProvider
+                      .searchCountryCode(academics[index])
+                      .replaceAll(RegExp(r'[\[\]]'), '');
+          return DataRow(
+            cells: [
+              DataCell(Text((index + 1).toString())), // Rank
+              DataCell(
+                Row(
+                  children: [
+                    CountryFlag.fromCountryCode(
+                      countryCode,
+                      height: 16,
+                      width: 24,
+                    ),
+                    Text(countryCode),
+                  ],
                 ),
-                Text(countries[index]),
-              ],
-            ),
-          ),
-          if (dataProvider.selectedCategory == AnalysisCategory.companyTech)
-            DataCell(
-              Text(companies[index]),
-            ),
-          if (dataProvider.selectedCategory == AnalysisCategory.academicTech)
-            DataCell(
-              Text(academics[index]),
-            ),
-          ...List.generate(
-            (years.end - years.start).toInt() + 1,
-            (yearIndex) => DataCell(
-              Text(tableData[(years.start.toInt() + yearIndex)]
-                      ?.toStringAsFixed(3) ??
-                  '0.000'),
-            ),
-          ),
-        ]);
-      }),
+              ),
+              if (dataProvider.selectedCategory == AnalysisCategory.companyTech)
+                DataCell(
+                  Text(companies[index]),
+                ),
+              if (dataProvider.selectedCategory ==
+                  AnalysisCategory.academicTech)
+                DataCell(
+                  Text(academics[index]),
+                ),
+              ...List.generate(
+                (years.end - years.start).toInt() + 1,
+                (yearIndex) => DataCell(
+                  Text(tableData[(years.start.toInt() + yearIndex)]
+                          ?.toStringAsFixed(3) ??
+                      '0.000'),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
     return dataTable;
   }

@@ -38,7 +38,7 @@ class SingleChartWidget extends StatelessWidget {
     this.width = 400,
     this.maxYRatio = 1.6,
     this.chartColor,
-    this.cagrMode = CagrCalculationMode.fullPeriod,
+    this.cagrMode = CagrCalculationMode.selectedPeriod,
   });
 
   @override
@@ -119,12 +119,6 @@ class SingleChartWidget extends StatelessWidget {
 
       if (chartData.isEmpty) continue;
 
-      final currentMax = chartData.values.reduce(max);
-      maxValue = max(maxValue, currentMax);
-
-      final currentMin = chartData.values.reduce(min);
-      minValue = min(minValue, currentMin);
-
       final trendLineSpots = calculateTrendLine(chartData, years);
       allTrendLines.add(
         LineChartBarData(
@@ -137,6 +131,12 @@ class SingleChartWidget extends StatelessWidget {
           belowBarData: BarAreaData(show: false),
         ),
       );
+
+      final currentMax = trendLineSpots.map((spot) => spot.y).reduce(max);
+      maxValue = max(maxValue, currentMax);
+
+      final currentMin = trendLineSpots.map((spot) => spot.y).reduce(min);
+      minValue = min(minValue, currentMin);
     }
 
     final interval = _calculateInterval(maxValue);
@@ -246,14 +246,26 @@ class SingleChartWidget extends StatelessWidget {
     AnalysisDataProvider dataProvider,
     Map<int, double> chartData,
   ) {
+    final fullData = dataProvider.getChartData(
+      techCode: techCode ?? selectedCodes![0],
+      country: country,
+      targetName: targetName,
+    );
+    final allYears = fullData.keys.toList()..sort();
+
     switch (cagrMode) {
       case CagrCalculationMode.selectedPeriod:
         // 선택된 기간의 데이터만 사용
         final years = chartData.keys.toList()..sort();
+
+        final startYear = years.first;
+        final endYear =
+            years.last == allYears.last ? years.last - 1 : years.last;
+
         final cagr = calculateCAGR(
-          chartData[years.first] ?? 0,
-          chartData[years.last - 1] ?? 0,
-          years.last - years.first,
+          chartData[startYear] ?? 0,
+          chartData[endYear] ?? 0,
+          endYear - startYear,
         );
 
         // 선택된 기간의 추세선 데이터 계산
@@ -270,12 +282,6 @@ class SingleChartWidget extends StatelessWidget {
 
       case CagrCalculationMode.fullPeriod:
         // 전체 기간의 데이터 사용
-        final fullData = dataProvider.getChartData(
-          techCode: techCode ?? selectedCodes![0],
-          country: country,
-          targetName: targetName,
-        );
-        final allYears = fullData.keys.toList()..sort();
 
         final fullDataCagr = calculateCAGR(
           fullData[allYears.first] ?? 0,
@@ -484,35 +490,45 @@ class SingleChartWidget extends StatelessWidget {
     return base * 20; // 2배 증가
   }
 
-  /// 선형 회귀를 사용하여 추세선 포인트를 계산
+  /// 지수함수 형태로 추세선 포인트를 계산
   List<FlSpot> calculateTrendLine(Map<int, double> data, List<int> years) {
     if (years.length < 2) return [];
 
-    // 선형 회��� 계산을 위한 변수들
-    double sumX = 0;
-    double sumY = 0;
-    double sumXY = 0;
-    double sumX2 = 0;
     int n = years.length;
+    double sumX = 0;
+    double sumLnY = 0;
+    double sumXLnY = 0;
+    double sumX2 = 0;
+    int validPoints = 0;
 
-    // x축을 0부터 시작하는 인덱스로 변환
+    // x축을 0부터 시작하는 인덱스로 변환하고 로그 변환된 y값 사용
     for (int i = 0; i < n; i++) {
       double x = i.toDouble();
-      double y = data[years[i]]!;
-
-      sumX += x;
-      sumY += y;
-      sumXY += x * y;
-      sumX2 += x * x;
+      double? y = data[years[i]];
+      if (y != null && y > 0) {
+        double lnY = log(y);
+        sumX += x;
+        sumLnY += lnY;
+        sumXLnY += x * lnY;
+        sumX2 += x * x;
+        validPoints++;
+      }
     }
 
-    // 기울기(m)와 y절편(b) 계산
-    double m = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-    double b = (sumY - m * sumX) / n;
+    if (validPoints < 2) {
+      return List.generate(n,
+          (i) => FlSpot(i.toDouble(), 0)); // 유효한 데이터 포인트가 2개 미만이면 0으로 채운 리스트 반환
+    }
+
+    // 지수 회귀 계수 계산
+    double b = (validPoints * sumXLnY - sumX * sumLnY) /
+        (validPoints * sumX2 - sumX * sumX);
+    double a = exp((sumLnY - b * sumX) / validPoints);
 
     // 추세선 포인트 생성
     return List.generate(n, (i) {
-      return FlSpot(i.toDouble(), m * i + b);
+      double y = a * exp(b * i);
+      return FlSpot(i.toDouble(), y > 0 ? y : 0); // 음수 값 방지
     });
   }
 

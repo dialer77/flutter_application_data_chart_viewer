@@ -45,7 +45,8 @@ class ChartDataTable extends StatelessWidget {
           dataProvider, years, techCode, countries, companies, academics);
     } else {
       var data = dataProvider.getTechCompetitionData();
-      dataTable = _buildDataTableTechCompetition(data);
+      var dataCodes = dataProvider.getTechCompetitionDataCodes();
+      dataTable = _buildDataTableTechCompetition(dataProvider, data, dataCodes);
     }
     return Container(
       decoration: const BoxDecoration(
@@ -55,13 +56,8 @@ class ChartDataTable extends StatelessWidget {
       height: height ?? 200,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: Color.fromARGB(255, 16, 72, 98),
-            ),
-          ),
           Expanded(
             child: SingleChildScrollView(
               controller: verticalController,
@@ -90,9 +86,7 @@ class ChartDataTable extends StatelessWidget {
                   child: SingleChildScrollView(
                     controller: horizontalController,
                     scrollDirection: Axis.horizontal,
-                    child: SizedBox(
-                      child: dataTable,
-                    ),
+                    child: dataTable,
                   ),
                 ),
               ),
@@ -209,21 +203,26 @@ class ChartDataTable extends StatelessWidget {
     return dataTable;
   }
 
-  DataTable _buildDataTableTechCompetition(
-      Map<String, Map<String, double>> data) {
-    List<String> dataCodes = ['PAN', 'PFN', 'PCN', 'PAI', 'PFI', 'PCI', 'TC'];
-
+  DataTable _buildDataTableTechCompetition(AnalysisDataProvider dataProvider,
+      Map<String, Map<String, double>> data, List<String> dataCodes) {
     return DataTable(
       headingRowColor:
           WidgetStateProperty.all(const Color.fromARGB(255, 16, 72, 98)),
       columns: [
         const DataColumn(
           label:
-              Text('Rank', style: TextStyle(fontSize: 12, color: Colors.white)),
+              Text('RANK', style: TextStyle(fontSize: 12, color: Colors.white)),
         ),
-        const DataColumn(
-          label: Text('Contury',
-              style: TextStyle(fontSize: 12, color: Colors.white)),
+        DataColumn(
+          label: Text(
+              dataProvider.selectedSubCategory ==
+                      AnalysisSubCategory.countryDetail
+                  ? 'COUNTRY'
+                  : dataProvider.selectedSubCategory ==
+                          AnalysisSubCategory.companyDetail
+                      ? 'COMPANY'
+                      : 'INSTITUTE',
+              style: const TextStyle(fontSize: 12, color: Colors.white)),
         ),
         ...dataCodes.map(
           (code) => DataColumn(
@@ -242,9 +241,14 @@ class ChartDataTable extends StatelessWidget {
                 Row(
                   children: [
                     CountryFlag.fromCountryCode(
-                      data.keys
-                          .elementAt(index)
-                          .replaceAll(RegExp(r'[\[\]]'), ''),
+                      dataProvider.selectedSubCategory ==
+                              AnalysisSubCategory.countryDetail
+                          ? data.keys
+                              .elementAt(index)
+                              .replaceAll(RegExp(r'[\[\]]'), '')
+                          : dataProvider
+                              .searchCountryCode(data.keys.elementAt(index))
+                              .replaceAll(RegExp(r'[\[\]]'), ''),
                       height: 16,
                       width: 24,
                     ),

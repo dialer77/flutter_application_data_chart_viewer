@@ -59,7 +59,8 @@ class SingleChartWidget extends StatelessWidget {
       chartLoopCodes.addAll(targetNames!);
     }
 
-    if (isIndexType && chartLoopCodes.isNotEmpty) {
+    if ((isIndexType && chartLoopCodes.isNotEmpty) ||
+        dataProvider.selectedCategory == AnalysisCategory.techGap) {
       return _buildMultiLineChart(context, dataProvider, chartLoopCodes);
     }
     return _buildBarChartWithTrendLine(context, dataProvider);
@@ -86,7 +87,12 @@ class SingleChartWidget extends StatelessWidget {
       final chartData = _getFilteredChartData(
         context,
         techCode ?? selectedCodes![0],
-        category == AnalysisCategory.countryTech ? code : null,
+        category == AnalysisCategory.countryTech
+            ? code
+            : dataProvider.selectedSubCategory ==
+                    AnalysisSubCategory.countryDetail
+                ? code
+                : null,
         category == AnalysisCategory.companyTech ||
                 category == AnalysisCategory.academicTech
             ? code
@@ -107,10 +113,16 @@ class SingleChartWidget extends StatelessWidget {
         context,
         category == AnalysisCategory.countryTech ||
                 category == AnalysisCategory.companyTech ||
-                category == AnalysisCategory.academicTech
+                category == AnalysisCategory.academicTech ||
+                category == AnalysisCategory.techGap
             ? techCode ?? selectedCodes![0]
             : code,
-        category == AnalysisCategory.countryTech ? code : null,
+        category == AnalysisCategory.countryTech ||
+                (category == AnalysisCategory.techGap &&
+                    dataProvider.selectedSubCategory ==
+                        AnalysisSubCategory.countryDetail)
+            ? code
+            : null,
         category == AnalysisCategory.companyTech ||
                 category == AnalysisCategory.academicTech
             ? code

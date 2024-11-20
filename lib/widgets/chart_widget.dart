@@ -60,12 +60,46 @@ class ChartWidget extends StatelessWidget {
         width: double.infinity,
         child: const Column(
           children: [
-            ChartDataTable(),
+            Expanded(child: ChartDataTable()),
             CountryMapWidget(
               countryCodes: ["KR", "US", "CN"],
             ),
           ],
         ),
+      );
+    } else if (category == AnalysisCategory.techAssessment) {
+      return Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+        ),
+      );
+    } else if (category == AnalysisCategory.techGap) {
+      var countries = dataProvider
+          .getAvailableCountriesFormTechGap(techCode)
+          .take(10)
+          .toList();
+      var targetNames = dataProvider
+          .getAvailableCompaniesFormTechGap(techCode)
+          .take(10)
+          .toList();
+      return Column(
+        children: [
+          SingleChartWidget(
+            category: category,
+            selectedSubCategory: selectedSubCategory,
+            techCode: techCode,
+            height: 300,
+            countries: dataProvider.selectedSubCategory ==
+                    AnalysisSubCategory.countryDetail
+                ? countries
+                : null,
+            targetNames: (category == AnalysisCategory.companyTech ||
+                    category == AnalysisCategory.academicTech)
+                ? targetNames
+                : null,
+          ),
+          // const ChartDataTable(),
+        ],
       );
     }
 

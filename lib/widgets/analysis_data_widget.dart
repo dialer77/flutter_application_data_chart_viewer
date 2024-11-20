@@ -50,6 +50,20 @@ class _AnalysisDataWidgetState extends State<AnalysisDataWidget> {
       case AnalysisCategory.academicTech:
         return [AnalysisDataType.paper];
       case AnalysisCategory.techCompetition:
+        if (provider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
+          return [
+            AnalysisDataType.patent,
+            AnalysisDataType.paper,
+            AnalysisDataType.patentAndPaper
+          ];
+        } else if (provider.selectedSubCategory ==
+            AnalysisSubCategory.companyDetail) {
+          return [AnalysisDataType.patent];
+        } else if (provider.selectedSubCategory ==
+            AnalysisSubCategory.academicDetail) {
+          return [AnalysisDataType.paper];
+        }
+        return [];
       case AnalysisCategory.techAssessment:
       case AnalysisCategory.techGap:
         return [

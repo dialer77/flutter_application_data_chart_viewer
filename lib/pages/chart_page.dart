@@ -181,7 +181,12 @@ class _ChartPageState extends State<ChartPage>
                                 widget.category ==
                                     AnalysisCategory.companyTech ||
                                 widget.category ==
-                                    AnalysisCategory.academicTech)
+                                    AnalysisCategory.academicTech ||
+                                widget.category ==
+                                    AnalysisCategory.techCompetition ||
+                                widget.category ==
+                                    AnalysisCategory.techAssessment ||
+                                widget.category == AnalysisCategory.techGap)
                               Column(
                                 children: [
                                   const SizedBox(height: 10),
@@ -190,9 +195,7 @@ class _ChartPageState extends State<ChartPage>
                                 ],
                               ),
                             const Spacer(),
-                            if (widget.category !=
-                                AnalysisCategory.techCompetition)
-                              const AnalysisPeriodWidget(),
+                            const AnalysisPeriodWidget(),
                           ],
                         ),
                       ),

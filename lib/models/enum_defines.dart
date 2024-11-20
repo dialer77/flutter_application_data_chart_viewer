@@ -9,7 +9,7 @@ enum AnalysisCategory {
   countryTech('국가별 분석'), // 국가기술
   companyTech('기업별 분석'), // 기업기술
   academicTech('대학별 분석'), // 학술기술
-  techCompetition('기술경쟁 분석'), // 기술경쟁
+  techCompetition('기술경쟁력 분석'), // 기술경쟁
   techAssessment('기술진단 분석'), // 기술진단
   techGap('기술격차 분석'); // 기술격차
 

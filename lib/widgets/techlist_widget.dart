@@ -76,6 +76,8 @@ class _TechListWidgetState extends State<TechListWidget> {
       if (widget.category == AnalysisCategory.countryTech ||
           widget.category == AnalysisCategory.companyTech ||
           widget.category == AnalysisCategory.academicTech ||
+          widget.category == AnalysisCategory.techCompetition ||
+          widget.category == AnalysisCategory.techAssessment ||
           widget.category == AnalysisCategory.techGap) {
         return _buildDropdownControl(
           'MC',
@@ -95,6 +97,8 @@ class _TechListWidgetState extends State<TechListWidget> {
       if (widget.category == AnalysisCategory.countryTech ||
           widget.category == AnalysisCategory.companyTech ||
           widget.category == AnalysisCategory.academicTech ||
+          widget.category == AnalysisCategory.techCompetition ||
+          widget.category == AnalysisCategory.techAssessment ||
           widget.category == AnalysisCategory.techGap) {
         return _buildDropdownControl(
           'SC',

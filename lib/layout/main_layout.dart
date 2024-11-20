@@ -44,7 +44,7 @@ class MainLayout extends StatelessWidget {
                       '데이터 시각화 프로그램',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 20,
+                        fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

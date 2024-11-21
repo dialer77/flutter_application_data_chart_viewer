@@ -5,9 +5,9 @@ import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:provider/provider.dart';
 
-class ChartDataTable extends StatelessWidget {
+class TableChartData extends StatelessWidget {
   final double? height;
-  const ChartDataTable({
+  const TableChartData({
     super.key,
     this.height = 440,
   });

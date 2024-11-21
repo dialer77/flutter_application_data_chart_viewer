@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/chart_data_table.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/table_chart_data.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/country_map_widget.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/table_tech_gap_data_widget.dart';
 import 'package:provider/provider.dart';
 import '../models/enum_defines.dart';
 import 'dart:math';
@@ -60,7 +61,7 @@ class ChartWidget extends StatelessWidget {
         width: double.infinity,
         child: const Column(
           children: [
-            Expanded(child: ChartDataTable()),
+            Expanded(child: TableChartData()),
             CountryMapWidget(
               countryCodes: ["KR", "US", "CN"],
             ),
@@ -74,14 +75,32 @@ class ChartWidget extends StatelessWidget {
         ),
       );
     } else if (category == AnalysisCategory.techGap) {
-      var countries = dataProvider
-          .getAvailableCountriesFormTechGap(techCode)
-          .take(10)
-          .toList();
-      var targetNames = dataProvider
-          .getAvailableCompaniesFormTechGap(techCode)
-          .take(10)
-          .toList();
+      var countries = dataProvider.selectedCountries.isEmpty
+          ? dataProvider
+              .getAvailableCountriesFormTechGap(techCode)
+              .take(10)
+              .toList()
+          : dataProvider.selectedCountries.toList();
+
+      List<String> targetNames = [];
+      if (dataProvider.selectedSubCategory ==
+          AnalysisSubCategory.companyDetail) {
+        targetNames = dataProvider.selectedCompanies.isEmpty
+            ? dataProvider
+                .getAvailableCompaniesFormTechGap(techCode)
+                .take(10)
+                .toList()
+            : dataProvider.selectedCompanies.toList();
+      } else if (dataProvider.selectedSubCategory ==
+          AnalysisSubCategory.academicDetail) {
+        targetNames = dataProvider.selectedAcademics.isEmpty
+            ? dataProvider
+                .getAvailableAcademicsFormTechGap(techCode)
+                .take(10)
+                .toList()
+            : dataProvider.selectedAcademics.toList();
+      }
+
       return Column(
         children: [
           SingleChartWidget(
@@ -91,14 +110,21 @@ class ChartWidget extends StatelessWidget {
             height: 300,
             countries: dataProvider.selectedSubCategory ==
                     AnalysisSubCategory.countryDetail
-                ? countries
+                ? countries.toList()
                 : null,
-            targetNames: (category == AnalysisCategory.companyTech ||
-                    category == AnalysisCategory.academicTech)
+            targetNames: dataProvider.selectedSubCategory ==
+                        AnalysisSubCategory.companyDetail ||
+                    dataProvider.selectedSubCategory ==
+                        AnalysisSubCategory.academicDetail
                 ? targetNames
                 : null,
           ),
-          // const ChartDataTable(),
+          const Expanded(
+            child: SizedBox(
+              width: double.infinity,
+              child: TableTechGapDataWidget(),
+            ),
+          ),
         ],
       );
     }
@@ -160,7 +186,7 @@ class ChartWidget extends StatelessWidget {
                   ? targetNames
                   : null,
             ),
-            const ChartDataTable(),
+            const TableChartData(),
           ],
         );
       } else {

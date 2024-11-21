@@ -93,8 +93,9 @@ class SingleChartWidget extends StatelessWidget {
                     AnalysisSubCategory.countryDetail
                 ? code
                 : null,
-        category == AnalysisCategory.companyTech ||
-                category == AnalysisCategory.academicTech
+        dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail ||
+                dataProvider.selectedSubCategory ==
+                    AnalysisSubCategory.academicDetail
             ? code
             : null,
       );
@@ -714,10 +715,11 @@ class SingleChartWidget extends StatelessWidget {
     }
 
     final dataProvider = context.read<AnalysisDataProvider>();
-    return filterChartData(dataProvider.getChartData(
+    final chartData = dataProvider.getChartData(
       techCode: techCode,
       country: country,
       targetName: targetName,
-    ));
+    );
+    return filterChartData(chartData);
   }
 }

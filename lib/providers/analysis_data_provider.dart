@@ -156,6 +156,15 @@ class AnalysisDataProvider extends ChangeNotifier {
           _selectedDataType = AnalysisDataType.paper;
         }
         break;
+
+      case AnalysisCategory.techAssessment:
+      case AnalysisCategory.techGap:
+        if (subCategory == AnalysisSubCategory.companyDetail) {
+          _selectedDataType = AnalysisDataType.patent;
+        } else if (subCategory == AnalysisSubCategory.academicDetail) {
+          _selectedDataType = AnalysisDataType.paper;
+        }
+        break;
       default:
         break;
     }
@@ -260,7 +269,11 @@ class AnalysisDataProvider extends ChangeNotifier {
         _selectedLcTechCode = getDataCodeNames(_selectedTechListType).first;
         break;
       case AnalysisCategory.techGap:
+        _selectedSubCategory = AnalysisSubCategory.countryDetail;
+        _selectedDataType = AnalysisDataType.patent;
         _selectedTechListType = TechListType.lc;
+        _selectedLcTechCode = getDataCodeNames(_selectedTechListType).first;
+        break;
       default:
         _selectedTechListType = TechListType.lc;
     }
@@ -506,7 +519,7 @@ class AnalysisDataProvider extends ChangeNotifier {
       return _getTechCompetitionChartData(
           techCode: techCode, country: country, dataCode: dataCode);
     } else if (selectedCategory == AnalysisCategory.techGap) {
-      return _getTechGapChartData(country: country ?? "");
+      return _getTechGapChartData(country: country, targetName: targetName);
     }
 
     // currentData 에서 국가 데이터만 반환
@@ -598,9 +611,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         {};
   }
 
-  Map<int, double> _getTechGapChartData({
-    required String country,
-  }) {
+  Map<int, double> _getTechGapChartData({String? country, String? targetName}) {
     // 우선 진단 데이터 확보
     var filteredData = currentData
         .where((data) =>
@@ -608,9 +619,19 @@ class AnalysisDataProvider extends ChangeNotifier {
                 getCategorySheetNames(AnalysisCategory.techCompetition) &&
             data.codeInfo.techType == selectedTechListType &&
             data.codeInfo.codeName == selectedTechCode &&
-            data.codeInfo.country == country &&
             data.analysisDatas.containsKey(""))
         .toList();
+    if (country != null) {
+      filteredData = filteredData
+          .where((data) => data.codeInfo.country == country)
+          .toList();
+    }
+
+    if (targetName != null) {
+      filteredData = filteredData
+          .where((data) => data.codeInfo.name == targetName)
+          .toList();
+    }
 
     if (filteredData.isEmpty) {
       return {};
@@ -624,10 +645,20 @@ class AnalysisDataProvider extends ChangeNotifier {
                 getCategorySheetNames(AnalysisCategory.techGap) &&
             data.codeInfo.techType == selectedTechListType &&
             data.codeInfo.codeName == selectedTechCode &&
-            data.codeInfo.country == country &&
             data.analysisDatas.containsKey(""))
         .toList();
 
+    if (country != null) {
+      filteredData = filteredData
+          .where((data) => data.codeInfo.country == country)
+          .toList();
+    }
+
+    if (targetName != null) {
+      filteredData = filteredData
+          .where((data) => data.codeInfo.name == targetName)
+          .toList();
+    }
     final afterData = filteredData.first.analysisDatas[""] ?? {};
 
     return {...beforeData, ...afterData};
@@ -920,9 +951,56 @@ class AnalysisDataProvider extends ChangeNotifier {
     return keyValue.toSet();
   }
 
+  Set<String> getAvailableAcademicsFormTechGap(String? techCode) {
+    final Map<String, double> companies = {};
+    for (var data in currentData) {
+      if (data.codeInfo.sheetName ==
+              getCategorySheetNames(AnalysisCategory.techGap) &&
+          data.codeInfo.techType == selectedTechListType &&
+          data.codeInfo.codeName == (techCode ?? selectedTechCode)) {
+        var yearData = data.analysisDatas[""];
+        double value = 0.0;
+        if (yearData != null && yearData.isNotEmpty) {
+          value = yearData[yearData.keys.last] ?? 0.0;
+        }
+        companies[data.codeInfo.name] = value;
+      }
+    }
+
+    final sortedList = companies.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value))
+      ..map((e) => e.key).toList();
+    List<String> keyValue = [];
+    for (var entry in sortedList) {
+      keyValue.add(entry.key);
+    }
+    return keyValue.toSet();
+  }
+
   Set<String> getAvailableCompaniesFormTechGap(String? techCode) {
     final Map<String, double> companies = {};
-    return companies.keys.toSet();
+    for (var data in currentData) {
+      if (data.codeInfo.sheetName ==
+              getCategorySheetNames(AnalysisCategory.techGap) &&
+          data.codeInfo.techType == selectedTechListType &&
+          data.codeInfo.codeName == (techCode ?? selectedTechCode)) {
+        var yearData = data.analysisDatas[""];
+        double value = 0.0;
+        if (yearData != null && yearData.isNotEmpty) {
+          value = yearData[yearData.keys.last] ?? 0.0;
+        }
+        companies[data.codeInfo.name] = value;
+      }
+    }
+
+    final sortedList = companies.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value))
+      ..map((e) => e.key).toList();
+    List<String> keyValue = [];
+    for (var entry in sortedList) {
+      keyValue.add(entry.key);
+    }
+    return keyValue.toSet();
   }
 
   Set<String> getAvailableCountriesFormTechGap(String? techCode) {

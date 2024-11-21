@@ -116,7 +116,7 @@ class _ChartPageState extends State<ChartPage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 300,
+            width: 320,
             child: Column(
               children: [
                 Padding(

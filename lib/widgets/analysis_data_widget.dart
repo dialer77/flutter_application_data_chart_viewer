@@ -66,11 +66,20 @@ class _AnalysisDataWidgetState extends State<AnalysisDataWidget> {
         return [];
       case AnalysisCategory.techAssessment:
       case AnalysisCategory.techGap:
-        return [
-          AnalysisDataType.patent,
-          AnalysisDataType.paper,
-          AnalysisDataType.patentAndPaper
-        ];
+        if (provider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
+          return [
+            AnalysisDataType.patent,
+            AnalysisDataType.paper,
+            AnalysisDataType.patentAndPaper
+          ];
+        } else if (provider.selectedSubCategory ==
+            AnalysisSubCategory.companyDetail) {
+          return [AnalysisDataType.patent];
+        } else if (provider.selectedSubCategory ==
+            AnalysisSubCategory.academicDetail) {
+          return [AnalysisDataType.paper];
+        }
+        return [];
     }
   }
 

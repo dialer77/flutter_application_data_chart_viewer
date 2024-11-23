@@ -517,7 +517,10 @@ class AnalysisDataProvider extends ChangeNotifier {
   }) {
     if (selectedCategory == AnalysisCategory.techCompetition) {
       return _getTechCompetitionChartData(
-          techCode: techCode, country: country, dataCode: dataCode);
+          techCode: techCode,
+          country: country,
+          targetName: targetName,
+          dataCode: dataCode);
     } else if (selectedCategory == AnalysisCategory.techGap) {
       return _getTechGapChartData(country: country, targetName: targetName);
     }
@@ -566,12 +569,25 @@ class AnalysisDataProvider extends ChangeNotifier {
   Map<int, double> _getTechCompetitionChartData({
     String? techCode,
     String? country,
+    String? targetName,
     String? dataCode,
   }) {
-    var sheetName = dataCode == 'TC'
-        ? getCategorySheetNames(AnalysisCategory.techCompetition)
-        : "국가진단";
-
+    var sheetName = getCategorySheetNames(AnalysisCategory.techCompetition);
+    if (dataCode != "TC") {
+      switch (selectedSubCategory) {
+        case AnalysisSubCategory.countryDetail:
+          sheetName = "국가진단";
+          break;
+        case AnalysisSubCategory.companyDetail:
+          sheetName = "기업진단";
+          break;
+        case AnalysisSubCategory.academicDetail:
+          sheetName = "기관진단";
+          break;
+        default:
+          break;
+      }
+    }
     var dataModels = currentData;
     if (selectedDataType == AnalysisDataType.patentAndPaper) {
       if (dataCode != "TC") {
@@ -593,6 +609,12 @@ class AnalysisDataProvider extends ChangeNotifier {
     if (country != null) {
       filteredData = filteredData
           .where((data) => data.codeInfo.country == country)
+          .toList();
+    }
+
+    if (targetName != null) {
+      filteredData = filteredData
+          .where((data) => data.codeInfo.name == targetName)
           .toList();
     }
 
@@ -677,6 +699,7 @@ class AnalysisDataProvider extends ChangeNotifier {
       case AnalysisCategory.academicTech:
         return '기관트렌드';
       case AnalysisCategory.techCompetition:
+      case AnalysisCategory.techAssessment:
         switch (selectedSubCategory) {
           case AnalysisSubCategory.countryDetail:
             if (selectedDataType == AnalysisDataType.patentAndPaper) {
@@ -691,8 +714,7 @@ class AnalysisDataProvider extends ChangeNotifier {
           default:
             return '';
         }
-      case AnalysisCategory.techAssessment:
-        return 'TechAssessment';
+
       case AnalysisCategory.techGap:
         switch (selectedSubCategory) {
           case AnalysisSubCategory.countryDetail:
@@ -951,6 +973,85 @@ class AnalysisDataProvider extends ChangeNotifier {
     return keyValue.toSet();
   }
 
+  Set<String> getAvailableCountriesFromTechAssessment() {
+    // currentData 에서 카테고리가  countryTech이고, techListType과 techCode가 일치하는 데이터를 찾는다
+    final Map<String, double> countries = {};
+    for (var data in currentData) {
+      if (data.codeInfo.sheetName ==
+              getCategorySheetNames(AnalysisCategory.techAssessment) &&
+          data.codeInfo.techType == selectedTechListType &&
+          data.codeInfo.codeName == selectedTechCode) {
+        var yearData = data.analysisDatas[""];
+        double value = 0.0;
+        if (yearData != null && yearData.isNotEmpty) {
+          value = yearData[yearData.keys.last] ?? 0.0;
+        }
+        countries[data.codeInfo.country] = value;
+      }
+    }
+
+    final sortedList = countries.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value))
+      ..map((e) => e.key).toList();
+    List<String> keyValue = [];
+    for (var entry in sortedList) {
+      keyValue.add(entry.key);
+    }
+    return keyValue.toSet();
+  }
+
+  Set<String> getAvailableCompaniesFromTechAssessment() {
+    final Map<String, double> companies = {};
+    for (var data in currentData) {
+      if (data.codeInfo.sheetName ==
+              getCategorySheetNames(AnalysisCategory.techAssessment) &&
+          data.codeInfo.techType == selectedTechListType &&
+          data.codeInfo.codeName == selectedTechCode) {
+        var yearData = data.analysisDatas[""];
+        double value = 0.0;
+        if (yearData != null && yearData.isNotEmpty) {
+          value = yearData[yearData.keys.last] ?? 0.0;
+        }
+        companies[data.codeInfo.name] = value;
+      }
+    }
+
+    final sortedList = companies.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value))
+      ..map((e) => e.key).toList();
+    List<String> keyValue = [];
+    for (var entry in sortedList) {
+      keyValue.add(entry.key);
+    }
+    return keyValue.toSet();
+  }
+
+  Set<String> getAvailableAcademicsFromTechAssessment() {
+    final Map<String, double> academics = {};
+    for (var data in currentData) {
+      if (data.codeInfo.sheetName ==
+              getCategorySheetNames(AnalysisCategory.techAssessment) &&
+          data.codeInfo.techType == selectedTechListType &&
+          data.codeInfo.codeName == selectedTechCode) {
+        var yearData = data.analysisDatas[""];
+        double value = 0.0;
+        if (yearData != null && yearData.isNotEmpty) {
+          value = yearData[yearData.keys.last] ?? 0.0;
+        }
+        academics[data.codeInfo.name] = value;
+      }
+    }
+
+    final sortedList = academics.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value))
+      ..map((e) => e.key).toList();
+    List<String> keyValue = [];
+    for (var entry in sortedList) {
+      keyValue.add(entry.key);
+    }
+    return keyValue.toSet();
+  }
+
   Set<String> getAvailableAcademicsFormTechGap(String? techCode) {
     final Map<String, double> companies = {};
     for (var data in currentData) {
@@ -1029,7 +1130,6 @@ class AnalysisDataProvider extends ChangeNotifier {
     return keyValue.toSet();
   }
 
-  // === Methods ===
   Set<String> getAvailableCountries(String? techCode) {
     // currentData 에서 카테고리가  countryTech이고, techListType과 techCode가 일치하는 데이터를 찾는다
     final Map<String, double> countries = {};
@@ -1044,7 +1144,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         var yearData = data.analysisDatas[dataCode];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
-          value = yearData[yearData.keys.last] ?? 0.0;
+          value = yearData[yearData.keys.last - 1] ?? 0.0;
         }
         countries[data.codeInfo.country] = value;
       }
@@ -1074,7 +1174,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         var yearData = data.analysisDatas[dataCode];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
-          value = yearData[yearData.keys.last] ?? 0.0;
+          value = yearData[yearData.keys.last - 1] ?? 0.0;
         }
         companies[data.codeInfo.name] = value;
       }
@@ -1104,7 +1204,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         var yearData = data.analysisDatas[dataCode];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
-          value = yearData[yearData.keys.last] ?? 0.0;
+          value = yearData[yearData.keys.last - 1] ?? 0.0;
         }
         academicNames[data.codeInfo.name] = value;
       }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart_circle_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/table_chart_data.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/country_map_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/table_tech_gap_data_widget.dart';
@@ -61,7 +62,12 @@ class ChartWidget extends StatelessWidget {
         width: double.infinity,
         child: const Column(
           children: [
-            Expanded(child: TableChartData()),
+            Expanded(
+              child: SizedBox(
+                width: double.infinity,
+                child: TableChartData(),
+              ),
+            ),
             CountryMapWidget(
               countryCodes: ["KR", "US", "CN"],
             ),
@@ -73,6 +79,7 @@ class ChartWidget extends StatelessWidget {
         decoration: const BoxDecoration(
           color: Colors.white,
         ),
+        child: const ChartCircleWidget(),
       );
     } else if (category == AnalysisCategory.techGap) {
       var countries = dataProvider.selectedCountries.isEmpty
@@ -186,7 +193,7 @@ class ChartWidget extends StatelessWidget {
                   ? targetNames
                   : null,
             ),
-            const TableChartData(),
+            const Expanded(child: TableChartData()),
           ],
         );
       } else {

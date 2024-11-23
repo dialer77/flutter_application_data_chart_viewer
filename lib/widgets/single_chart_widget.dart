@@ -93,7 +93,10 @@ class SingleChartWidget extends StatelessWidget {
                     AnalysisSubCategory.countryDetail
                 ? code
                 : null,
-        dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail ||
+        category == AnalysisCategory.companyTech ||
+                category == AnalysisCategory.academicTech ||
+                dataProvider.selectedSubCategory ==
+                    AnalysisSubCategory.companyDetail ||
                 dataProvider.selectedSubCategory ==
                     AnalysisSubCategory.academicDetail
             ? code
@@ -285,8 +288,9 @@ class SingleChartWidget extends StatelessWidget {
         final trendLineData = Map.fromEntries(
           years.map((year) {
             final yearDiff = year - years.first;
-            final expectedValue =
-                chartData[years.first]! * pow(1 + cagr, yearDiff);
+            double firstData = chartData[years.first] ?? 1;
+            firstData = firstData == 0 ? 1 : firstData;
+            final expectedValue = firstData * pow(1 + cagr, yearDiff);
             return MapEntry(year, expectedValue);
           }),
         );

@@ -61,8 +61,11 @@ class MainLayout extends StatelessWidget {
           ),
         ),
       ),
-      body: Consumer<ContentController>(
-        builder: (context, controller, child) => controller.currentContent,
+      body: Container(
+        color: Colors.white,
+        child: Consumer<ContentController>(
+          builder: (context, controller, child) => controller.currentContent,
+        ),
       ),
       bottomNavigationBar: Container(
         height: 80, // 원하는 높이로 조정

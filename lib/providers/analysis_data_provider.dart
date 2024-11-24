@@ -894,6 +894,72 @@ class AnalysisDataProvider extends ChangeNotifier {
     return null;
   }
 
+  List<AnalysisDataType> getAvailableDataTypes(AnalysisCategory category) {
+    switch (category) {
+      case AnalysisCategory.industryTech:
+      case AnalysisCategory.countryTech:
+        return [
+          AnalysisDataType.patent,
+          AnalysisDataType.paper,
+        ];
+      case AnalysisCategory.companyTech:
+        return [AnalysisDataType.patent];
+      case AnalysisCategory.academicTech:
+        return [AnalysisDataType.paper];
+      case AnalysisCategory.techCompetition:
+      case AnalysisCategory.techAssessment:
+      case AnalysisCategory.techGap:
+        return [
+          AnalysisDataType.patent,
+          AnalysisDataType.paper,
+          AnalysisDataType.patentAndPaper,
+        ];
+    }
+
+    return [];
+  }
+
+  List<AnalysisSubCategory> getAvailableSubCategories(
+      AnalysisCategory category) {
+    switch (category) {
+      case AnalysisCategory.industryTech:
+        return [
+          AnalysisSubCategory.techTrend,
+          AnalysisSubCategory.techInnovationIndex,
+          AnalysisSubCategory.marketExpansionIndex,
+          AnalysisSubCategory.rdInvestmentIndex,
+        ];
+      case AnalysisCategory.countryTech:
+        return [
+          AnalysisSubCategory.countryTrend,
+          AnalysisSubCategory.techInnovationIndex,
+          AnalysisSubCategory.marketExpansionIndex,
+          AnalysisSubCategory.rdInvestmentIndex,
+        ];
+      case AnalysisCategory.companyTech:
+        return [
+          AnalysisSubCategory.companyTrend,
+          AnalysisSubCategory.techInnovationIndex,
+          AnalysisSubCategory.marketExpansionIndex,
+          AnalysisSubCategory.rdInvestmentIndex,
+        ];
+      case AnalysisCategory.academicTech:
+        return [
+          AnalysisSubCategory.academicTrend,
+          AnalysisSubCategory.techInnovationIndex,
+          AnalysisSubCategory.rdInvestmentIndex,
+        ];
+      case AnalysisCategory.techCompetition:
+      case AnalysisCategory.techAssessment:
+      case AnalysisCategory.techGap:
+        return [
+          AnalysisSubCategory.countryDetail,
+          AnalysisSubCategory.companyDetail,
+          AnalysisSubCategory.academicDetail,
+        ]; // Fixed missing closing bracket and semicolon
+    }
+  }
+
   Set<String> getAvailableCountriesFromTechCompetition(String? techCode) {
     // currentData 에서 카테고리가  countryTech이고, techListType과 techCode가 일치하는 데이터를 찾는다
     final Map<String, double> countries = {};

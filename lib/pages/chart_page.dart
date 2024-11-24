@@ -40,7 +40,9 @@ class _ChartPageState extends State<ChartPage>
     );
 
     _controller.forward();
-    _subCategories = MenuListWidget.getAnalysisSubCategories(widget.category);
+    _subCategories = context
+        .read<AnalysisDataProvider>()
+        .getAvailableSubCategories(widget.category);
 
     // 첫 번째 서브카테고리를 기본값으로 설정
     if (_subCategories.isNotEmpty) {
@@ -49,7 +51,6 @@ class _ChartPageState extends State<ChartPage>
   }
 
   Widget _buildSubCategoryButtons() {
-    _subCategories = MenuListWidget.getAnalysisSubCategories(widget.category);
     _selectedSubCategory =
         context.watch<AnalysisDataProvider>().selectedSubCategory;
     return Container(

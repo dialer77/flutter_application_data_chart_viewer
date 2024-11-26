@@ -104,4 +104,6 @@ flutter:
   assets:
     - assets/images/logo_amur_white_full.png
     - assets/world_map.json
+    - assets/world_map_iso.json
+    - assets/country_coordinates.json
 

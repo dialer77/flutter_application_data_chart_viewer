@@ -61,6 +61,8 @@ class AnalysisDataProvider extends ChangeNotifier {
   late int _startYear;
   late int _endYear;
 
+  int _selectedYear = DateTime.now().year;
+
   // === Getters ===
   AnalysisDataType get selectedDataType => _selectedDataType;
   AnalysisCategory get selectedCategory => _selectedCategory;
@@ -73,6 +75,7 @@ class AnalysisDataProvider extends ChangeNotifier {
   bool get shouldRefreshChart => _shouldRefreshChart;
   int get startYear => _startYear;
   int get endYear => _endYear;
+  int get selectedYear => _selectedYear;
 
   String? get selectedTechCode {
     if (_selectedTechListType == TechListType.lc) {
@@ -93,6 +96,44 @@ class AnalysisDataProvider extends ChangeNotifier {
       case TechListType.sc:
         return [...selectedScTechCodes]..sort();
     }
+  }
+
+  String? get selectedCountry => _selectedCountry;
+
+  String? get selectedCompany => _selectedCompany;
+
+  String? get selectedAcademic => _selectedAcademic;
+
+  Set<String> get selectedCountries {
+    // _selectedCountries를 List로 변환 후 정렬
+    final sortedCountries = _selectedCountries.toList()
+      ..sort((a, b) {
+        // getAvailableCountries와 동일한 기준으로 정렬
+        final aValue = getCountryValue(a);
+        final bValue = getCountryValue(b);
+        return bValue.compareTo(aValue); // 내림차순 정렬
+      });
+    return sortedCountries.toSet();
+  }
+
+  Set<String> get selectedCompanies {
+    final sortedCompanies = _selectedCompanies.toList()
+      ..sort((a, b) {
+        final aValue = getTargetNameValue(a);
+        final bValue = getTargetNameValue(b);
+        return bValue.compareTo(aValue); // 내림차순 정렬
+      });
+    return sortedCompanies.toSet();
+  }
+
+  Set<String> get selectedAcademics {
+    final sortedAcademics = _selectedAcademics.toList()
+      ..sort((a, b) {
+        final aValue = getTargetNameValue(a);
+        final bValue = getTargetNameValue(b);
+        return bValue.compareTo(aValue); // 내림차순 정렬
+      });
+    return sortedAcademics.toSet();
   }
 
   // === Setters ===
@@ -127,6 +168,11 @@ class AnalysisDataProvider extends ChangeNotifier {
           _selectedSubCategory != AnalysisSubCategory.academicDetail) {
         _selectedSubCategory = AnalysisSubCategory.countryDetail;
       }
+
+      // Clear selected items
+      _selectedCountries.clear();
+      _selectedCompanies.clear();
+      _selectedAcademics.clear();
     }
     _selectedCategory = category;
 
@@ -204,6 +250,11 @@ class AnalysisDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setSelectedYear(int year) {
+    _selectedYear = year;
+    notifyListeners();
+  }
+
   void toggleMcTechCode(String code) {
     if (_selectedMcTechCodes.contains(code)) {
       _selectedMcTechCodes.remove(code);
@@ -219,6 +270,21 @@ class AnalysisDataProvider extends ChangeNotifier {
     } else {
       _selectedScTechCodes.add(code);
     }
+    notifyListeners();
+  }
+
+  void setSelectedCountry(String? country) {
+    _selectedCountry = country;
+    notifyListeners();
+  }
+
+  void setSelectedCompany(String? company) {
+    _selectedCompany = company;
+    notifyListeners();
+  }
+
+  void setSelectedAcademic(String? academic) {
+    _selectedAcademic = academic;
     notifyListeners();
   }
 
@@ -244,48 +310,44 @@ class AnalysisDataProvider extends ChangeNotifier {
     switch (category) {
       case AnalysisCategory.industryTech:
         _selectedSubCategory = AnalysisSubCategory.techTrend;
-        _selectedTechListType = TechListType.lc;
-        _selectedLcTechCode = getDataCodeNames(_selectedTechListType).first;
         break;
       case AnalysisCategory.countryTech:
         _selectedSubCategory = AnalysisSubCategory.countryTrend;
-        _selectedTechListType = TechListType.lc;
-        _selectedLcTechCode = getDataCodeNames(_selectedTechListType).first;
         break;
       case AnalysisCategory.companyTech:
         _selectedDataType = AnalysisDataType.patent;
         _selectedSubCategory = AnalysisSubCategory.companyTrend;
-        _selectedTechListType = TechListType.lc;
-        _selectedLcTechCode = getDataCodeNames(_selectedTechListType).first;
         break;
       case AnalysisCategory.academicTech:
         _selectedSubCategory = AnalysisSubCategory.academicTrend;
-        _selectedTechListType = TechListType.lc;
-        _selectedLcTechCode = getDataCodeNames(_selectedTechListType).first;
         break;
       case AnalysisCategory.techCompetition:
-        _selectedSubCategory = AnalysisSubCategory.countryDetail;
-        _selectedTechListType = TechListType.lc;
-        _selectedLcTechCode = getDataCodeNames(_selectedTechListType).first;
-        break;
       case AnalysisCategory.techGap:
+      case AnalysisCategory.techAssessment:
         _selectedSubCategory = AnalysisSubCategory.countryDetail;
-        _selectedDataType = AnalysisDataType.patent;
-        _selectedTechListType = TechListType.lc;
-        _selectedLcTechCode = getDataCodeNames(_selectedTechListType).first;
         break;
       default:
-        _selectedTechListType = TechListType.lc;
+        break;
     }
-
+    _selectedTechListType = TechListType.lc;
+    _selectedLcTechCode = getDataCodeNames(_selectedTechListType).first;
     RangeValues yearRange = getYearRange();
     _startYear = yearRange.start.toInt();
     _endYear = yearRange.end.toInt();
+    _selectedYear = _endYear;
+
+    if (selectedCategory == AnalysisCategory.techAssessment) {
+      _selectedCountry = getAvailableCountriesFromTechAssessment().first;
+    }
 
     notifyListeners();
   }
 
   // === Repository ===
+
+  String? _selectedCountry;
+  String? _selectedCompany;
+  String? _selectedAcademic;
 
   final Set<String> _selectedCountries = {};
 
@@ -297,19 +359,6 @@ class AnalysisDataProvider extends ChangeNotifier {
   bool _isInitialized = false;
   bool _isLoading = false;
   String? _error;
-
-  // Countries
-  Set<String> get selectedCountries {
-    // _selectedCountries를 List로 변환 후 정렬
-    final sortedCountries = _selectedCountries.toList()
-      ..sort((a, b) {
-        // getAvailableCountries와 동일한 기준으로 정렬
-        final aValue = getCountryValue(a);
-        final bValue = getCountryValue(b);
-        return bValue.compareTo(aValue); // 내림차순 정렬
-      });
-    return sortedCountries.toSet();
-  }
 
   // 국가의 값을 가져오는 헬퍼 메서드
   double getCountryValue(String country) {
@@ -329,28 +378,6 @@ class AnalysisDataProvider extends ChangeNotifier {
       }
     }
     return value;
-  }
-
-  // Companies
-  Set<String> get selectedCompanies {
-    final sortedCompanies = _selectedCompanies.toList()
-      ..sort((a, b) {
-        final aValue = getTargetNameValue(a);
-        final bValue = getTargetNameValue(b);
-        return bValue.compareTo(aValue); // 내림차순 정렬
-      });
-    return sortedCompanies.toSet();
-  }
-
-  // Academic Names
-  Set<String> get selectedAcademics {
-    final sortedAcademics = _selectedAcademics.toList()
-      ..sort((a, b) {
-        final aValue = getTargetNameValue(a);
-        final bValue = getTargetNameValue(b);
-        return bValue.compareTo(aValue); // 내림차순 정렬
-      });
-    return sortedAcademics.toSet();
   }
 
   // 회사의 값을 가져오는 헬퍼 메서드
@@ -379,7 +406,6 @@ class AnalysisDataProvider extends ChangeNotifier {
 
   String? get error => _error;
 
-  // Countries
   void toggleCountrySelection(String country) {
     if (_selectedCountries.contains(country)) {
       _selectedCountries.remove(country);
@@ -389,7 +415,6 @@ class AnalysisDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Companies
   void toggleCompanySelection(String company) {
     if (_selectedCompanies.contains(company)) {
       _selectedCompanies.remove(company);
@@ -399,7 +424,6 @@ class AnalysisDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Academic Names
   void toggleAcademicSelection(String academic) {
     if (_selectedAcademics.contains(academic)) {
       _selectedAcademics.remove(academic);
@@ -423,6 +447,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         data[country] = {};
         for (var dataCode in dataCodes) {
           data[country]?[dataCode] = getChartData(
+                  techListType: selectedTechListType,
                   techCode: selectedTechCode,
                   country: country,
                   dataCode: dataCode)
@@ -443,6 +468,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         data[company] = {};
         for (var dataCode in dataCodes) {
           data[company]?[dataCode] = getChartData(
+                  techListType: selectedTechListType,
                   techCode: selectedTechCode,
                   targetName: company,
                   dataCode: dataCode)
@@ -463,6 +489,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         data[academic] = {};
         for (var dataCode in dataCodes) {
           data[academic]?[dataCode] = getChartData(
+                  techListType: selectedTechListType,
                   techCode: selectedTechCode,
                   targetName: academic,
                   dataCode: dataCode)
@@ -510,6 +537,7 @@ class AnalysisDataProvider extends ChangeNotifier {
 
   // 차트 데이터 가져오기
   Map<int, double> getChartData({
+    required TechListType techListType,
     String? techCode,
     String? country,
     String? targetName,
@@ -517,6 +545,13 @@ class AnalysisDataProvider extends ChangeNotifier {
   }) {
     if (selectedCategory == AnalysisCategory.techCompetition) {
       return _getTechCompetitionChartData(
+          techCode: techCode,
+          country: country,
+          targetName: targetName,
+          dataCode: dataCode);
+    } else if (selectedCategory == AnalysisCategory.techAssessment) {
+      return _getTechAssessmentChartData(
+          techListType: techListType,
           techCode: techCode,
           country: country,
           targetName: targetName,
@@ -633,6 +668,40 @@ class AnalysisDataProvider extends ChangeNotifier {
         {};
   }
 
+  Map<int, double> _getTechAssessmentChartData({
+    required TechListType techListType,
+    String? techCode,
+    String? country,
+    String? targetName,
+    String? dataCode,
+  }) {
+    var filteredData = currentData
+        .where((data) =>
+            data.codeInfo.sheetName ==
+                getCategorySheetNames(AnalysisCategory.techAssessment) &&
+            data.codeInfo.techType == techListType &&
+            data.codeInfo.codeName == (techCode ?? selectedTechCode))
+        .toList();
+
+    if (country != null) {
+      filteredData = filteredData
+          .where((data) => data.codeInfo.country == country)
+          .toList();
+    }
+
+    if (targetName != null) {
+      filteredData = filteredData
+          .where((data) => data.codeInfo.name == targetName)
+          .toList();
+    }
+
+    if (filteredData.isEmpty) {
+      return {};
+    }
+
+    return filteredData.first.analysisDatas[dataCode ?? ""] ?? {};
+  }
+
   Map<int, double> _getTechGapChartData({String? country, String? targetName}) {
     // 우선 진단 데이터 확보
     var filteredData = currentData
@@ -684,6 +753,57 @@ class AnalysisDataProvider extends ChangeNotifier {
     final afterData = filteredData.first.analysisDatas[""] ?? {};
 
     return {...beforeData, ...afterData};
+  }
+
+  Map<String, double> getRaderChartData(TechListType techListType, int year) {
+    Map<String, double> chartData = {};
+
+    Set<String> techCodes = {};
+    if (techListType == TechListType.mc) {
+      techCodes = _selectedMcTechCodes.isNotEmpty
+          ? _selectedMcTechCodes
+          : getDataCodeNames(techListType);
+    } else if (techListType == TechListType.sc) {
+      techCodes = _selectedScTechCodes.isNotEmpty
+          ? _selectedScTechCodes
+          : getDataCodeNames(techListType);
+    }
+
+    for (var techCode in techCodes) {
+      var filteredData = currentData
+          .where((data) =>
+              data.codeInfo.sheetName ==
+                  getCategorySheetNames(AnalysisCategory.techCompetition) &&
+              data.codeInfo.techType == techListType &&
+              data.codeInfo.codeName == techCode)
+          .toList();
+
+      if (selectedSubCategory == AnalysisSubCategory.countryDetail) {
+        filteredData = filteredData
+            .where((data) => data.codeInfo.country == selectedCountry)
+            .toList();
+      }
+
+      if (selectedSubCategory == AnalysisSubCategory.companyDetail) {
+        filteredData = filteredData
+            .where((data) => data.codeInfo.name == selectedCompany)
+            .toList();
+      }
+
+      if (selectedSubCategory == AnalysisSubCategory.academicDetail) {
+        filteredData = filteredData
+            .where((data) => data.codeInfo.name == selectedAcademic)
+            .toList();
+      }
+
+      filteredData = filteredData
+          .where((data) => data.analysisDatas.containsKey(""))
+          .toList();
+
+      chartData[techCode] = filteredData.first.analysisDatas[""]?[year] ?? 0.0;
+    }
+
+    return chartData;
   }
 
   // === Utility Methods ===
@@ -805,6 +925,10 @@ class AnalysisDataProvider extends ChangeNotifier {
     return RangeValues(minYear.toDouble(), maxYear.toDouble());
   }
 
+  int getSelectedYear() {
+    return selectedYear;
+  }
+
   // Data Code
   String? getDataCode() {
     if (selectedCategory == AnalysisCategory.industryTech) {
@@ -915,8 +1039,6 @@ class AnalysisDataProvider extends ChangeNotifier {
           AnalysisDataType.patentAndPaper,
         ];
     }
-
-    return [];
   }
 
   List<AnalysisSubCategory> getAvailableSubCategories(

@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/single_chart_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -72,7 +73,7 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
           angle: angle,
         );
       },
-      tickCount: 5,
+      tickCount: 10,
       radarBorderData: BorderSide(color: Colors.grey.shade300, width: 1),
     );
   }
@@ -98,23 +99,12 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
   }
 
   // 차트 컨테이너 생성 함수
-  Widget _buildChartContainer() {
+  Widget _buildChartContainer(AnalysisDataProvider dataProvider) {
     // 임시 데이터 예시
-    final Map<String, double> data1 = {
-      '기술혁신지수': 80,
-      '시장확장지수': 60,
-      'R&D투자지수': 70,
-      '특허활동지수': 90,
-      '논문활동지수': 75,
-    };
-
-    final Map<String, double> data2 = {
-      '기술혁신지수': 70,
-      '시장확장지수': 85,
-      'R&D투자지수': 65,
-      '특허활동지수': 80,
-      '논문활동지수': 90,
-    };
+    var raderChartMCData = dataProvider.getRaderChartData(
+        TechListType.mc, dataProvider.selectedYear);
+    var raderChartSCData = dataProvider.getRaderChartData(
+        TechListType.sc, dataProvider.selectedYear);
 
     return Container(
       margin: const EdgeInsets.all(16.0),
@@ -127,25 +117,44 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              '선택된 항목: ${selectedItem ?? "없음"}',
+              selectedItem ?? '',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          Expanded(
+          Flexible(
+            child: SingleChartWidget(
+              category: AnalysisCategory.techAssessment,
+              selectedSubCategory: dataProvider.selectedSubCategory,
+              techListType: TechListType.lc,
+              techCode: dataProvider.selectedLcTechCode,
+              countries: dataProvider.selectedSubCategory ==
+                      AnalysisSubCategory.countryDetail
+                  ? [dataProvider.selectedCountry ?? '']
+                  : null,
+              targetNames: dataProvider.selectedSubCategory ==
+                      AnalysisSubCategory.companyDetail
+                  ? [dataProvider.selectedCompany ?? '']
+                  : dataProvider.selectedSubCategory ==
+                          AnalysisSubCategory.academicDetail
+                      ? [dataProvider.selectedAcademic ?? '']
+                      : null,
+            ),
+          ),
+          Flexible(
             child: Row(
               children: [
                 _buildRadarChart(
                   color: Colors.blue,
-                  data: data1,
+                  data: raderChartMCData,
                   isFilled: true,
                 ),
                 _buildRadarChart(
                   color: Colors.red,
-                  data: data2,
-                  isFilled: false,
+                  data: raderChartSCData,
+                  isFilled: true,
                 ),
               ],
             ),
@@ -190,7 +199,14 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: items.map((item) {
-                final isSelected = item == selectedItem;
+                final isSelected = item ==
+                    (dataProvider.selectedSubCategory ==
+                            AnalysisSubCategory.countryDetail
+                        ? dataProvider.selectedCountry
+                        : dataProvider.selectedSubCategory ==
+                                AnalysisSubCategory.companyDetail
+                            ? dataProvider.selectedCompany
+                            : dataProvider.selectedAcademic);
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: InkWell(
@@ -220,7 +236,7 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
             ),
           ),
         ),
-        Expanded(child: _buildChartContainer()),
+        Expanded(child: _buildChartContainer(dataProvider)),
       ],
     );
   }

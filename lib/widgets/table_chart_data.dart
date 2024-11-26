@@ -141,6 +141,7 @@ class TableChartData extends StatelessWidget {
                 : academics.length,
         (index) {
           final tableData = dataProvider.getChartData(
+              techListType: dataProvider.selectedTechListType,
               techCode: techCode,
               country:
                   dataProvider.selectedCategory == AnalysisCategory.countryTech

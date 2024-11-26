@@ -1,6 +1,7 @@
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_application_data_chart_viewer/utils/dash_circle_dot_painter.dart';
 import 'package:provider/provider.dart';
 import 'dart:math';
 import '../models/enum_defines.dart';
@@ -11,6 +12,7 @@ class SingleChartWidget extends StatelessWidget {
   final AnalysisCategory category;
   final AnalysisSubCategory? selectedSubCategory;
   final String? chartTitle;
+  final TechListType? techListType;
   final String? techCode;
   final List<String>? selectedCodes;
   final String? country;
@@ -28,6 +30,7 @@ class SingleChartWidget extends StatelessWidget {
     required this.category,
     required this.selectedSubCategory,
     this.chartTitle,
+    required this.techListType,
     this.techCode,
     this.selectedCodes,
     this.country,
@@ -60,7 +63,8 @@ class SingleChartWidget extends StatelessWidget {
     }
 
     if ((isIndexType && chartLoopCodes.isNotEmpty) ||
-        dataProvider.selectedCategory == AnalysisCategory.techGap) {
+        dataProvider.selectedCategory == AnalysisCategory.techGap ||
+        dataProvider.selectedCategory == AnalysisCategory.techAssessment) {
       return _buildMultiLineChart(context, dataProvider, chartLoopCodes);
     }
     return _buildBarChartWithTrendLine(context, dataProvider);
@@ -85,15 +89,16 @@ class SingleChartWidget extends StatelessWidget {
     // 첫 번째 유효한 데이터에서 years 가져오기
     for (final code in chartLoopCodes) {
       final chartData = _getFilteredChartData(
-        context,
-        techCode ?? selectedCodes![0],
-        category == AnalysisCategory.countryTech
+        context: context,
+        techListType: techListType!,
+        techCode: techCode ?? selectedCodes![0],
+        country: category == AnalysisCategory.countryTech
             ? code
             : dataProvider.selectedSubCategory ==
                     AnalysisSubCategory.countryDetail
                 ? code
                 : null,
-        category == AnalysisCategory.companyTech ||
+        targetName: category == AnalysisCategory.companyTech ||
                 category == AnalysisCategory.academicTech ||
                 dataProvider.selectedSubCategory ==
                     AnalysisSubCategory.companyDetail ||
@@ -114,20 +119,25 @@ class SingleChartWidget extends StatelessWidget {
     for (var i = 0; i < chartLoopCodes.length; i++) {
       final code = chartLoopCodes[i];
       final chartData = _getFilteredChartData(
-        context,
-        category == AnalysisCategory.countryTech ||
+        context: context,
+        techListType: techListType!,
+        techCode: category == AnalysisCategory.countryTech ||
                 category == AnalysisCategory.companyTech ||
                 category == AnalysisCategory.academicTech ||
-                category == AnalysisCategory.techGap
+                category == AnalysisCategory.techGap ||
+                category == AnalysisCategory.techAssessment
             ? techCode ?? selectedCodes![0]
             : code,
-        category == AnalysisCategory.countryTech ||
+        country: category == AnalysisCategory.countryTech ||
                 (category == AnalysisCategory.techGap &&
+                    dataProvider.selectedSubCategory ==
+                        AnalysisSubCategory.countryDetail) ||
+                (category == AnalysisCategory.techAssessment &&
                     dataProvider.selectedSubCategory ==
                         AnalysisSubCategory.countryDetail)
             ? code
             : null,
-        category == AnalysisCategory.companyTech ||
+        targetName: category == AnalysisCategory.companyTech ||
                 category == AnalysisCategory.academicTech
             ? code
             : null,
@@ -135,14 +145,27 @@ class SingleChartWidget extends StatelessWidget {
 
       if (chartData.isEmpty) continue;
 
-      final trendLineSpots = calculateTrendLine(chartData, years);
+      final trendLineSpots = _calculateTrendLine(chartData, years);
       allTrendLines.add(
         LineChartBarData(
           spots: trendLineSpots,
           isCurved: true,
           color: colors[i % colors.length],
           barWidth: 2,
-          dotData: const FlDotData(show: false),
+          dotData: FlDotData(
+            show: true,
+            checkToShowDot: (spot, barData) {
+              return spot.x == trendLineSpots.last.x;
+            },
+            getDotPainter: (spot, percent, barData, index) {
+              return DashedCircleDotPainter(
+                radius: 6,
+                strokeColor: colors[i % colors.length],
+                fillColor: Colors.white,
+                strokeWidth: 1.5,
+              );
+            },
+          ),
           isStrokeCapRound: true,
           belowBarData: BarAreaData(show: false),
         ),
@@ -194,7 +217,8 @@ class SingleChartWidget extends StatelessWidget {
                 ),
               ),
             ),
-            _buildLegend(chartLoopCodes, colors),
+            if (category != AnalysisCategory.techAssessment)
+              _buildLegend(chartLoopCodes, colors),
           ],
         ),
       ),
@@ -205,10 +229,11 @@ class SingleChartWidget extends StatelessWidget {
   Widget _buildBarChartWithTrendLine(
       BuildContext context, AnalysisDataProvider dataProvider) {
     final chartData = _getFilteredChartData(
-      context,
-      techCode ?? selectedCodes![0],
-      country,
-      targetName,
+      context: context,
+      techListType: techListType!,
+      techCode: techCode ?? selectedCodes![0],
+      country: country,
+      targetName: targetName,
     );
 
     if (chartData.isEmpty) return const SizedBox.shrink();
@@ -263,6 +288,7 @@ class SingleChartWidget extends StatelessWidget {
     Map<int, double> chartData,
   ) {
     final fullData = dataProvider.getChartData(
+      techListType: techListType!,
       techCode: techCode ?? selectedCodes![0],
       country: country,
       targetName: targetName,
@@ -278,7 +304,7 @@ class SingleChartWidget extends StatelessWidget {
         final endYear =
             years.last == allYears.last ? years.last - 1 : years.last;
 
-        final cagr = calculateCAGR(
+        final cagr = _calculateCAGR(
           chartData[startYear] ?? 0,
           chartData[endYear] ?? 0,
           endYear - startYear,
@@ -300,7 +326,7 @@ class SingleChartWidget extends StatelessWidget {
       case CagrCalculationMode.fullPeriod:
         // 전체 기간의 데이터 사용
 
-        final fullDataCagr = calculateCAGR(
+        final fullDataCagr = _calculateCAGR(
           fullData[allYears.first] ?? 0,
           fullData[allYears.last - 1] ?? 0,
           allYears.last - allYears.first,
@@ -456,7 +482,20 @@ class SingleChartWidget extends StatelessWidget {
               }).toList(),
               isCurved: true,
               color: Colors.red,
-              dotData: const FlDotData(show: false),
+              dotData: FlDotData(
+                show: true,
+                checkToShowDot: (spot, barData) {
+                  return spot.x == years.length - 1;
+                },
+                getDotPainter: (spot, percent, barData, index) {
+                  return DashedCircleDotPainter(
+                    radius: 6,
+                    strokeColor: Colors.red,
+                    fillColor: Colors.white,
+                    strokeWidth: 1.5,
+                  );
+                },
+              ),
               dashArray: [5, 5],
               barWidth: 2,
             ),
@@ -508,7 +547,7 @@ class SingleChartWidget extends StatelessWidget {
   }
 
   /// 지수함수 형태로 추세선 포인트를 계산
-  List<FlSpot> calculateTrendLine(Map<int, double> data, List<int> years) {
+  List<FlSpot> _calculateTrendLine(Map<int, double> data, List<int> years) {
     if (years.length < 2) return [];
 
     int n = years.length;
@@ -550,7 +589,7 @@ class SingleChartWidget extends StatelessWidget {
   }
 
   /// 두 값 사이의 연평균 성장률(CAGR)을 계산
-  double calculateCAGR(double startValue, double endValue, int years) {
+  double _calculateCAGR(double startValue, double endValue, int years) {
     // startValue가 0인 경우 endValue를 years로 나눈 평균 증가율 반환
     if (startValue == 0) {
       startValue = 1;
@@ -703,8 +742,12 @@ class SingleChartWidget extends StatelessWidget {
   }
 
   /// 선택된 매개변수에 따라 차트 데이터를 검색하고 필터링
-  Map<int, double> _getFilteredChartData(BuildContext context, String techCode,
-      String? country, String? targetName) {
+  Map<int, double> _getFilteredChartData(
+      {required BuildContext context,
+      required TechListType techListType,
+      required String techCode,
+      String? country,
+      String? targetName}) {
     // 차트 데이터를 연도 범위로 필터링
     Map<int, double> filterChartData(Map<int, double> data) {
       final provider = context.read<AnalysisDataProvider>();
@@ -720,6 +763,7 @@ class SingleChartWidget extends StatelessWidget {
 
     final dataProvider = context.read<AnalysisDataProvider>();
     final chartData = dataProvider.getChartData(
+      techListType: techListType,
       techCode: techCode,
       country: country,
       targetName: targetName,

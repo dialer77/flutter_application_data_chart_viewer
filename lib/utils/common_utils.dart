@@ -14,4 +14,8 @@ class CommonUtils {
       ),
     );
   }
+
+  String replaceCountryCode(String countryCode) {
+    return countryCode.replaceAll('[', '').replaceAll(']', '');
+  }
 }

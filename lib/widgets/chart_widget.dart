@@ -60,16 +60,21 @@ class ChartWidget extends StatelessWidget {
           color: Colors.white,
         ),
         width: double.infinity,
-        child: const Column(
+        child: Column(
           children: [
-            Expanded(
+            const Expanded(
               child: SizedBox(
                 width: double.infinity,
                 child: TableChartData(),
               ),
             ),
             CountryMapWidget(
-              countryCodes: ["KR", "US", "CN"],
+              countryCodes: dataProvider.selectedCountries.isEmpty
+                  ? dataProvider
+                      .getAvailableCountriesFormTechGap(techCode)
+                      .take(10)
+                      .toList()
+                  : dataProvider.selectedCountries.toList(),
             ),
           ],
         ),
@@ -113,6 +118,7 @@ class ChartWidget extends StatelessWidget {
           SingleChartWidget(
             category: category,
             selectedSubCategory: selectedSubCategory,
+            techListType: dataProvider.selectedTechListType,
             techCode: techCode,
             height: 300,
             countries: dataProvider.selectedSubCategory ==
@@ -183,6 +189,7 @@ class ChartWidget extends StatelessWidget {
             SingleChartWidget(
               category: category,
               selectedSubCategory: selectedSubCategory,
+              techListType: dataProvider.selectedTechListType,
               chartTitle: '지수 추세',
               techCode: techCode,
               height: 300,
@@ -200,6 +207,7 @@ class ChartWidget extends StatelessWidget {
         return SingleChartWidget(
           category: category,
           selectedSubCategory: selectedSubCategory,
+          techListType: dataProvider.selectedTechListType,
           chartTitle: '지수 추세',
           techCode: techCode,
           height: 400,
@@ -217,6 +225,7 @@ class ChartWidget extends StatelessWidget {
       return SingleChartWidget(
         category: category,
         selectedSubCategory: selectedSubCategory,
+        techListType: dataProvider.selectedTechListType,
         chartTitle: category == AnalysisCategory.countryTech
             ? dataProvider.selectedCountries.first
             : techCode ?? '',
@@ -277,6 +286,8 @@ class ChartWidget extends StatelessWidget {
                               ? SingleChartWidget(
                                   category: category,
                                   selectedSubCategory: selectedSubCategory,
+                                  techListType:
+                                      dataProvider.selectedTechListType,
                                   techCode: techCode,
                                   chartTitle: codes[j],
                                   country: codes[j],
@@ -290,6 +301,8 @@ class ChartWidget extends StatelessWidget {
                                   ? SingleChartWidget(
                                       category: category,
                                       selectedSubCategory: selectedSubCategory,
+                                      techListType:
+                                          dataProvider.selectedTechListType,
                                       techCode: techCode,
                                       chartTitle: codes[j],
                                       targetName: codes[j],
@@ -300,6 +313,8 @@ class ChartWidget extends StatelessWidget {
                                   : SingleChartWidget(
                                       category: category,
                                       selectedSubCategory: selectedSubCategory,
+                                      techListType:
+                                          dataProvider.selectedTechListType,
                                       chartTitle: codes[j],
                                       techCode: codes[j],
                                       height: 300,

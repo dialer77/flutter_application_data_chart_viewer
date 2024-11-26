@@ -131,6 +131,7 @@ class _TableTechGapDataWidgetState extends State<TableTechGapDataWidget> {
 
                 double rowValue = dataProvider
                     .getChartData(
+                        techListType: dataProvider.selectedTechListType,
                         techCode: techCode,
                         country: dataProvider.selectedSubCategory ==
                                 AnalysisSubCategory.countryDetail
@@ -146,6 +147,7 @@ class _TableTechGapDataWidgetState extends State<TableTechGapDataWidget> {
                     .last;
                 double colValue = dataProvider
                     .getChartData(
+                        techListType: dataProvider.selectedTechListType,
                         techCode: techCode,
                         country: dataProvider.selectedSubCategory ==
                                 AnalysisSubCategory.countryDetail

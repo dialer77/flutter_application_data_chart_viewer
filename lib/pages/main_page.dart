@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
-import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_application_data_chart_viewer/controllers/content_controller.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';

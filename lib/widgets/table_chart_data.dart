@@ -56,7 +56,6 @@ class TableChartData extends StatelessWidget {
       height: height ?? 200,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
             child: SingleChildScrollView(
@@ -104,7 +103,7 @@ class TableChartData extends StatelessWidget {
       List<String> countries,
       List<String> companies,
       List<String> academics) {
-    var dataTable = DataTable(
+    return DataTable(
       headingRowColor:
           WidgetStateProperty.all(const Color.fromARGB(255, 16, 72, 98)),
       columns: [
@@ -200,7 +199,6 @@ class TableChartData extends StatelessWidget {
         },
       ),
     );
-    return dataTable;
   }
 
   DataTable _buildDataTableTechCompetition(AnalysisDataProvider dataProvider,
@@ -226,8 +224,11 @@ class TableChartData extends StatelessWidget {
         ),
         ...dataCodes.map(
           (code) => DataColumn(
-            label: Text(code,
-                style: const TextStyle(fontSize: 12, color: Colors.white)),
+            label: Container(
+              width: 80,
+              child: Text(code,
+                  style: const TextStyle(fontSize: 12, color: Colors.white)),
+            ),
           ),
         ),
       ],

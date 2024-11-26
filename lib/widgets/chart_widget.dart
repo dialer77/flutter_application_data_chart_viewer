@@ -62,19 +62,16 @@ class ChartWidget extends StatelessWidget {
         width: double.infinity,
         child: Column(
           children: [
-            const Expanded(
-              child: SizedBox(
-                width: double.infinity,
-                child: TableChartData(),
+            Flexible(child: TableChartData()),
+            Flexible(
+              child: CountryMapWidget(
+                countryCodes: dataProvider.selectedCountries.isEmpty
+                    ? dataProvider
+                        .getAvailableCountriesFormTechGap(techCode)
+                        .take(10)
+                        .toList()
+                    : dataProvider.selectedCountries.toList(),
               ),
-            ),
-            CountryMapWidget(
-              countryCodes: dataProvider.selectedCountries.isEmpty
-                  ? dataProvider
-                      .getAvailableCountriesFormTechGap(techCode)
-                      .take(10)
-                      .toList()
-                  : dataProvider.selectedCountries.toList(),
             ),
           ],
         ),

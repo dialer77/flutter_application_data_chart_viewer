@@ -9,7 +9,7 @@ class CodeInfo {
   final String market;
   final String sheetName;
 
-  final TechListType techType;
+  final AnalysisTechListType techType;
 
   CodeInfo({
     required this.code,
@@ -32,8 +32,7 @@ class AnalysisDataModel {
     required this.analysisDatas,
   });
 
-  factory AnalysisDataModel.fromMap(
-      String sheetName, Map<String, dynamic> map) {
+  factory AnalysisDataModel.fromMap(String sheetName, Map<String, dynamic> map) {
     String code = map['CODE'].toString();
     String codeName = map['CODE_NAME'].toString();
     String country = map['COUNTRY'].toString();
@@ -41,17 +40,17 @@ class AnalysisDataModel {
     String scode = map['SCODE'].toString();
     String market = map['MARKET'].toString();
 
-    TechListType techType = TechListType.lc;
+    AnalysisTechListType techType = AnalysisTechListType.lc;
     List<String> sheetNameSplit = sheetName.split(' ');
     switch (sheetNameSplit[0].substring(1, 3)) {
       case "LC":
-        techType = TechListType.lc;
+        techType = AnalysisTechListType.lc;
         break;
       case "MC":
-        techType = TechListType.mc;
+        techType = AnalysisTechListType.mc;
         break;
       case "SC":
-        techType = TechListType.sc;
+        techType = AnalysisTechListType.sc;
         break;
     }
 
@@ -70,9 +69,7 @@ class AnalysisDataModel {
     final Map<String, Map<int, double>> analysisDatas = {};
 
     for (var key in map.keys) {
-      if (key.contains('_') &&
-          key != "CODE_NAME" &&
-          (int.tryParse(key) == null)) {
+      if (key.contains('_') && key != "CODE_NAME" && (int.tryParse(key) == null)) {
         int year = 0;
         String dataCode = "";
         if (int.tryParse(key) != null) {
@@ -84,12 +81,9 @@ class AnalysisDataModel {
         year += 2000;
 
         if (analysisDatas[dataCode] == null) {
-          analysisDatas[dataCode] = {
-            year: double.tryParse(map[key].toString()) ?? 0.0
-          };
+          analysisDatas[dataCode] = {year: double.tryParse(map[key].toString()) ?? 0.0};
         } else {
-          analysisDatas[dataCode]![year] =
-              double.tryParse(map[key].toString()) ?? 0.0;
+          analysisDatas[dataCode]![year] = double.tryParse(map[key].toString()) ?? 0.0;
         }
       } else if (int.tryParse(key) != null) {
         int year = int.parse(key);
@@ -97,12 +91,9 @@ class AnalysisDataModel {
         year = int.parse(key);
 
         if (analysisDatas[dataCode] == null) {
-          analysisDatas[dataCode] = {
-            year: double.tryParse(map[key].toString()) ?? 0.0
-          };
+          analysisDatas[dataCode] = {year: double.tryParse(map[key].toString()) ?? 0.0};
         } else {
-          analysisDatas[dataCode]![year] =
-              double.tryParse(map[key].toString()) ?? 0.0;
+          analysisDatas[dataCode]![year] = double.tryParse(map[key].toString()) ?? 0.0;
         }
       }
     }

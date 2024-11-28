@@ -51,13 +51,13 @@ enum AnalysisSubCategory {
   String toString() => label;
 }
 
-enum TechListType {
+enum AnalysisTechListType {
   lc('LC'),
   mc('MC'),
   sc('SC');
 
   final String label;
-  const TechListType(this.label);
+  const AnalysisTechListType(this.label);
 
   @override
   String toString() => label;

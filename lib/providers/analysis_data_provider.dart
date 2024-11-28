@@ -1,6 +1,5 @@
 import 'dart:collection';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/analysis_data_model.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
@@ -42,123 +41,29 @@ class AnalysisDataProvider extends ChangeNotifier {
     _startYear = 0;
     _endYear = 0;
   }
-  // Analysis Data
+
+  //정의
   AnalysisDataType _selectedDataType = AnalysisDataType.patent;
-  AnalysisDataType get selectedDataType => _selectedDataType;
-  void setSelectedDataType(AnalysisDataType dataType) {
-    _selectedDataType = dataType;
-    notifyListeners();
-  }
-
-  List<AnalysisDataType> getAvailableDataTypes(AnalysisCategory category) {
-    switch (category) {
-      case AnalysisCategory.industryTech:
-        if (_selectedSubCategory == AnalysisSubCategory.marketExpansionIndex) {
-          return [AnalysisDataType.patent];
-        } else {
-          return [AnalysisDataType.patent, AnalysisDataType.paper];
-        }
-      case AnalysisCategory.countryTech:
-        if (_selectedSubCategory == AnalysisSubCategory.marketExpansionIndex) {
-          return [AnalysisDataType.patent];
-        } else {
-          return [AnalysisDataType.patent, AnalysisDataType.paper];
-        }
-      case AnalysisCategory.companyTech:
-        return [AnalysisDataType.patent];
-      case AnalysisCategory.academicTech:
-        return [AnalysisDataType.paper];
-      case AnalysisCategory.techCompetition:
-        if (_selectedSubCategory == AnalysisSubCategory.countryDetail) {
-          return [AnalysisDataType.patent, AnalysisDataType.paper, AnalysisDataType.patentAndPaper];
-        } else if (_selectedSubCategory == AnalysisSubCategory.companyDetail) {
-          return [AnalysisDataType.patent];
-        } else if (_selectedSubCategory == AnalysisSubCategory.academicDetail) {
-          return [AnalysisDataType.paper];
-        }
-        return [];
-      case AnalysisCategory.techAssessment:
-      case AnalysisCategory.techGap:
-        if (_selectedSubCategory == AnalysisSubCategory.countryDetail) {
-          return [AnalysisDataType.patent, AnalysisDataType.paper, AnalysisDataType.patentAndPaper];
-        } else if (_selectedSubCategory == AnalysisSubCategory.companyDetail) {
-          return [AnalysisDataType.patent];
-        } else if (_selectedSubCategory == AnalysisSubCategory.academicDetail) {
-          return [AnalysisDataType.paper];
-        }
-        return [];
-    }
-  }
-
-  // Analysis Category
   AnalysisCategory _selectedCategory = AnalysisCategory.industryTech;
-  AnalysisCategory get selectedCategory => _selectedCategory;
-  void setSelectedCategory(AnalysisCategory category) {
-    if (category == AnalysisCategory.countryTech) {
-      if (_selectedSubCategory == AnalysisSubCategory.companyTrend || _selectedSubCategory == AnalysisSubCategory.academicTrend) {
-        _selectedSubCategory = AnalysisSubCategory.countryTrend;
-      }
-    } else if (category == AnalysisCategory.companyTech) {
-      _selectedDataType = AnalysisDataType.patent;
-      if (_selectedSubCategory == AnalysisSubCategory.countryTrend || _selectedSubCategory == AnalysisSubCategory.academicTrend) {
-        _selectedSubCategory = AnalysisSubCategory.companyTrend;
-      }
-    } else if (category == AnalysisCategory.academicTech) {
-      _selectedDataType = AnalysisDataType.paper;
-      if (_selectedSubCategory == AnalysisSubCategory.companyTrend || _selectedSubCategory == AnalysisSubCategory.countryTrend) {
-        _selectedSubCategory = AnalysisSubCategory.academicTrend;
-      }
-    } else if (category == AnalysisCategory.techCompetition || category == AnalysisCategory.techAssessment || category == AnalysisCategory.techGap) {
-      if (_selectedSubCategory != AnalysisSubCategory.countryDetail && _selectedSubCategory != AnalysisSubCategory.companyDetail && _selectedSubCategory != AnalysisSubCategory.academicDetail) {
-        _selectedSubCategory = AnalysisSubCategory.countryDetail;
-      }
-
-      // Clear selected items
-      _selectedCountries.clear();
-      _selectedCompanies.clear();
-      _selectedAcademics.clear();
-    }
-    _selectedCategory = category;
-
-    RangeValues yearRange = getYearRange();
-    _startYear = yearRange.start.toInt();
-    _endYear = yearRange.end.toInt();
-    notifyListeners();
-  }
-
-  // Analysis Sub Category
   AnalysisSubCategory _selectedSubCategory = AnalysisSubCategory.techTrend;
-  TechListType _selectedTechListType = TechListType.lc;
-  String? _selectedLcTechCode;
-  final Set<String> _selectedMcTechCodes = {};
-  final Set<String> _selectedScTechCodes = {};
+  AnalysisTechListType _selectedAnalysisTechListType = AnalysisTechListType.lc;
 
-  bool _isChartVisible = false;
-  bool _shouldRefreshChart = false;
-
-  // Year related state
-  late int _startYear;
-  late int _endYear;
-
-  int _selectedYear = DateTime.now().year;
-
-  // === Getters ===
-
+  //getter
+  AnalysisDataType get selectedDataType => _selectedDataType;
+  AnalysisCategory get selectedCategory => _selectedCategory;
   AnalysisSubCategory get selectedSubCategory => _selectedSubCategory;
-  TechListType get selectedTechListType => _selectedTechListType;
+  AnalysisTechListType get selectedTechListType => _selectedAnalysisTechListType;
   String? get selectedLcTechCode => _selectedLcTechCode;
   Set<String> get selectedMcTechCodes => _selectedMcTechCodes;
   Set<String> get selectedScTechCodes => _selectedScTechCodes;
-  bool get isChartVisible => _isChartVisible;
-  bool get shouldRefreshChart => _shouldRefreshChart;
   int get startYear => _startYear;
   int get endYear => _endYear;
   int get selectedYear => _selectedYear;
 
   String? get selectedTechCode {
-    if (_selectedTechListType == TechListType.lc) {
+    if (_selectedAnalysisTechListType == AnalysisTechListType.lc) {
       return _selectedLcTechCode ?? '';
-    } else if (_selectedTechListType == TechListType.mc) {
+    } else if (_selectedAnalysisTechListType == AnalysisTechListType.mc) {
       return _selectedMcTechCodes.isNotEmpty ? _selectedMcTechCodes.first : '';
     } else {
       return _selectedScTechCodes.isNotEmpty ? _selectedScTechCodes.first : '';
@@ -166,12 +71,12 @@ class AnalysisDataProvider extends ChangeNotifier {
   }
 
   List<String> get selectedTechCodes {
-    switch (_selectedTechListType) {
-      case TechListType.lc:
+    switch (_selectedAnalysisTechListType) {
+      case AnalysisTechListType.lc:
         return [selectedLcTechCode ?? ''];
-      case TechListType.mc:
+      case AnalysisTechListType.mc:
         return [...selectedMcTechCodes]..sort();
-      case TechListType.sc:
+      case AnalysisTechListType.sc:
         return [...selectedScTechCodes]..sort();
     }
   }
@@ -214,17 +119,125 @@ class AnalysisDataProvider extends ChangeNotifier {
     return sortedAcademics.toSet();
   }
 
+  //setter
+  void setSelectedDataType(AnalysisDataType dataType) {
+    _selectedDataType = dataType;
+    notifyListeners();
+  }
+
+  void setSelectedCategory(AnalysisCategory category) {
+    if (category == AnalysisCategory.countryTech) {
+      if (_selectedSubCategory == AnalysisSubCategory.companyTrend || _selectedSubCategory == AnalysisSubCategory.academicTrend) {
+        _selectedSubCategory = AnalysisSubCategory.countryTrend;
+      }
+    } else if (category == AnalysisCategory.companyTech) {
+      _selectedDataType = AnalysisDataType.patent;
+      if (_selectedSubCategory == AnalysisSubCategory.countryTrend || _selectedSubCategory == AnalysisSubCategory.academicTrend) {
+        _selectedSubCategory = AnalysisSubCategory.companyTrend;
+      }
+    } else if (category == AnalysisCategory.academicTech) {
+      _selectedDataType = AnalysisDataType.paper;
+      if (_selectedSubCategory == AnalysisSubCategory.companyTrend || _selectedSubCategory == AnalysisSubCategory.countryTrend) {
+        _selectedSubCategory = AnalysisSubCategory.academicTrend;
+      }
+    } else if (category == AnalysisCategory.techCompetition || category == AnalysisCategory.techAssessment || category == AnalysisCategory.techGap) {
+      if (_selectedSubCategory != AnalysisSubCategory.countryDetail && _selectedSubCategory != AnalysisSubCategory.companyDetail && _selectedSubCategory != AnalysisSubCategory.academicDetail) {
+        _selectedSubCategory = AnalysisSubCategory.countryDetail;
+      }
+
+      // Clear selected items
+      _selectedCountries.clear();
+      _selectedCompanies.clear();
+      _selectedAcademics.clear();
+    }
+    _selectedCategory = category;
+
+    RangeValues yearRange = getYearRange();
+    _startYear = yearRange.start.toInt();
+    _endYear = yearRange.end.toInt();
+    notifyListeners();
+  }
+
+  // aviliable function
+  List<AnalysisDataType> getAvailableDataTypes(AnalysisCategory category) {
+    switch (category) {
+      case AnalysisCategory.industryTech:
+        if (_selectedSubCategory == AnalysisSubCategory.marketExpansionIndex) {
+          return [AnalysisDataType.patent];
+        } else {
+          return [AnalysisDataType.patent, AnalysisDataType.paper];
+        }
+      case AnalysisCategory.countryTech:
+        if (_selectedSubCategory == AnalysisSubCategory.marketExpansionIndex) {
+          return [AnalysisDataType.patent];
+        } else {
+          return [AnalysisDataType.patent, AnalysisDataType.paper];
+        }
+      case AnalysisCategory.companyTech:
+        return [AnalysisDataType.patent];
+      case AnalysisCategory.academicTech:
+        return [AnalysisDataType.paper];
+      case AnalysisCategory.techCompetition:
+        if (_selectedSubCategory == AnalysisSubCategory.countryDetail) {
+          return [AnalysisDataType.patent, AnalysisDataType.paper, AnalysisDataType.patentAndPaper];
+        } else if (_selectedSubCategory == AnalysisSubCategory.companyDetail) {
+          return [AnalysisDataType.patent];
+        } else if (_selectedSubCategory == AnalysisSubCategory.academicDetail) {
+          return [AnalysisDataType.paper];
+        }
+        return [];
+      case AnalysisCategory.techAssessment:
+      case AnalysisCategory.techGap:
+        if (_selectedSubCategory == AnalysisSubCategory.countryDetail) {
+          return [AnalysisDataType.patent, AnalysisDataType.paper, AnalysisDataType.patentAndPaper];
+        } else if (_selectedSubCategory == AnalysisSubCategory.companyDetail) {
+          return [AnalysisDataType.patent];
+        } else if (_selectedSubCategory == AnalysisSubCategory.academicDetail) {
+          return [AnalysisDataType.paper];
+        }
+        return [];
+    }
+  }
+
+  List<AnalysisTechListType> getAvailableTechListTypes(AnalysisCategory category) {
+    switch (category) {
+      case AnalysisCategory.industryTech:
+        if (_selectedSubCategory == AnalysisSubCategory.marketExpansionIndex || _selectedSubCategory == AnalysisSubCategory.rdInvestmentIndex) {
+          return [AnalysisTechListType.mc, AnalysisTechListType.sc];
+        } else {
+          return [AnalysisTechListType.lc, AnalysisTechListType.mc, AnalysisTechListType.sc];
+        }
+      case AnalysisCategory.countryTech:
+      case AnalysisCategory.companyTech:
+      case AnalysisCategory.academicTech:
+      case AnalysisCategory.techCompetition:
+      case AnalysisCategory.techAssessment:
+      case AnalysisCategory.techGap:
+        return [AnalysisTechListType.lc, AnalysisTechListType.mc, AnalysisTechListType.sc];
+    }
+  }
+
+  String? _selectedLcTechCode;
+  final Set<String> _selectedMcTechCodes = {};
+  final Set<String> _selectedScTechCodes = {};
+
+  // Year related state
+  late int _startYear;
+  late int _endYear;
+
+  int _selectedYear = DateTime.now().year;
+
   // === Setters ===
 
   void setSelectedSubCategory(AnalysisSubCategory subCategory) {
     switch (selectedCategory) {
       case AnalysisCategory.industryTech:
-        if (subCategory == AnalysisSubCategory.rdInvestmentIndex && _selectedTechListType == TechListType.lc) {
-          _selectedTechListType = TechListType.mc;
+        if (subCategory == AnalysisSubCategory.rdInvestmentIndex && _selectedAnalysisTechListType == AnalysisTechListType.lc) {
+          _selectedAnalysisTechListType = AnalysisTechListType.mc;
         } else if (subCategory == AnalysisSubCategory.marketExpansionIndex) {
           _selectedDataType = AnalysisDataType.patent;
-          if (_selectedTechListType == TechListType.lc) {
-            _selectedTechListType = TechListType.mc;
+          if (_selectedAnalysisTechListType == AnalysisTechListType.lc) {
+            _selectedAnalysisTechListType = AnalysisTechListType.mc;
           }
         }
         break;
@@ -249,11 +262,11 @@ class AnalysisDataProvider extends ChangeNotifier {
     }
 
     _selectedSubCategory = subCategory;
-    notifyListeners();
+    Future.microtask(() => notifyListeners());
   }
 
-  void setSelectedTechListType(TechListType type) {
-    _selectedTechListType = type;
+  void setSelectedTechListType(AnalysisTechListType type) {
+    _selectedAnalysisTechListType = type;
     notifyListeners();
   }
 
@@ -321,23 +334,6 @@ class AnalysisDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Chart visibility methods
-  void showChart() {
-    _isChartVisible = true;
-    notifyListeners();
-  }
-
-  void hideChart() {
-    _isChartVisible = false;
-    notifyListeners();
-  }
-
-  void refreshChart() {
-    _shouldRefreshChart = true;
-    notifyListeners();
-    _shouldRefreshChart = false;
-  }
-
   // Category initialization
   void initializeWithCategory(AnalysisCategory category) {
     switch (category) {
@@ -362,8 +358,8 @@ class AnalysisDataProvider extends ChangeNotifier {
       default:
         break;
     }
-    _selectedTechListType = TechListType.lc;
-    _selectedLcTechCode = getDataCodeNames(_selectedTechListType).first;
+    _selectedAnalysisTechListType = AnalysisTechListType.lc;
+    _selectedLcTechCode = getDataCodeNames(_selectedAnalysisTechListType).first;
     RangeValues yearRange = getYearRange();
     _startYear = yearRange.start.toInt();
     _endYear = yearRange.end.toInt();
@@ -528,7 +524,7 @@ class AnalysisDataProvider extends ChangeNotifier {
 
   // 차트 데이터 가져오기
   Map<int, double> getChartData({
-    required TechListType techListType,
+    required AnalysisTechListType techListType,
     String? techCode,
     String? country,
     String? targetName,
@@ -626,7 +622,7 @@ class AnalysisDataProvider extends ChangeNotifier {
   }
 
   Map<int, double> _getTechAssessmentChartData({
-    required TechListType techListType,
+    required AnalysisTechListType techListType,
     String? techCode,
     String? country,
     String? targetName,
@@ -695,13 +691,13 @@ class AnalysisDataProvider extends ChangeNotifier {
     return {...beforeData, ...afterData};
   }
 
-  Map<String, double> getRaderChartData(TechListType techListType, int year) {
+  Map<String, double> getRaderChartData(AnalysisTechListType techListType, int year) {
     Map<String, double> chartData = {};
 
     Set<String> techCodes = {};
-    if (techListType == TechListType.mc) {
+    if (techListType == AnalysisTechListType.mc) {
       techCodes = _selectedMcTechCodes.isNotEmpty ? _selectedMcTechCodes : getDataCodeNames(techListType);
-    } else if (techListType == TechListType.sc) {
+    } else if (techListType == AnalysisTechListType.sc) {
       techCodes = _selectedScTechCodes.isNotEmpty ? _selectedScTechCodes : getDataCodeNames(techListType);
     }
 
@@ -778,7 +774,7 @@ class AnalysisDataProvider extends ChangeNotifier {
   }
 
   // Data Code Names
-  Set<String> getDataCodeNames(TechListType techListType) {
+  Set<String> getDataCodeNames(AnalysisTechListType techListType) {
     final sheetName = getCategorySheetNames(_selectedCategory);
 
     var filteredData = currentData.where((data) => data.codeInfo.sheetName == sheetName).toList();
@@ -849,13 +845,13 @@ class AnalysisDataProvider extends ChangeNotifier {
           }
         case AnalysisSubCategory.techInnovationIndex:
           if (selectedDataType == AnalysisDataType.patent) {
-            if (selectedTechListType == TechListType.lc) {
+            if (selectedTechListType == AnalysisTechListType.lc) {
               return 'PCN';
             } else {
               return 'PCI';
             }
           } else if (selectedDataType == AnalysisDataType.paper) {
-            if (selectedTechListType == TechListType.lc) {
+            if (selectedTechListType == AnalysisTechListType.lc) {
               return 'TCN';
             } else {
               return 'TCI';

@@ -12,7 +12,7 @@ class SingleChartWidget extends StatelessWidget {
   final AnalysisCategory category;
   final AnalysisSubCategory? selectedSubCategory;
   final String? chartTitle;
-  final TechListType? techListType;
+  final AnalysisTechListType? techListType;
   final String? techCode;
   final List<String>? selectedCodes;
   final String? country;
@@ -725,7 +725,7 @@ class SingleChartWidget extends StatelessWidget {
   }
 
   /// 선택된 매개변수에 따라 차트 데이터를 검색하고 필터링
-  Map<int, double> _getFilteredChartData({required BuildContext context, required TechListType techListType, required String techCode, String? country, String? targetName}) {
+  Map<int, double> _getFilteredChartData({required BuildContext context, required AnalysisTechListType techListType, required String techCode, String? country, String? targetName}) {
     // 차트 데이터를 연도 범위로 필터링
     Map<int, double> filterChartData(Map<int, double> data) {
       final provider = context.read<AnalysisDataProvider>();

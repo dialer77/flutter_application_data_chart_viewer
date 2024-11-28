@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
@@ -56,7 +57,7 @@ class ChartPage extends StatefulWidget {
 class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
-  List<AnalysisSubCategory> _subCategories = [];
+
   AnalysisSubCategory? _selectedSubCategory;
 
   @override
@@ -73,12 +74,6 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
     );
 
     _controller.forward();
-    _subCategories = context.read<AnalysisDataProvider>().getAvailableSubCategories(widget.category);
-
-    // 첫 번째 서브카테고리를 기본값으로 설정
-    if (_subCategories.isNotEmpty) {
-      _selectedSubCategory = _subCategories.first;
-    }
   }
 
   Widget _buildCategoryButton({double fontSizeRatio = 0.25}) {
@@ -147,7 +142,14 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
   }
 
   Widget _buildSubCategoryButtons({double fontSizeRatio = 0.25}) {
-    _selectedSubCategory = context.watch<AnalysisDataProvider>().selectedSubCategory;
+    final dataProvider = context.watch<AnalysisDataProvider>();
+    _selectedSubCategory = dataProvider.selectedSubCategory;
+    final subCategories = dataProvider.getAvailableSubCategories(widget.category);
+
+    // 첫 번째 서브카테고리를 기본값으로 설정
+    if (_selectedSubCategory == null || subCategories.contains(_selectedSubCategory) == false) {
+      dataProvider.setSelectedSubCategory(subCategories.first);
+    }
 
     return LayoutBuilder(builder: (context, constraints) {
       return Padding(
@@ -161,7 +163,7 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
-            children: _subCategories.map((subCategory) {
+            children: subCategories.map((subCategory) {
               final isSelected = _selectedSubCategory == subCategory;
               return Flexible(
                 child: LayoutBuilder(builder: (context, constraints) {
@@ -232,26 +234,39 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
             children: [
               SizedBox(height: constraints.maxHeight * 0.05),
               SizedBox(
+                width: constraints.maxWidth,
                 height: constraints.maxHeight * 0.15,
                 child: AnalysisDataWidget(category: widget.category),
               ),
-              const SizedBox(height: 10),
-              AnalysisTechListWidget(category: widget.category),
+              if (widget.category == AnalysisCategory.industryTech)
+                Expanded(
+                  child: AnalysisTechListWidget(category: widget.category),
+                ),
               if (widget.category == AnalysisCategory.countryTech ||
                   widget.category == AnalysisCategory.companyTech ||
                   widget.category == AnalysisCategory.academicTech ||
                   widget.category == AnalysisCategory.techCompetition ||
                   widget.category == AnalysisCategory.techAssessment ||
                   widget.category == AnalysisCategory.techGap)
-                Column(
-                  children: [
-                    const SizedBox(height: 10),
-                    AnalysisTargetWidget(category: widget.category),
-                  ],
+                Expanded(
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: constraints.maxHeight * 0.2,
+                        child: AnalysisTechListWidget(category: widget.category),
+                      ),
+                      Expanded(
+                        child: AnalysisTargetWidget(category: widget.category),
+                      ),
+                    ],
+                  ),
                 ),
-              const Spacer(),
-              AnalysisPeriodWidget(
-                analysisType: dataProvider.selectedCategory == AnalysisCategory.techAssessment ? AnalysisType.single : AnalysisType.range,
+              SizedBox(
+                width: constraints.maxWidth,
+                height: constraints.maxHeight * 0.15,
+                child: AnalysisPeriodWidget(
+                  analysisType: dataProvider.selectedCategory == AnalysisCategory.techAssessment ? AnalysisType.single : AnalysisType.range,
+                ),
               ),
             ],
           ),

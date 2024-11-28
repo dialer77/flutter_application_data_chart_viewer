@@ -80,8 +80,7 @@ class _CountryMapWidgetState extends State<CountryMapWidget> {
   }
 
   Future<void> _loadCoordinates() async {
-    final String jsonString = await DefaultAssetBundle.of(context)
-        .loadString('assets/country_coordinates.json');
+    final String jsonString = await DefaultAssetBundle.of(context).loadString('assets/country_coordinates.json');
     final data = json.decode(jsonString);
 
     setState(() {
@@ -113,10 +112,8 @@ class _CountryMapWidgetState extends State<CountryMapWidget> {
               'assets/world_map_iso.json',
               shapeDataField: 'name',
               dataCount: widget.countryCodes.length,
-              primaryValueMapper: (int index) => CommonUtils.instance
-                  .replaceCountryCode(widget.countryCodes[index]),
-              shapeColorValueMapper: (int index) => CommonUtils.instance
-                  .replaceCountryCode(widget.countryCodes[index]),
+              primaryValueMapper: (int index) => CommonUtils.instance.replaceCountryCode(widget.countryCodes[index]),
+              shapeColorValueMapper: (int index) => CommonUtils.instance.replaceCountryCode(widget.countryCodes[index]),
               shapeColorMappers: widget.countryCodes
                   .map((code) => MapColorMapper(
                         value: CommonUtils.instance.replaceCountryCode(code),
@@ -130,8 +127,7 @@ class _CountryMapWidgetState extends State<CountryMapWidget> {
             color: Colors.grey[100],
             initialMarkersCount: 10,
             markerBuilder: (BuildContext context, int index) {
-              final coordinates =
-                  _getCountryCoordinates(widget.countryCodes[index]);
+              final coordinates = _getCountryCoordinates(widget.countryCodes[index]);
               if (coordinates == null) {
                 return const MapMarker(
                   latitude: 0,
@@ -143,8 +139,7 @@ class _CountryMapWidgetState extends State<CountryMapWidget> {
                 latitude: coordinates.latitude,
                 longitude: coordinates.longitude,
                 child: CountryFlag.fromCountryCode(
-                  CommonUtils.instance
-                      .replaceCountryCode(widget.countryCodes[index]),
+                  CommonUtils.instance.replaceCountryCode(widget.countryCodes[index]),
                   height: _getFlagSize(_zoomPanBehavior.zoomLevel),
                   width: _getFlagSize(_zoomPanBehavior.zoomLevel),
                 ),

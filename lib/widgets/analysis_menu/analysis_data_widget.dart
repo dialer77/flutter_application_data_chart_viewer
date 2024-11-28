@@ -33,20 +33,18 @@ class _AnalysisDataWidgetState extends State<AnalysisDataWidget> {
     return LayoutBuilder(
       builder: (context, constraints) => Column(
         children: [
-          Center(
-            child: Container(
-              height: constraints.maxHeight * 0.5,
-              decoration: BoxDecoration(
-                border: Border.all(color: const Color.fromARGB(255, 70, 177, 225)),
-              ),
-              child: Center(
-                child: Text(
-                  '분석 데이터',
-                  style: TextStyle(
-                    fontSize: constraints.maxHeight * 0.225,
-                    fontWeight: FontWeight.bold,
-                    color: const Color.fromARGB(255, 70, 177, 225),
-                  ),
+          Container(
+            height: constraints.maxWidth * 0.15,
+            decoration: BoxDecoration(
+              border: Border.all(color: const Color.fromARGB(255, 70, 177, 225)),
+            ),
+            child: Center(
+              child: Text(
+                '분석 데이터',
+                style: TextStyle(
+                  fontSize: constraints.maxWidth * 0.06,
+                  fontWeight: FontWeight.bold,
+                  color: const Color.fromARGB(255, 70, 177, 225),
                 ),
               ),
             ),
@@ -59,7 +57,7 @@ class _AnalysisDataWidgetState extends State<AnalysisDataWidget> {
                   (option) => Opacity(
                     opacity: availableOptions.contains(option) ? 1.0 : 0.0,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Transform.scale(

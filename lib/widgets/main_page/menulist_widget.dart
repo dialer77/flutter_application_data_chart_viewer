@@ -19,8 +19,7 @@ class MenuListWidget extends StatefulWidget {
   State<MenuListWidget> createState() => _MenuListWidgetState();
 }
 
-class _MenuListWidgetState extends State<MenuListWidget>
-    with SingleTickerProviderStateMixin {
+class _MenuListWidgetState extends State<MenuListWidget> with SingleTickerProviderStateMixin {
   bool _isAnimating = false; // 애니메이션 상태를 제어하는 플래그
   final GlobalKey _categoryKey = GlobalKey(); // 카테고리 위치를 찾기 위한 키
   double? _targetY; // 카테고리의 Y축 위치를 저장
@@ -42,11 +41,7 @@ class _MenuListWidgetState extends State<MenuListWidget>
   }
 
   void _handleTap() {
-    final dataProvider =
-        Provider.of<AnalysisDataProvider>(context, listen: false);
-
-    final RenderBox? renderBox =
-        _categoryKey.currentContext?.findRenderObject() as RenderBox?;
+    final RenderBox? renderBox = _categoryKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox != null) {
       final position = renderBox.localToGlobal(Offset.zero);
       _targetY = position.dy;
@@ -58,7 +53,6 @@ class _MenuListWidgetState extends State<MenuListWidget>
     _controller.forward();
 
     Future.delayed(const Duration(milliseconds: 1000), () {
-      dataProvider.showChart();
       widget.onSubCategorySelected?.call(widget.analysisCategory);
     });
   }
@@ -68,11 +62,7 @@ class _MenuListWidgetState extends State<MenuListWidget>
     final dataProvider = context.watch<AnalysisDataProvider>();
 
     const int maxSubCategories = 4; // 최대 서브카테고리 개수
-    final int emptySpaceCount = maxSubCategories -
-        context
-            .watch<AnalysisDataProvider>()
-            .getAvailableSubCategories(widget.analysisCategory)
-            .length;
+    final int emptySpaceCount = maxSubCategories - context.watch<AnalysisDataProvider>().getAvailableSubCategories(widget.analysisCategory).length;
 
     return Stack(
       children: [
@@ -87,24 +77,18 @@ class _MenuListWidgetState extends State<MenuListWidget>
     );
   }
 
-  Widget _buildSubCategoryList(
-      AnalysisDataProvider dataProvider, int emptySpaceCount) {
+  Widget _buildSubCategoryList(AnalysisDataProvider dataProvider, int emptySpaceCount) {
     return Flexible(
       flex: 5,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          ...dataProvider
-              .getAvailableSubCategories(widget.analysisCategory)
-              .asMap()
-              .entries
-              .map((entry) {
+          ...dataProvider.getAvailableSubCategories(widget.analysisCategory).asMap().entries.map((entry) {
             final int index = entry.key;
             final subCategory = entry.value;
             return Flexible(
               child: Padding(
-                padding: EdgeInsets.symmetric(
-                    vertical: widget.constraints.maxWidth * 0.15),
+                padding: EdgeInsets.symmetric(vertical: widget.constraints.maxWidth * 0.15),
                 child: AnimatedOpacity(
                   duration: Duration(milliseconds: 400 + (index * 100)),
                   opacity: _isAnimating ? 0.0 : 1.0,
@@ -113,9 +97,7 @@ class _MenuListWidgetState extends State<MenuListWidget>
                     transform: Matrix4.identity()
                       ..translate(
                         0.0,
-                        _isAnimating
-                            ? (_targetY ?? 0) - (250 + (index * 50))
-                            : 0.0,
+                        _isAnimating ? (_targetY ?? 0) - (250 + (index * 50)) : 0.0,
                       ),
                     child: Container(
                       height: double.infinity,
@@ -140,8 +122,7 @@ class _MenuListWidgetState extends State<MenuListWidget>
               ),
             );
           }),
-          ...List.generate(emptySpaceCount,
-              (_) => const Flexible(child: SizedBox(height: double.infinity))),
+          ...List.generate(emptySpaceCount, (_) => const Flexible(child: SizedBox(height: double.infinity))),
         ],
       ),
     );
@@ -151,8 +132,7 @@ class _MenuListWidgetState extends State<MenuListWidget>
     return Flexible(
       flex: 1,
       child: Padding(
-        padding:
-            EdgeInsets.symmetric(vertical: widget.constraints.maxWidth * 0.1),
+        padding: EdgeInsets.symmetric(vertical: widget.constraints.maxWidth * 0.1),
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 800),
           opacity: _isAnimating ? 0.0 : 1.0,

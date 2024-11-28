@@ -86,8 +86,8 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
   // 차트 컨테이너 생성 함수
   Widget _buildChartContainer(AnalysisDataProvider dataProvider) {
     // 임시 데이터 예시
-    var raderChartMCData = dataProvider.getRaderChartData(TechListType.mc, dataProvider.selectedYear);
-    var raderChartSCData = dataProvider.getRaderChartData(TechListType.sc, dataProvider.selectedYear);
+    var raderChartMCData = dataProvider.getRaderChartData(AnalysisTechListType.mc, dataProvider.selectedYear);
+    var raderChartSCData = dataProvider.getRaderChartData(AnalysisTechListType.sc, dataProvider.selectedYear);
 
     return Container(
       margin: const EdgeInsets.all(16.0),
@@ -111,7 +111,7 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
             child: SingleChartWidget(
               category: AnalysisCategory.techAssessment,
               selectedSubCategory: dataProvider.selectedSubCategory,
-              techListType: TechListType.lc,
+              techListType: AnalysisTechListType.lc,
               techCode: dataProvider.selectedLcTechCode,
               countries: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? [dataProvider.selectedCountry ?? ''] : null,
               targetNames: dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail

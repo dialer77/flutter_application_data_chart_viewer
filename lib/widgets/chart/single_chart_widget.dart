@@ -4,8 +4,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_application_data_chart_viewer/utils/dash_circle_dot_painter.dart';
 import 'package:provider/provider.dart';
 import 'dart:math';
-import '../models/enum_defines.dart';
-import '../providers/analysis_data_provider.dart';
+import '../../models/enum_defines.dart';
+import '../../providers/analysis_data_provider.dart';
 import 'package:decimal/decimal.dart'; // Decimal 패키지 임포트
 
 class SingleChartWidget extends StatelessWidget {
@@ -62,17 +62,14 @@ class SingleChartWidget extends StatelessWidget {
       chartLoopCodes.addAll(targetNames!);
     }
 
-    if ((isIndexType && chartLoopCodes.isNotEmpty) ||
-        dataProvider.selectedCategory == AnalysisCategory.techGap ||
-        dataProvider.selectedCategory == AnalysisCategory.techAssessment) {
+    if ((isIndexType && chartLoopCodes.isNotEmpty) || dataProvider.selectedCategory == AnalysisCategory.techGap || dataProvider.selectedCategory == AnalysisCategory.techAssessment) {
       return _buildMultiLineChart(context, dataProvider, chartLoopCodes);
     }
     return _buildBarChartWithTrendLine(context, dataProvider);
   }
 
   /// 여러 데이터셋을 비교하기 위한 다중 선 차트를 생성
-  Widget _buildMultiLineChart(BuildContext context,
-      AnalysisDataProvider dataProvider, List<String> chartLoopCodes) {
+  Widget _buildMultiLineChart(BuildContext context, AnalysisDataProvider dataProvider, List<String> chartLoopCodes) {
     double maxValue = 0;
     double minValue = double.infinity;
     final allTrendLines = <LineChartBarData>[];
@@ -88,24 +85,26 @@ class SingleChartWidget extends StatelessWidget {
 
     // 첫 번째 유효한 데이터에서 years 가져오기
     for (final code in chartLoopCodes) {
+      String? countryCode;
+      if (category == AnalysisCategory.countryTech) {
+        countryCode = code;
+      } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
+        countryCode = code;
+      }
+
+      String? targetName;
+      if (category == AnalysisCategory.companyTech || category == AnalysisCategory.academicTech) {
+        targetName = code;
+      } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
+        targetName = code;
+      }
+
       final chartData = _getFilteredChartData(
         context: context,
         techListType: techListType!,
         techCode: techCode ?? selectedCodes![0],
-        country: category == AnalysisCategory.countryTech
-            ? code
-            : dataProvider.selectedSubCategory ==
-                    AnalysisSubCategory.countryDetail
-                ? code
-                : null,
-        targetName: category == AnalysisCategory.companyTech ||
-                category == AnalysisCategory.academicTech ||
-                dataProvider.selectedSubCategory ==
-                    AnalysisSubCategory.companyDetail ||
-                dataProvider.selectedSubCategory ==
-                    AnalysisSubCategory.academicDetail
-            ? code
-            : null,
+        country: countryCode,
+        targetName: targetName,
       );
       if (chartData.isNotEmpty) {
         years = chartData.keys.toList()..sort();
@@ -129,16 +128,14 @@ class SingleChartWidget extends StatelessWidget {
             ? techCode ?? selectedCodes![0]
             : code,
         country: category == AnalysisCategory.countryTech ||
-                (category == AnalysisCategory.techGap &&
-                    dataProvider.selectedSubCategory ==
-                        AnalysisSubCategory.countryDetail) ||
-                (category == AnalysisCategory.techAssessment &&
-                    dataProvider.selectedSubCategory ==
-                        AnalysisSubCategory.countryDetail)
+                (category == AnalysisCategory.techGap && dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) ||
+                (category == AnalysisCategory.techAssessment && dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail)
             ? code
             : null,
         targetName: category == AnalysisCategory.companyTech ||
-                category == AnalysisCategory.academicTech
+                category == AnalysisCategory.academicTech ||
+                (category == AnalysisCategory.techGap &&
+                    (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail))
             ? code
             : null,
       );
@@ -217,8 +214,7 @@ class SingleChartWidget extends StatelessWidget {
                 ),
               ),
             ),
-            if (category != AnalysisCategory.techAssessment)
-              _buildLegend(chartLoopCodes, colors),
+            if (category != AnalysisCategory.techAssessment) _buildLegend(chartLoopCodes, colors),
           ],
         ),
       ),
@@ -226,8 +222,7 @@ class SingleChartWidget extends StatelessWidget {
   }
 
   /// 막대 차트와 추세선을 함께 표시하는 차트를 생성
-  Widget _buildBarChartWithTrendLine(
-      BuildContext context, AnalysisDataProvider dataProvider) {
+  Widget _buildBarChartWithTrendLine(BuildContext context, AnalysisDataProvider dataProvider) {
     final chartData = _getFilteredChartData(
       context: context,
       techListType: techListType!,
@@ -266,10 +261,8 @@ class SingleChartWidget extends StatelessWidget {
                 ),
                 child: Stack(
                   children: [
-                    _buildBarChart(
-                        context, years, chartData, maxValue, interval),
-                    _buildTrendLineOverlay(
-                        years, trendLineData, maxValue), // 미리 계산된 추세선 데이터 전달
+                    _buildBarChart(context, years, chartData, maxValue, interval),
+                    _buildTrendLineOverlay(years, trendLineData, maxValue), // 미리 계산된 추세선 데이터 전달
                     _buildCagrOverlay(cagr),
                   ],
                 ),
@@ -301,8 +294,7 @@ class SingleChartWidget extends StatelessWidget {
         final years = chartData.keys.toList()..sort();
 
         final startYear = years.first;
-        final endYear =
-            years.last == allYears.last ? years.last - 1 : years.last;
+        final endYear = years.last == allYears.last ? years.last - 1 : years.last;
 
         final cagr = _calculateCAGR(
           chartData[startYear] ?? 0,
@@ -347,11 +339,9 @@ class SingleChartWidget extends StatelessWidget {
   }
 
   /// 시각화의 막대 차트 컴포넌트를 생성
-  Widget _buildBarChart(BuildContext context, List<int> years,
-      Map<int, double> chartData, double maxValue, double interval) {
+  Widget _buildBarChart(BuildContext context, List<int> years, Map<int, double> chartData, double maxValue, double interval) {
     // 차트의 너비에 따른 막대 두께 계산
-    final barWidth = (MediaQuery.of(context).size.width / (years.length * 12))
-        .clamp(8.0, 24.0);
+    final barWidth = (MediaQuery.of(context).size.width / (years.length * 12)).clamp(8.0, 24.0);
 
     return Container(
       padding: const EdgeInsets.only(
@@ -375,8 +365,7 @@ class SingleChartWidget extends StatelessWidget {
                     const TextStyle(color: Colors.black),
                   );
                 } catch (e) {
-                  return BarTooltipItem(
-                      ',', const TextStyle(color: Colors.black));
+                  return BarTooltipItem(',', const TextStyle(color: Colors.black));
                 }
               },
             ),
@@ -416,8 +405,7 @@ class SingleChartWidget extends StatelessWidget {
   }
 
   /// 추세선 오버레이 컴포넌트를 생성
-  Widget _buildTrendLineOverlay(
-      List<int> years, Map<int, double> trendLineData, double maxValue) {
+  Widget _buildTrendLineOverlay(List<int> years, Map<int, double> trendLineData, double maxValue) {
     return Container(
       padding: const EdgeInsets.only(
         top: 16,
@@ -572,13 +560,11 @@ class SingleChartWidget extends StatelessWidget {
     }
 
     if (validPoints < 2) {
-      return List.generate(n,
-          (i) => FlSpot(i.toDouble(), 0)); // 유효한 데이터 포인트가 2개 미만이면 0으로 채운 리스트 반환
+      return List.generate(n, (i) => FlSpot(i.toDouble(), 0)); // 유효한 데이터 포인트가 2개 미만이면 0으로 채운 리스트 반환
     }
 
     // 지수 회귀 계수 계산
-    double b = (validPoints * sumXLnY - sumX * sumLnY) /
-        (validPoints * sumX2 - sumX * sumX);
+    double b = (validPoints * sumXLnY - sumX * sumLnY) / (validPoints * sumX2 - sumX * sumX);
     double a = exp((sumLnY - b * sumX) / validPoints);
 
     // 추세선 포인트 생성
@@ -699,17 +685,14 @@ class SingleChartWidget extends StatelessWidget {
           showTitles: true,
           getTitlesWidget: (value, meta) {
             // value를 Decimal로 변환하고 소수점 두 자리로 반올림
-            final Decimal roundedValue =
-                Decimal.parse(value.toStringAsFixed(2)); // 소수점 두 자리로 반올림
-            final Decimal decimalInterval =
-                Decimal.parse(interval.toString()); // interval을 Decimal로 변환
+            final Decimal roundedValue = Decimal.parse(value.toStringAsFixed(2)); // 소수점 두 자리로 반올림
+            final Decimal decimalInterval = Decimal.parse(interval.toString()); // interval을 Decimal로 변환
 
             if (roundedValue % decimalInterval != Decimal.zero) {
               return const SizedBox.shrink(); // 최댓값일 경우 빈 위젯 반환
             }
             // roundedValue가 10 이상이면 정수로 표시
-            if (roundedValue >= Decimal.fromInt(10) ||
-                decimalInterval >= Decimal.fromInt(10)) {
+            if (roundedValue >= Decimal.fromInt(10) || decimalInterval >= Decimal.fromInt(10)) {
               return Text(
                 roundedValue.toString(), // 정수로 표시
                 style: const TextStyle(
@@ -742,22 +725,12 @@ class SingleChartWidget extends StatelessWidget {
   }
 
   /// 선택된 매개변수에 따라 차트 데이터를 검색하고 필터링
-  Map<int, double> _getFilteredChartData(
-      {required BuildContext context,
-      required TechListType techListType,
-      required String techCode,
-      String? country,
-      String? targetName}) {
+  Map<int, double> _getFilteredChartData({required BuildContext context, required TechListType techListType, required String techCode, String? country, String? targetName}) {
     // 차트 데이터를 연도 범위로 필터링
     Map<int, double> filterChartData(Map<int, double> data) {
       final provider = context.read<AnalysisDataProvider>();
       return Map.fromEntries(
-        data.entries
-            .where((entry) =>
-                entry.key >= provider.startYear &&
-                entry.key <= provider.endYear)
-            .toList()
-          ..sort((a, b) => a.key.compareTo(b.key)),
+        data.entries.where((entry) => entry.key >= provider.startYear && entry.key <= provider.endYear).toList()..sort((a, b) => a.key.compareTo(b.key)),
       );
     }
 

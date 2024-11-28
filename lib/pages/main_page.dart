@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/main_page/menulist_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_application_data_chart_viewer/controllers/content_controller.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/menulist_widget.dart';
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
 
-  void _handleCategorySelected(
-      BuildContext context, AnalysisCategory category) {
+  void _handleCategorySelected(BuildContext context, AnalysisCategory category) {
     final dataProvider = context.read<AnalysisDataProvider>();
     dataProvider.setSelectedCategory(category);
     dataProvider.initializeWithCategory(category);
@@ -35,8 +34,7 @@ class MainPage extends StatelessWidget {
                       .map(
                         (category) => Flexible(
                           child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 30.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 30.0),
                             child: LayoutBuilder(
                               builder: (context, constraints) {
                                 return Container(
@@ -45,9 +43,7 @@ class MainPage extends StatelessWidget {
                                   child: MenuListWidget(
                                     analysisCategory: category,
                                     constraints: constraints,
-                                    onSubCategorySelected: (category) =>
-                                        _handleCategorySelected(
-                                            context, category),
+                                    onSubCategorySelected: (category) => _handleCategorySelected(context, category),
                                   ),
                                 );
                               },
@@ -81,16 +77,14 @@ class MainPage extends StatelessWidget {
             children: AnalysisCategory.values
                 .map((category) => Flexible(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 30.0, vertical: 5.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 5.0),
                         child: LayoutBuilder(builder: (context, constraints) {
                           return Container(
                             alignment: Alignment.center,
                             height: double.infinity,
                             decoration: const BoxDecoration(
                               color: Colors.white,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10)),
+                              borderRadius: BorderRadius.all(Radius.circular(10)),
                             ),
                             child: Text(
                               category.toString(),

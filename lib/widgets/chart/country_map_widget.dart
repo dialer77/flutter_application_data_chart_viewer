@@ -132,8 +132,15 @@ class _CountryMapWidgetState extends State<CountryMapWidget> {
             markerBuilder: (BuildContext context, int index) {
               final coordinates =
                   _getCountryCoordinates(widget.countryCodes[index]);
+              if (coordinates == null) {
+                return const MapMarker(
+                  latitude: 0,
+                  longitude: 0,
+                  child: SizedBox.shrink(),
+                );
+              }
               return MapMarker(
-                latitude: coordinates!.latitude,
+                latitude: coordinates.latitude,
                 longitude: coordinates.longitude,
                 child: CountryFlag.fromCountryCode(
                   CommonUtils.instance

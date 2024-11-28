@@ -11,7 +11,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows) {
     setWindowTitle('InnoPatent Analytics v4.5');
-    setWindowMinSize(const Size(800, 600));
+    setWindowMinSize(const Size(1600, 900));
     getCurrentScreen().then((screen) {
       if (screen != null) {
         final screenFrame = screen.frame;

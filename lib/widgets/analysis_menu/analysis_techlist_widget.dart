@@ -5,19 +5,19 @@ import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:provider/provider.dart';
 
-class TechListWidget extends StatefulWidget {
+class AnalysisTechListWidget extends StatefulWidget {
   final AnalysisCategory category;
 
-  const TechListWidget({
+  const AnalysisTechListWidget({
     super.key,
     required this.category,
   });
 
   @override
-  State<TechListWidget> createState() => _TechListWidgetState();
+  State<AnalysisTechListWidget> createState() => _AnalysisTechListWidgetState();
 }
 
-class _TechListWidgetState extends State<TechListWidget> {
+class _AnalysisTechListWidgetState extends State<AnalysisTechListWidget> {
   @override
   void initState() {
     super.initState();
@@ -44,10 +44,7 @@ class _TechListWidgetState extends State<TechListWidget> {
     final provider = context.watch<AnalysisDataProvider>();
     switch (widget.category) {
       case AnalysisCategory.industryTech:
-        if (provider.selectedSubCategory ==
-                AnalysisSubCategory.marketExpansionIndex ||
-            provider.selectedSubCategory ==
-                AnalysisSubCategory.rdInvestmentIndex) {
+        if (provider.selectedSubCategory == AnalysisSubCategory.marketExpansionIndex || provider.selectedSubCategory == AnalysisSubCategory.rdInvestmentIndex) {
           return [TechListType.mc, TechListType.sc];
         } else {
           return [TechListType.lc, TechListType.mc, TechListType.sc];
@@ -119,8 +116,7 @@ class _TechListWidgetState extends State<TechListWidget> {
   }
 
   // 드롭다운 컨트롤을 위한 헬퍼 메서드
-  Widget _buildDropdownControl(String label, String? selectedValue,
-      Set<String> items, Function(String?) onChanged) {
+  Widget _buildDropdownControl(String label, String? selectedValue, Set<String> items, Function(String?) onChanged) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -151,8 +147,7 @@ class _TechListWidgetState extends State<TechListWidget> {
   }
 
   // 체크박스 리스트를 위한 헬퍼 메서드
-  Widget _buildCheckboxList(String label, Set<String> items,
-      Set<String> selectedItems, Function(String) onChanged) {
+  Widget _buildCheckboxList(String label, Set<String> items, Set<String> selectedItems, Function(String) onChanged) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -206,10 +201,6 @@ class _TechListWidgetState extends State<TechListWidget> {
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
-        ),
-        const Divider(
-          color: Colors.grey,
-          thickness: 1,
         ),
         Row(
           children: [

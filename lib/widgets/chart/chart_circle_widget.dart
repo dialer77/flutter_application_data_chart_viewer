@@ -2,7 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/single_chart_widget.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart/single_chart_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -20,26 +20,11 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
   List<String> getItemsBySubCategory(AnalysisDataProvider dataProvider) {
     switch (dataProvider.selectedSubCategory) {
       case AnalysisSubCategory.countryDetail:
-        return dataProvider.selectedCountries.isEmpty
-            ? dataProvider
-                .getAvailableCountriesFromTechAssessment()
-                .take(10)
-                .toList()
-            : dataProvider.selectedCountries.toList();
+        return dataProvider.selectedCountries.isEmpty ? dataProvider.getAvailableCountriesFromTechAssessment().take(10).toList() : dataProvider.selectedCountries.toList();
       case AnalysisSubCategory.companyDetail:
-        return dataProvider.selectedCompanies.isEmpty
-            ? dataProvider
-                .getAvailableCompaniesFromTechAssessment()
-                .take(10)
-                .toList()
-            : dataProvider.selectedCompanies.toList();
+        return dataProvider.selectedCompanies.isEmpty ? dataProvider.getAvailableCompaniesFromTechAssessment().take(10).toList() : dataProvider.selectedCompanies.toList();
       case AnalysisSubCategory.academicDetail:
-        return dataProvider.selectedAcademics.isEmpty
-            ? dataProvider
-                .getAvailableAcademicsFromTechAssessment()
-                .take(10)
-                .toList()
-            : dataProvider.selectedAcademics.toList();
+        return dataProvider.selectedAcademics.isEmpty ? dataProvider.getAvailableAcademicsFromTechAssessment().take(10).toList() : dataProvider.selectedAcademics.toList();
       default:
         return [];
     }
@@ -101,10 +86,8 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
   // 차트 컨테이너 생성 함수
   Widget _buildChartContainer(AnalysisDataProvider dataProvider) {
     // 임시 데이터 예시
-    var raderChartMCData = dataProvider.getRaderChartData(
-        TechListType.mc, dataProvider.selectedYear);
-    var raderChartSCData = dataProvider.getRaderChartData(
-        TechListType.sc, dataProvider.selectedYear);
+    var raderChartMCData = dataProvider.getRaderChartData(TechListType.mc, dataProvider.selectedYear);
+    var raderChartSCData = dataProvider.getRaderChartData(TechListType.sc, dataProvider.selectedYear);
 
     return Container(
       margin: const EdgeInsets.all(16.0),
@@ -130,15 +113,10 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
               selectedSubCategory: dataProvider.selectedSubCategory,
               techListType: TechListType.lc,
               techCode: dataProvider.selectedLcTechCode,
-              countries: dataProvider.selectedSubCategory ==
-                      AnalysisSubCategory.countryDetail
-                  ? [dataProvider.selectedCountry ?? '']
-                  : null,
-              targetNames: dataProvider.selectedSubCategory ==
-                      AnalysisSubCategory.companyDetail
+              countries: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? [dataProvider.selectedCountry ?? ''] : null,
+              targetNames: dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail
                   ? [dataProvider.selectedCompany ?? '']
-                  : dataProvider.selectedSubCategory ==
-                          AnalysisSubCategory.academicDetail
+                  : dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail
                       ? [dataProvider.selectedAcademic ?? '']
                       : null,
             ),
@@ -200,11 +178,9 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
             child: Row(
               children: items.map((item) {
                 final isSelected = item ==
-                    (dataProvider.selectedSubCategory ==
-                            AnalysisSubCategory.countryDetail
+                    (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail
                         ? dataProvider.selectedCountry
-                        : dataProvider.selectedSubCategory ==
-                                AnalysisSubCategory.companyDetail
+                        : dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail
                             ? dataProvider.selectedCompany
                             : dataProvider.selectedAcademic);
                 return Padding(
@@ -216,8 +192,7 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
                       });
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 8.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                       decoration: BoxDecoration(
                         color: isSelected ? Colors.blue : Colors.white,
                         border: Border.all(color: Colors.blue),

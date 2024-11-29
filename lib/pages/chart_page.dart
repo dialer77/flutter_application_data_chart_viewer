@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
@@ -6,6 +5,7 @@ import 'package:flutter_application_data_chart_viewer/widgets/analysis_menu/anal
 import 'package:flutter_application_data_chart_viewer/widgets/analysis_menu/analysis_target_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/analysis_menu/analysis_techlist_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/analysis_menu/analysis_period_widget.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart/chart_widget.dart';
 import 'package:provider/provider.dart';
 import '../controllers/content_controller.dart';
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
@@ -54,7 +54,8 @@ class ChartPage extends StatefulWidget {
   State<ChartPage> createState() => _ChartPageState();
 }
 
-class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMixin {
+class _ChartPageState extends State<ChartPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -144,10 +145,12 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
   Widget _buildSubCategoryButtons({double fontSizeRatio = 0.25}) {
     final dataProvider = context.watch<AnalysisDataProvider>();
     _selectedSubCategory = dataProvider.selectedSubCategory;
-    final subCategories = dataProvider.getAvailableSubCategories(widget.category);
+    final subCategories =
+        dataProvider.getAvailableSubCategories(widget.category);
 
     // 첫 번째 서브카테고리를 기본값으로 설정
-    if (_selectedSubCategory == null || subCategories.contains(_selectedSubCategory) == false) {
+    if (_selectedSubCategory == null ||
+        subCategories.contains(_selectedSubCategory) == false) {
       dataProvider.setSelectedSubCategory(subCategories.first);
     }
 
@@ -168,13 +171,15 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
               return Flexible(
                 child: LayoutBuilder(builder: (context, constraints) {
                   return Padding(
-                    padding: EdgeInsets.symmetric(horizontal: constraints.maxWidth * 0.15),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: constraints.maxWidth * 0.15),
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isSelected
-                              ? const Color.fromARGB(255, 97, 203, 244) // 선택된 항목의 배경색
+                              ? const Color.fromARGB(
+                                  255, 97, 203, 244) // 선택된 항목의 배경색
                               : const Color.fromARGB(255, 16, 72, 98), // 기본 배경색
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
@@ -184,7 +189,9 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
                         onPressed: () {
                           setState(() {
                             _selectedSubCategory = subCategory;
-                            context.read<AnalysisDataProvider>().setSelectedSubCategory(subCategory);
+                            context
+                                .read<AnalysisDataProvider>()
+                                .setSelectedSubCategory(subCategory);
                           });
                         },
                         child: SizedBox(
@@ -195,7 +202,9 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: constraints.maxHeight * fontSizeRatio,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, // 선택된 항목의 텍스트를 굵게
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal, // 선택된 항목의 텍스트를 굵게
                               ),
                             ),
                           ),
@@ -228,7 +237,8 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
             border: Border.all(color: Colors.grey),
             borderRadius: BorderRadius.circular(45),
           ),
-          padding: EdgeInsets.symmetric(horizontal: constraints.maxWidth * 0.15),
+          padding:
+              EdgeInsets.symmetric(horizontal: constraints.maxWidth * 0.15),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -253,7 +263,8 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
                     children: [
                       SizedBox(
                         height: constraints.maxHeight * 0.2,
-                        child: AnalysisTechListWidget(category: widget.category),
+                        child:
+                            AnalysisTechListWidget(category: widget.category),
                       ),
                       Expanded(
                         child: AnalysisTargetWidget(category: widget.category),
@@ -265,7 +276,10 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
                 width: constraints.maxWidth,
                 height: constraints.maxHeight * 0.15,
                 child: AnalysisPeriodWidget(
-                  analysisType: dataProvider.selectedCategory == AnalysisCategory.techAssessment ? AnalysisType.single : AnalysisType.range,
+                  analysisType: dataProvider.selectedCategory ==
+                          AnalysisCategory.techAssessment
+                      ? AnalysisType.single
+                      : AnalysisType.range,
                 ),
               ),
             ],
@@ -273,6 +287,11 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
         ),
       );
     });
+  }
+
+  Widget _buildChartWidget() {
+    return ChartWidget(
+        category: widget.category, selectedSubCategory: _selectedSubCategory);
   }
 
   @override
@@ -292,56 +311,9 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
           _buildCategoryButton(fontSizeRatio: 0.25),
           _buildSubCategoryButtons(fontSizeRatio: 0.3),
           _buildMenuLists(),
+          _buildChartWidget(),
         ],
       ),
     );
-
-    // return Row(
-    //   crossAxisAlignment: CrossAxisAlignment.start,
-    //   children: [
-    //     Flexible(
-    //       flex: 1,
-    //       child: Column(
-    //         children: [
-    //           Padding(
-    //             padding: const EdgeInsets.fromLTRB(10, 50, 0, 0),
-    //
-    //           ),
-    //           Expanded(
-    //             child: Padding(
-    //               padding: const EdgeInsets.fromLTRB(10, 30, 0, 30),
-    //               child: AnimatedBuilder(
-    //                 animation: _animation,
-    //                 builder: (context, child) {
-    //                   return ClipRect(
-    //                     child: Align(
-    //                       alignment: Alignment.topCenter,
-    //                       heightFactor: _animation.value,
-    //                       child: child,
-    //                     ),
-    //                   );
-    //                 },
-    //
-    //               ),
-    //             ),
-    //           ),
-    //         ],
-    //       ),
-    //     ),
-    //     Flexible(
-    //       flex: 3,
-    //       child: Expanded(
-    //   child: Container(
-    //     color: Colors.grey[200],
-    //     margin: const EdgeInsets.all(20),
-    //     child: ChartWidget(
-    //       category: widget.category,
-    //       selectedSubCategory: _selectedSubCategory,
-    //     ),
-    //   ),
-    // ),
-    //     ),
-    //   ],
-    // );
   }
 }

@@ -64,9 +64,9 @@ class AnalysisDataProvider extends ChangeNotifier {
     if (_selectedAnalysisTechListType == AnalysisTechListType.lc) {
       return _selectedLcTechCode ?? '';
     } else if (_selectedAnalysisTechListType == AnalysisTechListType.mc) {
-      return _selectedMcTechCodes.isNotEmpty ? _selectedMcTechCodes.first : '';
+      return _selectedMcTechCodes.isNotEmpty ? _selectedMcTechCodes.first : getDataCodeNames(_selectedAnalysisTechListType).first;
     } else {
-      return _selectedScTechCodes.isNotEmpty ? _selectedScTechCodes.first : '';
+      return _selectedScTechCodes.isNotEmpty ? _selectedScTechCodes.first : getDataCodeNames(_selectedAnalysisTechListType).first;
     }
   }
 
@@ -1278,6 +1278,10 @@ class AnalysisDataProvider extends ChangeNotifier {
   final Map<String, Color> _mcCodeMap = {};
   final Map<String, Color> _scCodeMap = {};
 
+  final Map<String, Color> _countryCodeMap = {};
+  final Map<String, Color> _companyCodeMap = {};
+  final Map<String, Color> _academicCodeMap = {};
+
   // 사용할 색상 리스트
   final List<Color> _defaultColors = [
     Colors.red,
@@ -1308,6 +1312,26 @@ class AnalysisDataProvider extends ChangeNotifier {
 
   // 코드에 대한 색상을 가져오거나 할당
   Color getColorForCode(String code) {
+    if (_selectedCategory == AnalysisCategory.countryTech) {
+      if (!_countryCodeMap.containsKey(code)) {
+        final colorIndex = _countryCodeMap.length % _defaultColors.length;
+        _countryCodeMap[code] = _defaultColors[colorIndex];
+      }
+      return _countryCodeMap[code]!;
+    } else if (_selectedCategory == AnalysisCategory.companyTech) {
+      if (!_companyCodeMap.containsKey(code)) {
+        final colorIndex = _companyCodeMap.length % _defaultColors.length;
+        _companyCodeMap[code] = _defaultColors[colorIndex];
+      }
+      return _companyCodeMap[code]!;
+    } else if (_selectedCategory == AnalysisCategory.academicTech) {
+      if (!_academicCodeMap.containsKey(code)) {
+        final colorIndex = _academicCodeMap.length % _defaultColors.length;
+        _academicCodeMap[code] = _defaultColors[colorIndex];
+      }
+      return _academicCodeMap[code]!;
+    }
+
     if (_selectedAnalysisTechListType == AnalysisTechListType.mc) {
       if (!_mcCodeMap.containsKey(code)) {
         final colorIndex = _mcCodeMap.length % _defaultColors.length;

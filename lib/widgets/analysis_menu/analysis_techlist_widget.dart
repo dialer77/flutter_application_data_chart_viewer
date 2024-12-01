@@ -23,6 +23,57 @@ class _AnalysisTechListWidgetState extends State<AnalysisTechListWidget> {
     super.initState();
   }
 
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<AnalysisDataProvider>();
+    final availableOptions = provider.getAvailableTechListTypes(provider.selectedCategory);
+
+    return Column(
+      children: [
+        SizedBox(
+          height: widget.buttonHeight,
+          child: LayoutGrid(
+            columnSizes: [1.fr, 1.fr, 1.fr],
+            rowSizes: [1.fr],
+            children: [
+              ...AnalysisTechListType.values.map(
+                (option) => Opacity(
+                  opacity: availableOptions.contains(option) ? 1.0 : 0.0,
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Transform.scale(
+                          scale: widget.buttonHeight * 0.02,
+                          child: Radio<AnalysisTechListType>(
+                            value: option,
+                            groupValue: provider.selectedTechListType,
+                            onChanged: (AnalysisTechListType? value) {
+                              if (value != null) {
+                                context.read<AnalysisDataProvider>().setSelectedTechListType(value);
+                              }
+                            },
+                          ),
+                        ),
+                        Text(
+                          option.toString(),
+                          style: TextStyle(fontSize: widget.fontSize),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: _buildAdditionalControls(),
+        ),
+      ],
+    );
+  }
+
   Widget _buildAdditionalControls() {
     final provider = context.watch<AnalysisDataProvider>();
 
@@ -69,58 +120,56 @@ class _AnalysisTechListWidgetState extends State<AnalysisTechListWidget> {
   // 드롭다운 컨트롤을 위한 헬퍼 메서드
   Widget _buildDropdownControl(String label, String? selectedValue, Set<String> items, Function(String?) onChanged) {
     return LayoutBuilder(
-      builder: (context, constraints) => Column(
+      builder: (context, constraints) => Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            height: constraints.maxHeight * 0.15,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Container(
-                  width: constraints.maxWidth * 0.3,
-                  padding: EdgeInsets.only(
-                    left: constraints.maxWidth * 0.05,
-                    right: constraints.maxWidth * 0.05,
-                    top: constraints.maxWidth * 0.02,
-                  ),
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: constraints.maxWidth * 0.06,
-                    ),
-                  ),
+          Container(
+            height: widget.buttonHeight,
+            width: constraints.maxWidth * 0.3,
+            padding: EdgeInsets.only(
+              left: constraints.maxWidth * 0.05,
+            ),
+            margin: EdgeInsets.only(
+              top: constraints.maxHeight * 0.05,
+            ),
+            alignment: Alignment.centerLeft,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: constraints.maxWidth * 0.06,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Container(
+              height: widget.buttonHeight,
+              margin: EdgeInsets.only(
+                top: constraints.maxHeight * 0.05,
+              ),
+              alignment: Alignment.center,
+              child: DropdownButton<String>(
+                isExpanded: true,
+                value: selectedValue,
+                iconSize: constraints.maxWidth * 0.08,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: constraints.maxWidth * 0.05,
+                  fontWeight: FontWeight.bold,
                 ),
-                Expanded(
-                  child: DropdownButton<String>(
-                    isExpanded: true,
-                    value: selectedValue,
-                    iconSize: constraints.maxWidth * 0.08,
-                    style: TextStyle(
-                      fontSize: constraints.maxWidth * 0.05,
-                      fontWeight: FontWeight.bold,
+                items: items.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Container(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        value,
+                      ),
                     ),
-                    items: items.map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Container(
-                          height: constraints.maxHeight * 0.5,
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            value,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: constraints.maxWidth * 0.05,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: onChanged,
-                  ),
-                ),
-              ],
+                  );
+                }).toList(),
+                onChanged: onChanged,
+              ),
             ),
           ),
         ],
@@ -136,15 +185,21 @@ class _AnalysisTechListWidgetState extends State<AnalysisTechListWidget> {
         children: [
           Container(
             width: constraints.maxWidth * 0.3,
-            padding: EdgeInsets.fromLTRB(constraints.maxWidth * 0.05, constraints.maxWidth * 0.05, 0, 0),
+            padding: EdgeInsets.only(
+              left: constraints.maxWidth * 0.05,
+              top: constraints.maxHeight * 0.08,
+            ),
             child: Text(
               label,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: constraints.maxWidth * 0.06),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: constraints.maxWidth * 0.06,
+              ),
             ),
           ),
           Expanded(
             child: Container(
-              margin: EdgeInsets.only(top: constraints.maxWidth * 0.05),
+              margin: EdgeInsets.only(top: constraints.maxHeight * 0.05),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey),
                 borderRadius: BorderRadius.circular(4),
@@ -166,60 +221,6 @@ class _AnalysisTechListWidgetState extends State<AnalysisTechListWidget> {
           ),
         ],
       ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final provider = context.watch<AnalysisDataProvider>();
-    final availableOptions = provider.getAvailableTechListTypes(provider.selectedCategory);
-
-    return Column(
-      children: [
-        SizedBox(
-          height: widget.buttonHeight,
-          child: LayoutGrid(
-            columnSizes: [1.fr, 1.fr, 1.fr],
-            rowSizes: [1.fr],
-            children: [
-              ...AnalysisTechListType.values.map(
-                (option) => Opacity(
-                  opacity: availableOptions.contains(option) ? 1.0 : 0.0,
-                  child: Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Transform.scale(
-                          scale: widget.buttonHeight * 0.02,
-                          child: Radio<AnalysisTechListType>(
-                            value: option,
-                            groupValue: provider.selectedTechListType,
-                            onChanged: (AnalysisTechListType? value) {
-                              if (value != null) {
-                                context.read<AnalysisDataProvider>().setSelectedTechListType(value);
-                              }
-                            },
-                          ),
-                        ),
-                        Text(
-                          option.toString(),
-                          style: TextStyle(fontSize: widget.fontSize),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: Container(
-            alignment: Alignment.topCenter,
-            child: _buildAdditionalControls(),
-          ),
-        ),
-      ],
     );
   }
 }

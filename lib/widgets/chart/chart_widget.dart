@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/chart_circle_widget.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart/chart_widget_analysis_target.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/chart_widget_industry_tech.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/table_chart_data.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/table_tech_gap_data_widget.dart';
@@ -47,6 +48,10 @@ class ChartWidget extends StatelessWidget {
     switch (dataProvider.selectedCategory) {
       case AnalysisCategory.industryTech:
         return const ChartWidgetIndustryTech();
+      case AnalysisCategory.countryTech:
+      case AnalysisCategory.companyTech:
+      case AnalysisCategory.academicTech:
+        return const ChartWidgetAnalysisTarget();
       default:
         break;
     }

@@ -3,6 +3,7 @@ import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class MenuListWidget extends StatefulWidget {
   final AnalysisCategory analysisCategory;
@@ -108,10 +109,9 @@ class _MenuListWidgetState extends State<MenuListWidget> with SingleTickerProvid
                       child: Center(
                         child: Text(
                           subCategory.toString(),
-                          style: TextStyle(
+                          style: GoogleFonts.notoSansKr(
                             color: Colors.white,
                             fontSize: widget.constraints.maxWidth * 0.1,
-                            fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -154,7 +154,7 @@ class _MenuListWidgetState extends State<MenuListWidget> with SingleTickerProvid
                 child: Center(
                   child: Text(
                     "Execute  ",
-                    style: TextStyle(
+                    style: GoogleFonts.notoSansKr(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: widget.constraints.maxWidth * 0.1,

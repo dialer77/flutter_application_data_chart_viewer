@@ -8,10 +8,13 @@ import 'package:provider/provider.dart';
 
 class AnalysisTargetWidget extends StatefulWidget {
   final AnalysisCategory category;
-
+  final double buttonHeight;
+  final double fontSize;
   const AnalysisTargetWidget({
     super.key,
     required this.category,
+    required this.buttonHeight,
+    required this.fontSize,
   });
 
   @override
@@ -36,22 +39,6 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
       builder: (context, constraints) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: constraints.maxWidth * 0.15,
-            decoration: BoxDecoration(
-              border: Border.all(color: const Color.fromARGB(255, 70, 177, 225)),
-            ),
-            child: Center(
-              child: Text(
-                '분석 대상',
-                style: TextStyle(
-                  fontSize: constraints.maxWidth * 0.06,
-                  fontWeight: FontWeight.bold,
-                  color: const Color.fromARGB(255, 70, 177, 225),
-                ),
-              ),
-            ),
-          ),
           if (widget.category == AnalysisCategory.techCompetition || widget.category == AnalysisCategory.techAssessment || widget.category == AnalysisCategory.techGap)
             Expanded(
               child: _buildAnalysisTargetWithTechCompetition(dataProvider),
@@ -106,39 +93,42 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: availableOptions.map((option) {
-                return Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Transform.scale(
-                        scale: constraints.maxWidth * 0.004,
-                        child: Radio<AnalysisCategory>(
-                          value: option,
-                          groupValue: dataProvider.selectedCategory,
-                          onChanged: (AnalysisCategory? value) {
-                            if (value != null) {
-                              dataProvider.setSelectedCategory(value);
-                              context.read<ContentController>().changeContent(value);
-                            }
-                          },
+            SizedBox(
+              height: widget.buttonHeight,
+              child: Row(
+                children: availableOptions.map((option) {
+                  return Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Transform.scale(
+                          scale: widget.buttonHeight * 0.02,
+                          child: Radio<AnalysisCategory>(
+                            value: option,
+                            groupValue: dataProvider.selectedCategory,
+                            onChanged: (AnalysisCategory? value) {
+                              if (value != null) {
+                                dataProvider.setSelectedCategory(value);
+                                context.read<ContentController>().changeContent(value);
+                              }
+                            },
+                          ),
                         ),
-                      ),
-                      Text(
-                        option == AnalysisCategory.countryTech
-                            ? '국가'
-                            : option == AnalysisCategory.companyTech
-                                ? '기업'
-                                : '대학',
-                        style: TextStyle(
-                          fontSize: constraints.maxWidth * 0.06,
+                        Text(
+                          option == AnalysisCategory.countryTech
+                              ? '국가'
+                              : option == AnalysisCategory.companyTech
+                                  ? '기업'
+                                  : '대학',
+                          style: TextStyle(
+                            fontSize: widget.fontSize,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
             ),
             Expanded(
               child: Container(
@@ -174,7 +164,13 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
                       },
                       onChanged: (bool? value) {
                         if (value != null) {
-                          dataProvider.toggleCountrySelection(item);
+                          if (dataProvider.selectedCategory == AnalysisCategory.countryTech) {
+                            dataProvider.toggleCountrySelection(item);
+                          } else if (dataProvider.selectedCategory == AnalysisCategory.companyTech) {
+                            dataProvider.toggleCompanySelection(item);
+                          } else if (dataProvider.selectedCategory == AnalysisCategory.academicTech) {
+                            dataProvider.toggleAcademicSelection(item);
+                          }
                         }
                       },
                       dense: true,
@@ -211,117 +207,125 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
                       }
                     },
                   ),
-                  Text(option == AnalysisSubCategory.countryDetail
-                      ? '국가'
-                      : option == AnalysisSubCategory.companyDetail
-                          ? '기업'
-                          : '대학'),
+                  Text(
+                    option == AnalysisSubCategory.countryDetail
+                        ? '국가'
+                        : option == AnalysisSubCategory.companyDetail
+                            ? '기업'
+                            : '대학',
+                    style: TextStyle(
+                      fontSize: widget.fontSize,
+                    ),
+                  ),
                 ],
               ),
             );
           }).toList(),
         ),
         if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail)
-          Container(
-            margin: const EdgeInsets.only(top: 10),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            height: 150,
-            child: ListView(
-              children: dataProvider.getAvailableCountriesFromTechCompetition(context.watch<AnalysisDataProvider>().selectedTechCode).map((country) {
-                return CheckboxListTile(
-                  title: Row(
-                    children: [
-                      CountryFlag.fromCountryCode(country.replaceAll(RegExp(r'[\[\]]'), ''), height: 16, width: 24),
-                      Text(country),
-                    ],
-                  ),
-                  value: dataProvider.selectedCountries.contains(country),
-                  onChanged: (bool? value) {
-                    if (value != null) {
-                      dataProvider.toggleCountrySelection(
-                        country,
-                      );
-                    }
-                  },
-                  dense: true,
-                  controlAffinity: ListTileControlAffinity.leading,
-                );
-              }).toList(),
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(top: 10),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: ListView(
+                children: dataProvider.getAvailableCountriesFromTechCompetition(context.watch<AnalysisDataProvider>().selectedTechCode).map((country) {
+                  return CheckboxListTile(
+                    title: Row(
+                      children: [
+                        CountryFlag.fromCountryCode(country.replaceAll(RegExp(r'[\[\]]'), ''), height: 16, width: 24),
+                        Text(country),
+                      ],
+                    ),
+                    value: dataProvider.selectedCountries.contains(country),
+                    onChanged: (bool? value) {
+                      if (value != null) {
+                        dataProvider.toggleCountrySelection(
+                          country,
+                        );
+                      }
+                    },
+                    dense: true,
+                    controlAffinity: ListTileControlAffinity.leading,
+                  );
+                }).toList(),
+              ),
             ),
           ),
         if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail)
-          Container(
-            margin: const EdgeInsets.only(top: 10),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            height: 150,
-            child: ListView(
-              children: dataProvider.getAvailableCompaniesFromTechCompetition(context.watch<AnalysisDataProvider>().selectedTechCode).map((company) {
-                return CheckboxListTile(
-                  title: Row(
-                    children: [
-                      CountryFlag.fromCountryCode(dataProvider.searchCountryCode(company).replaceAll(RegExp(r'[\[\]]'), ''), height: 16, width: 24),
-                      Expanded(
-                        child: Text(
-                          company,
-                          overflow: TextOverflow.ellipsis,
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(top: 10),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: ListView(
+                children: dataProvider.getAvailableCompaniesFromTechCompetition(context.watch<AnalysisDataProvider>().selectedTechCode).map((company) {
+                  return CheckboxListTile(
+                    title: Row(
+                      children: [
+                        CountryFlag.fromCountryCode(dataProvider.searchCountryCode(company).replaceAll(RegExp(r'[\[\]]'), ''), height: 16, width: 24),
+                        Expanded(
+                          child: Text(
+                            company,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  value: dataProvider.selectedCompanies.contains(company),
-                  onChanged: (bool? value) {
-                    if (value != null) {
-                      dataProvider.toggleCompanySelection(
-                        company,
-                      );
-                    }
-                  },
-                  dense: true,
-                  controlAffinity: ListTileControlAffinity.leading,
-                );
-              }).toList(),
+                      ],
+                    ),
+                    value: dataProvider.selectedCompanies.contains(company),
+                    onChanged: (bool? value) {
+                      if (value != null) {
+                        dataProvider.toggleCompanySelection(
+                          company,
+                        );
+                      }
+                    },
+                    dense: true,
+                    controlAffinity: ListTileControlAffinity.leading,
+                  );
+                }).toList(),
+              ),
             ),
           ),
         if (dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail)
-          Container(
-            margin: const EdgeInsets.only(top: 10),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            height: 150,
-            child: ListView(
-              children: dataProvider.getAvailableAcademicsFromTechCompetition(context.watch<AnalysisDataProvider>().selectedTechCode).map((academic) {
-                return CheckboxListTile(
-                  title: Row(
-                    children: [
-                      CountryFlag.fromCountryCode(dataProvider.searchCountryCode(academic).replaceAll(RegExp(r'[\[\]]'), ''), height: 16, width: 24),
-                      Expanded(
-                        child: Text(
-                          academic,
-                          overflow: TextOverflow.ellipsis,
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(top: 10),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: ListView(
+                children: dataProvider.getAvailableAcademicsFromTechCompetition(context.watch<AnalysisDataProvider>().selectedTechCode).map((academic) {
+                  return CheckboxListTile(
+                    title: Row(
+                      children: [
+                        CountryFlag.fromCountryCode(dataProvider.searchCountryCode(academic).replaceAll(RegExp(r'[\[\]]'), ''), height: 16, width: 24),
+                        Expanded(
+                          child: Text(
+                            academic,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  value: dataProvider.selectedAcademics.contains(academic),
-                  onChanged: (bool? value) {
-                    if (value != null) {
-                      dataProvider.toggleAcademicSelection(
-                        academic,
-                      );
-                    }
-                  },
-                  dense: true,
-                  controlAffinity: ListTileControlAffinity.leading,
-                );
-              }).toList(),
+                      ],
+                    ),
+                    value: dataProvider.selectedAcademics.contains(academic),
+                    onChanged: (bool? value) {
+                      if (value != null) {
+                        dataProvider.toggleAcademicSelection(
+                          academic,
+                        );
+                      }
+                    },
+                    dense: true,
+                    controlAffinity: ListTileControlAffinity.leading,
+                  );
+                }).toList(),
+              ),
             ),
           ),
       ],

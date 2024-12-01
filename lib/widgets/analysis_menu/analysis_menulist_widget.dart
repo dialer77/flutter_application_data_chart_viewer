@@ -20,7 +20,7 @@ class _AnalysisMenuListWidgetState extends State<AnalysisMenuListWidget> {
     final dataProvider = context.watch<AnalysisDataProvider>();
     return LayoutBuilder(builder: (context, constraints) {
       final titleSize = constraints.maxHeight * 0.05;
-      final buttonHeight = constraints.maxHeight * 0.075;
+      final buttonHeight = constraints.maxHeight * 0.065;
       final fontSize = constraints.maxHeight * 0.020;
 
       return Padding(
@@ -61,24 +61,38 @@ class _AnalysisMenuListWidgetState extends State<AnalysisMenuListWidget> {
               (() {
                 if (dataProvider.selectedCategory == AnalysisCategory.industryTech) {
                   return Expanded(
-                    child: AnalysisTechListWidget(buttonHeight: buttonHeight, fontSize: fontSize),
+                    child: AnalysisTechListWidget(
+                      buttonHeight: buttonHeight,
+                      fontSize: fontSize,
+                    ),
                   );
                 } else {
-                  Expanded(
+                  return Expanded(
                     child: Column(
                       children: [
                         SizedBox(
-                          height: constraints.maxHeight * 0.2,
-                          child: AnalysisTechListWidget(buttonHeight: buttonHeight, fontSize: fontSize),
+                            height: buttonHeight * 2,
+                            child: AnalysisTechListWidget(
+                              buttonHeight: buttonHeight,
+                              fontSize: fontSize,
+                            )),
+                        CommonUtils.instance.menuTitle(
+                          title: '분석 대상',
+                          height: titleSize,
+                          fontSize: fontSize,
+                          color: const Color.fromARGB(255, 70, 177, 225),
                         ),
                         Expanded(
-                          child: AnalysisTargetWidget(category: dataProvider.selectedCategory),
+                          child: AnalysisTargetWidget(
+                            category: dataProvider.selectedCategory,
+                            buttonHeight: buttonHeight,
+                            fontSize: fontSize,
+                          ),
                         ),
                       ],
                     ),
                   );
                 }
-                return const SizedBox.shrink();
               })(),
               SizedBox(height: constraints.maxHeight * 0.025),
               CommonUtils.instance.menuTitle(
@@ -182,7 +196,10 @@ class _AnalysisMenuListWidgetState extends State<AnalysisMenuListWidget> {
             },
           ),
         ),
-        Text('${provider.endYear}년'),
+        Text(
+          '${provider.endYear}년',
+          style: TextStyle(fontSize: fontSize),
+        ),
       ],
     );
   }

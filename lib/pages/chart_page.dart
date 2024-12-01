@@ -53,7 +53,6 @@ class ChartPage extends StatefulWidget {
 
 class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _animation;
 
   AnalysisSubCategory? _selectedSubCategory;
 
@@ -64,12 +63,6 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-
-    _animation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutQuart,
-    );
-
     _controller.forward();
   }
 

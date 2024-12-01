@@ -540,7 +540,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     String? dataCode,
   }) {
     if (selectedCategory == AnalysisCategory.techCompetition) {
-      return _getTechCompetitionChartData(techCode: techCode, country: country, targetName: targetName, dataCode: dataCode);
+      return getTechCompetitionChartData(techCode: techCode, country: country, targetName: targetName, dataCode: dataCode);
     } else if (selectedCategory == AnalysisCategory.techAssessment) {
       return _getTechAssessmentChartData(techListType: techListType, techCode: techCode, country: country, targetName: targetName, dataCode: dataCode);
     } else if (selectedCategory == AnalysisCategory.techGap) {
@@ -575,7 +575,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     return filterData.first.analysisDatas[finalDataCode] ?? {};
   }
 
-  Map<int, double> _getTechCompetitionChartData({
+  Map<int, double> getTechCompetitionChartData({
     String? techCode,
     String? country,
     String? targetName,
@@ -1330,6 +1330,26 @@ class AnalysisDataProvider extends ChangeNotifier {
         _academicCodeMap[code] = _defaultColors[colorIndex];
       }
       return _academicCodeMap[code]!;
+    } else if (_selectedCategory == AnalysisCategory.techCompetition) {
+      if (selectedSubCategory == AnalysisSubCategory.countryDetail) {
+        if (!_countryCodeMap.containsKey(code)) {
+          final colorIndex = _countryCodeMap.length % _defaultColors.length;
+          _countryCodeMap[code] = _defaultColors[colorIndex];
+        }
+        return _countryCodeMap[code]!;
+      } else if (selectedSubCategory == AnalysisSubCategory.companyDetail) {
+        if (!_companyCodeMap.containsKey(code)) {
+          final colorIndex = _companyCodeMap.length % _defaultColors.length;
+          _companyCodeMap[code] = _defaultColors[colorIndex];
+        }
+        return _companyCodeMap[code]!;
+      } else if (selectedSubCategory == AnalysisSubCategory.academicDetail) {
+        if (!_academicCodeMap.containsKey(code)) {
+          final colorIndex = _academicCodeMap.length % _defaultColors.length;
+          _academicCodeMap[code] = _defaultColors[colorIndex];
+        }
+        return _academicCodeMap[code]!;
+      }
     }
 
     if (_selectedAnalysisTechListType == AnalysisTechListType.mc) {
@@ -1345,6 +1365,7 @@ class AnalysisDataProvider extends ChangeNotifier {
       }
       return _scCodeMap[code]!;
     }
+
     return Colors.blue;
   }
 }

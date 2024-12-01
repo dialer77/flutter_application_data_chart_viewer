@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 class CommonUtils {
@@ -41,5 +43,21 @@ class CommonUtils {
 
   String replaceCountryCode(String countryCode) {
     return countryCode.replaceAll('[', '').replaceAll(']', '');
+  }
+
+  double calculateInterval(double maxValue) {
+    // maxValue가 0이면 기본값 1 반환
+    if (maxValue <= 0) return 0.1;
+
+    // 자릿수 계산을 위해 로그 사용
+    final digitCount = (log(maxValue) / ln10).floor();
+    final base = pow(10, digitCount - 1).toDouble();
+
+    // 최고 자릿수 추출
+    final firstDigit = (maxValue / pow(10, digitCount)).floor();
+
+    if (firstDigit <= 2) return base * 4; // 2배 증가
+    if (firstDigit <= 5) return base * 10; // 2배 증가
+    return base * 20; // 2배 증가
   }
 }

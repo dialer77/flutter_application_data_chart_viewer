@@ -1,6 +1,7 @@
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
 import 'package:flutter_application_data_chart_viewer/utils/dash_circle_dot_painter.dart';
 import 'package:provider/provider.dart';
 import 'dart:math';
@@ -59,7 +60,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
     super.initState();
     // 선 그리기 애니메이션용 컨트롤러
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
     )..forward();
 
@@ -220,7 +221,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
       minValue = min(minValue, currentMin);
     }
 
-    final interval = _calculateInterval(maxValue);
+    final interval = CommonUtils.instance.calculateInterval(maxValue);
     final maxYValue = maxValue * widget.maxYRatio;
     final double adjustedMinY = minValue < 0 ? 0 : minValue;
 
@@ -327,7 +328,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
 
     // 최소값과 최대값 계산
     final maxValue = chartData.values.reduce(max);
-    final interval = _calculateInterval(maxValue);
+    final interval = CommonUtils.instance.calculateInterval(maxValue);
 
     // CAGR과 추세선 데이터 계산
     final (cagr, trendLineData) = _calculateCagrAndTrendLine(
@@ -388,24 +389,8 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                                 ),
                               ),
                               borderData: FlBorderData(show: false),
-                              lineTouchData: LineTouchData(
+                              lineTouchData: const LineTouchData(
                                 enabled: false,
-                                touchTooltipData: LineTouchTooltipData(
-                                  tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
-                                  getTooltipItems: (List<LineBarSpot> touchedSpots) {
-                                    return touchedSpots.map((LineBarSpot touchedSpot) {
-                                      final year = years[touchedSpot.x.toInt()];
-                                      return LineTooltipItem(
-                                        '$year년\n${touchedSpot.y.toStringAsFixed(1)}',
-                                        const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      );
-                                    }).toList();
-                                  },
-                                ),
                                 handleBuiltInTouches: true,
                               ),
                               lineBarsData: [
@@ -544,22 +529,6 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
         BarChartData(
           alignment: BarChartAlignment.spaceAround,
           maxY: maxValue * widget.maxYRatio,
-          barTouchData: BarTouchData(
-            enabled: false,
-            touchTooltipData: BarTouchTooltipData(
-              tooltipBgColor: Colors.transparent,
-              getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                try {
-                  return BarTooltipItem(
-                    rod.toY.toInt().toString(),
-                    const TextStyle(color: Colors.black),
-                  );
-                } catch (e) {
-                  return BarTooltipItem(',', const TextStyle(color: Colors.black));
-                }
-              },
-            ),
-          ),
           titlesData: _buildTitlesData(years, interval),
           gridData: const FlGridData(show: false),
           borderData: FlBorderData(
@@ -586,16 +555,8 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                   color: widget.chartColor ?? Colors.blue,
                   width: barWidth,
                   borderRadius: BorderRadius.circular(2),
-                  // 여기에 막대 위의 텍스트 추가
-                  backDrawRodData: BackgroundBarChartRodData(
-                    show: true,
-                    toY: shouldShow ? value : 0,
-                    color: Colors.transparent,
-                  ),
                 ),
               ],
-              // 막대 위에 표시할 텍스트 위젯
-              showingTooltipIndicators: shouldShow ? [0] : [],
               barsSpace: 4,
             );
           }).toList(),
@@ -621,22 +582,6 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
         ),
       ),
     );
-  }
-
-  double _calculateInterval(double maxValue) {
-    // maxValue가 0이면 기본값 1 반환
-    if (maxValue <= 0) return 0.1;
-
-    // 자릿수 계산을 위해 로그 사용
-    final digitCount = (log(maxValue) / ln10).floor();
-    final base = pow(10, digitCount - 1).toDouble();
-
-    // 최고 자릿수 추출
-    final firstDigit = (maxValue / pow(10, digitCount)).floor();
-
-    if (firstDigit <= 2) return base * 4; // 2배 증가
-    if (firstDigit <= 5) return base * 10; // 2배 증가
-    return base * 20; // 2배 증가
   }
 
   /// 지수함수 형태로 추세선 포인트를 계산

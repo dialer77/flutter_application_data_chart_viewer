@@ -4,6 +4,7 @@ import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/single_chart_widget.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart/table_chart_data.dart';
 import 'package:provider/provider.dart';
 
 class ChartWidgetAnalysisTarget extends StatefulWidget {
@@ -84,7 +85,12 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                 );
               }
             default:
-              return _buildChartMultiLineType(codes);
+              return Column(
+                children: [
+                  Flexible(child: _buildChartMultiLineType(codes)),
+                  const Flexible(child: TableChartData()),
+                ],
+              );
           }
         })(),
       );

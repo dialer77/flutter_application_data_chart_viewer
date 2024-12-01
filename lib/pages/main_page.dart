@@ -11,7 +11,6 @@ class MainPage extends StatelessWidget {
   void _handleCategorySelected(BuildContext context, AnalysisCategory category) {
     final dataProvider = context.read<AnalysisDataProvider>();
     dataProvider.setSelectedCategory(category);
-    dataProvider.initializeWithCategory(category);
     context.read<ContentController>().changeContent(category);
   }
 

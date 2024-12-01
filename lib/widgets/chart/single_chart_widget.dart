@@ -8,7 +8,7 @@ import '../../models/enum_defines.dart';
 import '../../providers/analysis_data_provider.dart';
 import 'package:decimal/decimal.dart'; // Decimal 패키지 임포트
 
-class SingleChartWidget extends StatelessWidget {
+class SingleChartWidget extends StatefulWidget {
   final AnalysisCategory category;
   final AnalysisSubCategory? selectedSubCategory;
   final String? chartTitle;
@@ -23,6 +23,7 @@ class SingleChartWidget extends StatelessWidget {
   final double width;
   final double maxYRatio;
   final Color? chartColor;
+  final ChartType chartType;
   final CagrCalculationMode cagrMode;
 
   const SingleChartWidget({
@@ -41,8 +42,40 @@ class SingleChartWidget extends StatelessWidget {
     this.width = 400,
     this.maxYRatio = 1.6,
     this.chartColor,
+    this.chartType = ChartType.none,
     this.cagrMode = CagrCalculationMode.selectedPeriod,
   });
+
+  @override
+  State<SingleChartWidget> createState() => _SingleChartWidgetState();
+}
+
+class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late AnimationController _rotationController;
+
+  @override
+  void initState() {
+    super.initState();
+    // 선 그리기 애니메이션용 컨트롤러
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    )..forward();
+
+    // 회전 애니메이션용 컨트롤러
+    _rotationController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(); // 계속 반복
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _rotationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,15 +84,21 @@ class SingleChartWidget extends StatelessWidget {
       AnalysisSubCategory.techInnovationIndex,
       AnalysisSubCategory.marketExpansionIndex,
       AnalysisSubCategory.rdInvestmentIndex,
-    ].contains(selectedSubCategory);
+    ].contains(widget.selectedSubCategory);
 
     List<String> chartLoopCodes = [];
-    if (selectedCodes != null) {
-      chartLoopCodes.addAll(selectedCodes!);
-    } else if (countries != null) {
-      chartLoopCodes.addAll(countries!);
-    } else if (targetNames != null) {
-      chartLoopCodes.addAll(targetNames!);
+    if (widget.selectedCodes != null) {
+      chartLoopCodes.addAll(widget.selectedCodes!);
+    } else if (widget.countries != null) {
+      chartLoopCodes.addAll(widget.countries!);
+    } else if (widget.targetNames != null) {
+      chartLoopCodes.addAll(widget.targetNames!);
+    }
+
+    if (widget.chartType == ChartType.multiline) {
+      return _buildMultiLineChart(context, dataProvider, chartLoopCodes);
+    } else if (widget.chartType == ChartType.barWithTrendLine) {
+      return _buildBarChartWithTrendLine(context, dataProvider);
     }
 
     if ((isIndexType && chartLoopCodes.isNotEmpty) || dataProvider.selectedCategory == AnalysisCategory.techGap || dataProvider.selectedCategory == AnalysisCategory.techAssessment) {
@@ -86,14 +125,14 @@ class SingleChartWidget extends StatelessWidget {
     // 첫 번째 유효한 데이터에서 years 가져오기
     for (final code in chartLoopCodes) {
       String? countryCode;
-      if (category == AnalysisCategory.countryTech) {
+      if (widget.category == AnalysisCategory.countryTech) {
         countryCode = code;
       } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
         countryCode = code;
       }
 
       String? targetName;
-      if (category == AnalysisCategory.companyTech || category == AnalysisCategory.academicTech) {
+      if (widget.category == AnalysisCategory.companyTech || widget.category == AnalysisCategory.academicTech) {
         targetName = code;
       } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
         targetName = code;
@@ -101,8 +140,8 @@ class SingleChartWidget extends StatelessWidget {
 
       final chartData = _getFilteredChartData(
         context: context,
-        techListType: techListType!,
-        techCode: techCode ?? selectedCodes![0],
+        techListType: widget.techListType!,
+        techCode: widget.techCode ?? widget.selectedCodes![0],
         country: countryCode,
         targetName: targetName,
       );
@@ -119,22 +158,22 @@ class SingleChartWidget extends StatelessWidget {
       final code = chartLoopCodes[i];
       final chartData = _getFilteredChartData(
         context: context,
-        techListType: techListType!,
-        techCode: category == AnalysisCategory.countryTech ||
-                category == AnalysisCategory.companyTech ||
-                category == AnalysisCategory.academicTech ||
-                category == AnalysisCategory.techGap ||
-                category == AnalysisCategory.techAssessment
-            ? techCode ?? selectedCodes![0]
+        techListType: widget.techListType!,
+        techCode: widget.category == AnalysisCategory.countryTech ||
+                widget.category == AnalysisCategory.companyTech ||
+                widget.category == AnalysisCategory.academicTech ||
+                widget.category == AnalysisCategory.techGap ||
+                widget.category == AnalysisCategory.techAssessment
+            ? widget.techCode ?? widget.selectedCodes![0]
             : code,
-        country: category == AnalysisCategory.countryTech ||
-                (category == AnalysisCategory.techGap && dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) ||
-                (category == AnalysisCategory.techAssessment && dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail)
+        country: widget.category == AnalysisCategory.countryTech ||
+                (widget.category == AnalysisCategory.techGap && dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) ||
+                (widget.category == AnalysisCategory.techAssessment && dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail)
             ? code
             : null,
-        targetName: category == AnalysisCategory.companyTech ||
-                category == AnalysisCategory.academicTech ||
-                (category == AnalysisCategory.techGap &&
+        targetName: widget.category == AnalysisCategory.companyTech ||
+                widget.category == AnalysisCategory.academicTech ||
+                (widget.category == AnalysisCategory.techGap &&
                     (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail))
             ? code
             : null,
@@ -165,6 +204,12 @@ class SingleChartWidget extends StatelessWidget {
           ),
           isStrokeCapRound: true,
           belowBarData: BarAreaData(show: false),
+          showingIndicators: List.generate(
+            trendLineSpots.length,
+            (index) => index,
+          ).where((index) {
+            return index <= (trendLineSpots.length - 1) * _controller.value;
+          }).toList(),
         ),
       );
 
@@ -176,48 +221,95 @@ class SingleChartWidget extends StatelessWidget {
     }
 
     final interval = _calculateInterval(maxValue);
-    final maxYValue = maxValue * maxYRatio;
+    final maxYValue = maxValue * widget.maxYRatio;
     final double adjustedMinY = minValue < 0 ? 0 : minValue;
 
-    return Container(
-      decoration: const BoxDecoration(color: Colors.white),
-      child: SizedBox(
-        height: height,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.only(
-                  top: 16,
-                  left: 40,
-                  right: 16,
-                  bottom: 24,
-                ),
-                child: LineChart(
-                  LineChartData(
-                    gridData: const FlGridData(show: false),
-                    titlesData: _buildTitlesData(years, interval),
-                    borderData: FlBorderData(
-                      show: true,
-                      border: const Border(
-                        left: BorderSide(color: Colors.grey),
-                        right: BorderSide(color: Colors.transparent),
-                        top: BorderSide(color: Colors.transparent),
-                        bottom: BorderSide(color: Colors.transparent),
+    return AnimatedBuilder(
+      animation: _rotationController,
+      builder: (context, child) {
+        return AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Container(
+              decoration: const BoxDecoration(color: Colors.white),
+              child: SizedBox(
+                height: widget.height,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    (() {
+                      if (widget.category != AnalysisCategory.techAssessment) {
+                        return Center(
+                          child: _buildLegend(chartLoopCodes, colors),
+                        );
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    })(),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.only(
+                          top: 16,
+                          left: 40,
+                          right: 16,
+                          bottom: 24,
+                        ),
+                        child: LineChart(
+                          LineChartData(
+                            gridData: const FlGridData(show: false),
+                            titlesData: _buildTitlesData(years, interval),
+                            borderData: FlBorderData(
+                              show: true,
+                              border: const Border(
+                                left: BorderSide(color: Colors.grey),
+                                right: BorderSide(color: Colors.transparent),
+                                top: BorderSide(color: Colors.transparent),
+                                bottom: BorderSide(color: Colors.transparent),
+                              ),
+                            ),
+                            lineBarsData: allTrendLines.map((lineData) {
+                              final spots = lineData.spots;
+                              final currentSpots = spots
+                                  .asMap()
+                                  .entries
+                                  .where((entry) {
+                                    return entry.key <= (spots.length - 1) * _controller.value;
+                                  })
+                                  .map((e) => e.value)
+                                  .toList();
+
+                              return lineData.copyWith(
+                                spots: currentSpots,
+                                dotData: FlDotData(
+                                  show: true,
+                                  checkToShowDot: (spot, barData) {
+                                    return spot.x == currentSpots.last.x;
+                                  },
+                                  getDotPainter: (spot, percent, barData, index) {
+                                    return DashedCircleDotPainter(
+                                      radius: 6,
+                                      strokeColor: lineData.color ?? Colors.blue,
+                                      fillColor: Colors.white,
+                                      strokeWidth: 1.5,
+                                      rotationDegree: _rotationController.value * 360,
+                                    );
+                                  },
+                                ),
+                              );
+                            }).toList(),
+                            minY: adjustedMinY,
+                            maxY: maxYValue,
+                          ),
+                        ),
                       ),
                     ),
-                    lineBarsData: allTrendLines,
-                    minY: adjustedMinY,
-                    maxY: maxYValue,
-                  ),
+                  ],
                 ),
               ),
-            ),
-            if (category != AnalysisCategory.techAssessment) _buildLegend(chartLoopCodes, colors),
-          ],
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -225,10 +317,10 @@ class SingleChartWidget extends StatelessWidget {
   Widget _buildBarChartWithTrendLine(BuildContext context, AnalysisDataProvider dataProvider) {
     final chartData = _getFilteredChartData(
       context: context,
-      techListType: techListType!,
-      techCode: techCode ?? selectedCodes![0],
-      country: country,
-      targetName: targetName,
+      techListType: widget.techListType!,
+      techCode: widget.techCode ?? widget.selectedCodes![0],
+      country: widget.country,
+      targetName: widget.targetName,
     );
 
     if (chartData.isEmpty) return const SizedBox.shrink();
@@ -246,31 +338,130 @@ class SingleChartWidget extends StatelessWidget {
 
     final years = chartData.keys.toList()..sort();
 
-    return Container(
-      decoration: const BoxDecoration(color: Colors.white),
-      child: SizedBox(
-        height: height,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (chartTitle != null) _buildTitle(chartTitle!, chartColor, true),
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                ),
-                child: Stack(
-                  children: [
-                    _buildBarChart(context, years, chartData, maxValue, interval),
-                    _buildTrendLineOverlay(years, trendLineData, maxValue), // 미리 계산된 추세선 데이터 전달
-                    _buildCagrOverlay(cagr),
-                  ],
-                ),
+    return AnimatedBuilder(
+      animation: _rotationController,
+      builder: (context, child) {
+        return AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return SizedBox(
+              height: widget.height,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (widget.chartTitle != null) _buildTitle(widget.chartTitle!, widget.chartColor, true),
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        _buildBarChart(context, years, chartData, maxValue, interval),
+                        Container(
+                          padding: const EdgeInsets.only(
+                            top: 16,
+                            left: 40,
+                            right: 16,
+                            bottom: 24,
+                          ),
+                          child: LineChart(
+                            LineChartData(
+                              gridData: const FlGridData(show: false),
+                              titlesData: FlTitlesData(
+                                show: true,
+                                bottomTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    getTitlesWidget: (_, __) => const SizedBox(height: 36),
+                                    reservedSize: 36,
+                                  ),
+                                ),
+                                leftTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    getTitlesWidget: (_, __) => const SizedBox(width: 40),
+                                    reservedSize: 40,
+                                  ),
+                                ),
+                                rightTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
+                                ),
+                                topTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
+                                ),
+                              ),
+                              borderData: FlBorderData(show: false),
+                              lineTouchData: LineTouchData(
+                                enabled: false,
+                                touchTooltipData: LineTouchTooltipData(
+                                  tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+                                  getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                                    return touchedSpots.map((LineBarSpot touchedSpot) {
+                                      final year = years[touchedSpot.x.toInt()];
+                                      return LineTooltipItem(
+                                        '$year년\n${touchedSpot.y.toStringAsFixed(1)}',
+                                        const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      );
+                                    }).toList();
+                                  },
+                                ),
+                                handleBuiltInTouches: true,
+                              ),
+                              lineBarsData: [
+                                LineChartBarData(
+                                  spots: years.asMap().entries.where((entry) {
+                                    // 애니메이션이 완료되면 모든 포인트 표시, 아니면 한 칸 뒤에서 시작
+                                    return _controller.value == 1
+                                        ? true // 애니메이션 완료 시 모든 포인트 표시
+                                        : entry.key < (years.length - 1) * _controller.value; // 진행 중에는 한 칸 뒤에서 따라가기
+                                  }).map((entry) {
+                                    return FlSpot(
+                                      entry.key.toDouble(),
+                                      trendLineData[entry.value] ?? 0,
+                                    );
+                                  }).toList(),
+                                  isCurved: true,
+                                  color: Colors.red,
+                                  dotData: FlDotData(
+                                    show: true,
+                                    checkToShowDot: (spot, barData) {
+                                      final currentLastIndex = ((years.length - 1) * _controller.value - 1).floor();
+                                      return _controller.value == 1
+                                          ? spot.x == years.length - 1 // 애니메이션 완료 시 마지막 점
+                                          : spot.x == currentLastIndex; // 진행 중에는 현재 위치
+                                    },
+                                    getDotPainter: (spot, percent, barData, index) {
+                                      return DashedCircleDotPainter(
+                                        radius: 6,
+                                        strokeColor: Colors.red,
+                                        fillColor: Colors.white,
+                                        strokeWidth: 1.5,
+                                        rotationDegree: _rotationController.value * 360,
+                                      );
+                                    },
+                                  ),
+                                  dashArray: [5, 5],
+                                  barWidth: 2,
+                                ),
+                              ],
+                              minX: -0.5,
+                              maxX: years.length.toDouble() - 0.5,
+                              minY: 0,
+                              maxY: maxValue * widget.maxYRatio,
+                            ),
+                          ),
+                        ),
+                        _buildCagrOverlay(cagr),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -281,14 +472,14 @@ class SingleChartWidget extends StatelessWidget {
     Map<int, double> chartData,
   ) {
     final fullData = dataProvider.getChartData(
-      techListType: techListType!,
-      techCode: techCode ?? selectedCodes![0],
-      country: country,
-      targetName: targetName,
+      techListType: widget.techListType!,
+      techCode: widget.techCode ?? widget.selectedCodes![0],
+      country: widget.country,
+      targetName: widget.targetName,
     );
     final allYears = fullData.keys.toList()..sort();
 
-    switch (cagrMode) {
+    switch (widget.cagrMode) {
       case CagrCalculationMode.selectedPeriod:
         // 선택된 기간의 데이터만 사용
         final years = chartData.keys.toList()..sort();
@@ -340,7 +531,6 @@ class SingleChartWidget extends StatelessWidget {
 
   /// 시각화의 막대 차트 컴포넌트를 생성
   Widget _buildBarChart(BuildContext context, List<int> years, Map<int, double> chartData, double maxValue, double interval) {
-    // 차트의 너비에 따른 막대 두께 계산
     final barWidth = (MediaQuery.of(context).size.width / (years.length * 12)).clamp(8.0, 24.0);
 
     return Container(
@@ -353,7 +543,7 @@ class SingleChartWidget extends StatelessWidget {
       child: BarChart(
         BarChartData(
           alignment: BarChartAlignment.spaceAround,
-          maxY: maxValue * maxYRatio,
+          maxY: maxValue * widget.maxYRatio,
           barTouchData: BarTouchData(
             enabled: false,
             touchTooltipData: BarTouchTooltipData(
@@ -386,112 +576,29 @@ class SingleChartWidget extends StatelessWidget {
             final year = entry.value;
             final value = chartData[year] ?? 0.0;
 
+            final shouldShow = index <= (years.length - 1) * _controller.value;
+
             return BarChartGroupData(
               x: index,
               barRods: [
                 BarChartRodData(
-                  toY: value,
-                  color: chartColor ?? Colors.blue,
+                  toY: shouldShow ? value : 0,
+                  color: widget.chartColor ?? Colors.blue,
                   width: barWidth,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(2),
+                  // 여기에 막대 위의 텍스트 추가
+                  backDrawRodData: BackgroundBarChartRodData(
+                    show: true,
+                    toY: shouldShow ? value : 0,
+                    color: Colors.transparent,
+                  ),
                 ),
               ],
-              showingTooltipIndicators: [0],
+              // 막대 위에 표시할 텍스트 위젯
+              showingTooltipIndicators: shouldShow ? [0] : [],
+              barsSpace: 4,
             );
           }).toList(),
-        ),
-      ),
-    );
-  }
-
-  /// 추세선 오버레이 컴포넌트를 생성
-  Widget _buildTrendLineOverlay(List<int> years, Map<int, double> trendLineData, double maxValue) {
-    return Container(
-      padding: const EdgeInsets.only(
-        top: 16,
-        left: 40,
-        right: 16,
-        bottom: 24,
-      ),
-      child: LineChart(
-        LineChartData(
-          gridData: const FlGridData(show: false),
-          titlesData: FlTitlesData(
-            show: true,
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (_, __) => const SizedBox(height: 36),
-                reservedSize: 36,
-              ),
-            ),
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (_, __) => const SizedBox(width: 40),
-                reservedSize: 40,
-              ),
-            ),
-            rightTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            topTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-          ),
-          borderData: FlBorderData(show: false),
-          lineTouchData: LineTouchData(
-            enabled: false,
-            touchTooltipData: LineTouchTooltipData(
-              tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
-              getTooltipItems: (List<LineBarSpot> touchedSpots) {
-                return touchedSpots.map((LineBarSpot touchedSpot) {
-                  final year = years[touchedSpot.x.toInt()];
-                  return LineTooltipItem(
-                    '$year년\n${touchedSpot.y.toStringAsFixed(1)}',
-                    const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  );
-                }).toList();
-              },
-            ),
-            handleBuiltInTouches: true,
-          ),
-          lineBarsData: [
-            LineChartBarData(
-              spots: years.map((year) {
-                return FlSpot(
-                  years.indexOf(year).toDouble(),
-                  trendLineData[year] ?? 0,
-                );
-              }).toList(),
-              isCurved: true,
-              color: Colors.red,
-              dotData: FlDotData(
-                show: true,
-                checkToShowDot: (spot, barData) {
-                  return spot.x == years.length - 1;
-                },
-                getDotPainter: (spot, percent, barData, index) {
-                  return DashedCircleDotPainter(
-                    radius: 6,
-                    strokeColor: Colors.red,
-                    fillColor: Colors.white,
-                    strokeWidth: 1.5,
-                  );
-                },
-              ),
-              dashArray: [5, 5],
-              barWidth: 2,
-            ),
-          ],
-          minX: -0.5,
-          maxX: years.length.toDouble() - 0.5,
-          minY: 0,
-          maxY: maxValue * maxYRatio,
         ),
       ),
     );
@@ -500,9 +607,9 @@ class SingleChartWidget extends StatelessWidget {
   /// CAGR 값을 보여주는 오버레이 위젯을 생성
   Widget _buildCagrOverlay(double cagr) {
     return Positioned(
-      top: height * 0.1, // 차트 높이의 15% 위치에 배치
-      left: width * 0.1, // 차트 너비의 10% 위치에 배치
-      right: width * 0.1, // 차트 너비의 10% 위치에 배치
+      top: widget.height * 0.1, // 차트 높이의 15% 위치에 배치
+      left: widget.width * 0.1, // 차트 너비의 10% 위치에 배치
+      right: widget.width * 0.1, // 차트 너비의 10% 위치에 배치
       child: Center(
         child: Text(
           'CAGR ${(cagr * 100).toStringAsFixed(1)}%',
@@ -516,8 +623,6 @@ class SingleChartWidget extends StatelessWidget {
     );
   }
 
-  /// 최대값을 기준으로 y축의 적절한 간격을 계산
-  /// maxValue의 최고 자릿수보다 한 단계 낮은 10의 거듭제곱 값을 반환
   double _calculateInterval(double maxValue) {
     // maxValue가 0이면 기본값 1 반환
     if (maxValue <= 0) return 0.1;
@@ -600,7 +705,7 @@ class SingleChartWidget extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (category == AnalysisCategory.countryTech) ...[
+            if (widget.category == AnalysisCategory.countryTech) ...[
               CountryFlag.fromCountryCode(
                 countryCode,
                 height: 16,

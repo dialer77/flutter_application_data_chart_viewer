@@ -72,3 +72,9 @@ enum AnalysisType {
   range,
   single,
 }
+
+enum ChartType {
+  none,
+  multiline,
+  barWithTrendLine,
+}

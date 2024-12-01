@@ -81,6 +81,14 @@ class AnalysisDataProvider extends ChangeNotifier {
     }
   }
 
+  Set<String> get selectedToggleTechCodes {
+    if (_selectedAnalysisTechListType == AnalysisTechListType.mc) {
+      return selectedMcTechCodes;
+    } else {
+      return selectedScTechCodes;
+    }
+  }
+
   String? get selectedCountry => _selectedCountry;
 
   String? get selectedCompany => _selectedCompany;
@@ -150,7 +158,10 @@ class AnalysisDataProvider extends ChangeNotifier {
       _selectedCompanies.clear();
       _selectedAcademics.clear();
     }
+
     _selectedCategory = category;
+
+    initializeWithCategory(category);
 
     RangeValues yearRange = getYearRange();
     _startYear = yearRange.start.toInt();
@@ -368,8 +379,6 @@ class AnalysisDataProvider extends ChangeNotifier {
     if (selectedCategory == AnalysisCategory.techAssessment) {
       _selectedCountry = getAvailableCountriesFromTechAssessment().first;
     }
-
-    notifyListeners();
   }
 
   // === Repository ===
@@ -789,13 +798,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     int minYear = 9999;
     int maxYear = 0;
 
-    var filteredData = currentData
-        .where((data) => data.codeInfo.sheetName == getCategorySheetNames(selectedCategory) && data.codeInfo.techType == selectedTechListType && data.codeInfo.codeName == selectedTechCode)
-        .toList();
-
-    var dataCode = getDataCode() ?? "";
-    // dataCode와 key가 일치하는 데이터에서 연도 정보를 찾아 최소/최대 연도를 구한다
-    filteredData = filteredData.where((data) => data.analysisDatas.keys.contains(dataCode)).toList();
+    var filteredData = currentData.where((data) => data.codeInfo.sheetName == getCategorySheetNames(selectedCategory) && data.codeInfo.techType == selectedTechListType).toList();
 
     for (var data in filteredData) {
       for (var yearData in data.analysisDatas.values) {
@@ -1271,8 +1274,9 @@ class AnalysisDataProvider extends ChangeNotifier {
     return filteredData.first.codeInfo.country;
   }
 
-  // 코드별 색상 매핑을 저장할 맵
-  final Map<String, Color> _codeColorMap = {};
+  // MC/SC 코드 매핑
+  final Map<String, Color> _mcCodeMap = {};
+  final Map<String, Color> _scCodeMap = {};
 
   // 사용할 색상 리스트
   final List<Color> _defaultColors = [
@@ -1286,15 +1290,37 @@ class AnalysisDataProvider extends ChangeNotifier {
     Colors.brown,
     Colors.indigo,
     Colors.grey,
+    Colors.cyan,
+    Colors.amber,
+    Colors.lime,
+    Colors.deepOrange,
+    Colors.deepPurple,
+    Colors.lightBlue,
+    Colors.lightGreen,
+    Colors.yellow,
+    Colors.blueGrey,
+    Colors.redAccent,
+    Colors.blueAccent,
+    Colors.greenAccent,
+    Colors.orangeAccent,
+    Colors.purpleAccent,
   ];
 
   // 코드에 대한 색상을 가져오거나 할당
   Color getColorForCode(String code) {
-    if (!_codeColorMap.containsKey(code)) {
-      // 새로운 코드라면 다음 사용 가능한 색상 할당
-      final colorIndex = _codeColorMap.length % _defaultColors.length;
-      _codeColorMap[code] = _defaultColors[colorIndex];
+    if (_selectedAnalysisTechListType == AnalysisTechListType.mc) {
+      if (!_mcCodeMap.containsKey(code)) {
+        final colorIndex = _mcCodeMap.length % _defaultColors.length;
+        _mcCodeMap[code] = _defaultColors[colorIndex];
+      }
+      return _mcCodeMap[code]!;
+    } else if (_selectedAnalysisTechListType == AnalysisTechListType.sc) {
+      if (!_scCodeMap.containsKey(code)) {
+        final colorIndex = _scCodeMap.length % _defaultColors.length;
+        _scCodeMap[code] = _defaultColors[colorIndex];
+      }
+      return _scCodeMap[code]!;
     }
-    return _codeColorMap[code]!;
+    return Colors.blue;
   }
 }

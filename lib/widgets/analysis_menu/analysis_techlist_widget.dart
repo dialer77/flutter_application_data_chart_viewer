@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
+import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:provider/provider.dart';
 
 class AnalysisTechListWidget extends StatefulWidget {
-  final AnalysisCategory category;
-
+  final double buttonHeight;
+  final double fontSize;
   const AnalysisTechListWidget({
     super.key,
-    required this.category,
+    required this.buttonHeight,
+    required this.fontSize,
   });
 
   @override
@@ -23,85 +25,102 @@ class _AnalysisTechListWidgetState extends State<AnalysisTechListWidget> {
 
   Widget _buildAdditionalControls() {
     final provider = context.watch<AnalysisDataProvider>();
-    if (provider.selectedTechListType == AnalysisTechListType.lc) {
-      // LC 컨트롤 (단일 선택)
+
+    if (provider.selectedCategory == AnalysisCategory.industryTech) {
+      if (provider.selectedTechListType == AnalysisTechListType.lc) {
+        return _buildDropdownControl(
+          provider.selectedTechListType.toString(),
+          provider.selectedLcTechCode,
+          provider.getDataCodeNames(provider.selectedTechListType),
+          (newValue) => provider.setSelectedLcDataCode(newValue),
+        );
+      } else {
+        return _buildCheckboxList(
+          provider.selectedTechListType.toString(),
+          provider.getDataCodeNames(provider.selectedTechListType),
+          provider.selectedTechCodes.toSet(),
+          (newValue) {
+            if (provider.selectedTechListType == AnalysisTechListType.mc) {
+              provider.toggleMcTechCode(newValue);
+            } else {
+              provider.toggleScTechCode(newValue);
+            }
+          },
+        );
+      }
+    } else {
       return _buildDropdownControl(
-        'LC',
-        provider.selectedLcTechCode,
-        provider.getDataCodeNames(AnalysisTechListType.lc),
-        (newValue) => provider.setSelectedLcDataCode(newValue),
+        provider.selectedTechListType.toString(),
+        provider.selectedTechCode,
+        provider.getDataCodeNames(provider.selectedTechListType),
+        (newValue) {
+          if (provider.selectedTechListType == AnalysisTechListType.lc) {
+            provider.setSelectedLcDataCode(newValue);
+          } else if (provider.selectedTechListType == AnalysisTechListType.mc) {
+            provider.setSelectedMcTechCodes({newValue!});
+          } else {
+            provider.setSelectedScTechCodes({newValue!});
+          }
+        },
       );
-    } else if (provider.selectedTechListType == AnalysisTechListType.mc) {
-      if (widget.category == AnalysisCategory.countryTech ||
-          widget.category == AnalysisCategory.companyTech ||
-          widget.category == AnalysisCategory.academicTech ||
-          widget.category == AnalysisCategory.techCompetition ||
-          widget.category == AnalysisCategory.techAssessment ||
-          widget.category == AnalysisCategory.techGap) {
-        return _buildDropdownControl(
-          'MC',
-          provider.selectedMcTechCodes.firstOrNull,
-          provider.getDataCodeNames(AnalysisTechListType.mc),
-          (newValue) => provider.setSelectedMcTechCodes({newValue!}),
-        );
-      } else {
-        return _buildCheckboxList(
-          'MC',
-          provider.getDataCodeNames(AnalysisTechListType.mc),
-          provider.selectedMcTechCodes,
-          provider.toggleMcTechCode,
-        );
-      }
-    } else if (provider.selectedTechListType == AnalysisTechListType.sc) {
-      if (widget.category == AnalysisCategory.countryTech ||
-          widget.category == AnalysisCategory.companyTech ||
-          widget.category == AnalysisCategory.academicTech ||
-          widget.category == AnalysisCategory.techCompetition ||
-          widget.category == AnalysisCategory.techAssessment ||
-          widget.category == AnalysisCategory.techGap) {
-        return _buildDropdownControl(
-          'SC',
-          provider.selectedScTechCodes.firstOrNull,
-          provider.getDataCodeNames(AnalysisTechListType.sc),
-          (newValue) => provider.setSelectedScTechCodes({newValue!}),
-        );
-      } else {
-        return _buildCheckboxList(
-          'SC',
-          provider.getDataCodeNames(AnalysisTechListType.sc),
-          provider.selectedScTechCodes,
-          provider.toggleScTechCode,
-        );
-      }
     }
-    return const SizedBox();
   }
 
   // 드롭다운 컨트롤을 위한 헬퍼 메서드
   Widget _buildDropdownControl(String label, String? selectedValue, Set<String> items, Function(String?) onChanged) {
     return LayoutBuilder(
-      builder: (context, constraints) => Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      builder: (context, constraints) => Column(
         children: [
-          Container(
-            width: constraints.maxWidth * 0.3,
-            padding: EdgeInsets.fromLTRB(constraints.maxWidth * 0.05, constraints.maxWidth * 0.05, 0, 0),
-            child: Text(
-              label,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: constraints.maxWidth * 0.06),
-            ),
-          ),
-          Expanded(
-            child: DropdownButton<String>(
-              isExpanded: true,
-              value: selectedValue,
-              items: items.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: onChanged,
+          SizedBox(
+            height: constraints.maxHeight * 0.15,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  width: constraints.maxWidth * 0.3,
+                  padding: EdgeInsets.only(
+                    left: constraints.maxWidth * 0.05,
+                    right: constraints.maxWidth * 0.05,
+                    top: constraints.maxWidth * 0.02,
+                  ),
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: constraints.maxWidth * 0.06,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: DropdownButton<String>(
+                    isExpanded: true,
+                    value: selectedValue,
+                    iconSize: constraints.maxWidth * 0.08,
+                    style: TextStyle(
+                      fontSize: constraints.maxWidth * 0.05,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    items: items.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Container(
+                          height: constraints.maxHeight * 0.5,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            value,
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: constraints.maxWidth * 0.05,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: onChanged,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -153,41 +172,25 @@ class _AnalysisTechListWidgetState extends State<AnalysisTechListWidget> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AnalysisDataProvider>();
-    final availableOptions = provider.getAvailableTechListTypes(widget.category);
+    final availableOptions = provider.getAvailableTechListTypes(provider.selectedCategory);
 
-    return LayoutBuilder(
-      builder: (context, constraints) => Column(
-        children: [
-          Container(
-            height: constraints.maxWidth * 0.15,
-            decoration: BoxDecoration(
-              border: Border.all(color: const Color.fromARGB(255, 70, 177, 225)),
-            ),
-            child: Center(
-              child: Text(
-                '기술 목록',
-                style: TextStyle(
-                  fontSize: constraints.maxWidth * 0.06,
-                  fontWeight: FontWeight.bold,
-                  color: const Color.fromARGB(255, 70, 177, 225),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(
-            height: constraints.maxWidth * 0.15,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ...AnalysisTechListType.values.map(
-                  (option) => Opacity(
-                    opacity: availableOptions.contains(option) ? 1.0 : 1.0,
+    return Column(
+      children: [
+        SizedBox(
+          height: widget.buttonHeight,
+          child: LayoutGrid(
+            columnSizes: [1.fr, 1.fr, 1.fr],
+            rowSizes: [1.fr],
+            children: [
+              ...AnalysisTechListType.values.map(
+                (option) => Opacity(
+                  opacity: availableOptions.contains(option) ? 1.0 : 0.0,
+                  child: Center(
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Transform.scale(
-                          scale: constraints.maxWidth * 0.004,
+                          scale: widget.buttonHeight * 0.02,
                           child: Radio<AnalysisTechListType>(
                             value: option,
                             groupValue: provider.selectedTechListType,
@@ -200,24 +203,23 @@ class _AnalysisTechListWidgetState extends State<AnalysisTechListWidget> {
                         ),
                         Text(
                           option.toString(),
-                          style: TextStyle(fontSize: constraints.maxWidth * 0.06),
+                          style: TextStyle(fontSize: widget.fontSize),
                         ),
                       ],
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          Expanded(
-            child: Container(
-              alignment: Alignment.topCenter,
-              height: constraints.maxHeight * 0.5,
-              child: _buildAdditionalControls(),
-            ),
+        ),
+        Expanded(
+          child: Container(
+            alignment: Alignment.topCenter,
+            child: _buildAdditionalControls(),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:window_size/window_size.dart';
+import 'package:window_manager/window_manager.dart';
 import 'dart:io';
 import 'layout/main_layout.dart';
 import 'controllers/content_controller.dart';
@@ -9,24 +9,21 @@ import 'providers/analysis_data_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   if (Platform.isWindows) {
-    setWindowTitle('InnoPatent Analytics v4.5');
-    setWindowMinSize(const Size(1600, 900));
-    getCurrentScreen().then((screen) {
-      if (screen != null) {
-        final screenFrame = screen.frame;
-        const initialSize = Size(1920, 1080);
+    await windowManager.ensureInitialized();
 
-        final left = (screenFrame.width - initialSize.width) / 2;
-        final top = (screenFrame.height - initialSize.height) / 2;
+    WindowOptions windowOptions = const WindowOptions(
+      size: Size(1920, 1080),
+      minimumSize: Size(1600, 900),
+      center: true,
+      title: 'InnoPatent Analytics v4.5',
+      backgroundColor: Colors.transparent,
+    );
 
-        setWindowFrame(Rect.fromLTWH(
-          left + screenFrame.left,
-          top + screenFrame.top,
-          initialSize.width,
-          initialSize.height,
-        ));
-      }
+    await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
     });
   }
 
@@ -36,16 +33,19 @@ void main() async {
   await dataProvider.loadAllData();
 
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(
-          value: dataProvider,
-        ),
-        ChangeNotifierProvider(
-          create: (context) => ContentController(),
-        ),
-      ],
-      child: const MyApp(),
+    AspectRatio(
+      aspectRatio: 16 / 9,
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(
+            value: dataProvider,
+          ),
+          ChangeNotifierProvider(
+            create: (context) => ContentController(),
+          ),
+        ],
+        child: const MyApp(),
+      ),
     ),
   );
 }

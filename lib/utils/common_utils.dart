@@ -15,6 +15,30 @@ class CommonUtils {
     );
   }
 
+  Widget menuTitle({
+    required String title,
+    required double height,
+    required double fontSize,
+    required Color color,
+  }) {
+    return Container(
+      height: height,
+      decoration: BoxDecoration(
+        border: Border.all(color: color),
+      ),
+      child: Center(
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ),
+    );
+  }
+
   String replaceCountryCode(String countryCode) {
     return countryCode.replaceAll('[', '').replaceAll(']', '');
   }

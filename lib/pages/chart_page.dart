@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/analysis_menu/analysis_data_widget.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/analysis_menu/analysis_target_widget.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/analysis_menu/analysis_techlist_widget.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/analysis_menu/analysis_period_widget.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/analysis_menu/analysis_menulist_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/chart_widget.dart';
 import 'package:provider/provider.dart';
 import '../controllers/content_controller.dart';
@@ -54,8 +51,7 @@ class ChartPage extends StatefulWidget {
   State<ChartPage> createState() => _ChartPageState();
 }
 
-class _ChartPageState extends State<ChartPage>
-    with SingleTickerProviderStateMixin {
+class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -145,18 +141,18 @@ class _ChartPageState extends State<ChartPage>
   Widget _buildSubCategoryButtons({double fontSizeRatio = 0.25}) {
     final dataProvider = context.watch<AnalysisDataProvider>();
     _selectedSubCategory = dataProvider.selectedSubCategory;
-    final subCategories =
-        dataProvider.getAvailableSubCategories(widget.category);
+    final subCategories = dataProvider.getAvailableSubCategories(widget.category);
 
     // 첫 번째 서브카테고리를 기본값으로 설정
-    if (_selectedSubCategory == null ||
-        subCategories.contains(_selectedSubCategory) == false) {
+    if (_selectedSubCategory == null || subCategories.contains(_selectedSubCategory) == false) {
       dataProvider.setSelectedSubCategory(subCategories.first);
     }
 
     return LayoutBuilder(builder: (context, constraints) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(50, 0, 0, 0),
+        padding: EdgeInsets.only(
+          left: constraints.maxWidth * 0.025,
+        ),
         child: Container(
           height: constraints.maxHeight,
           decoration: BoxDecoration(
@@ -171,15 +167,13 @@ class _ChartPageState extends State<ChartPage>
               return Flexible(
                 child: LayoutBuilder(builder: (context, constraints) {
                   return Padding(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: constraints.maxWidth * 0.15),
+                    padding: EdgeInsets.symmetric(horizontal: constraints.maxWidth * 0.15),
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isSelected
-                              ? const Color.fromARGB(
-                                  255, 97, 203, 244) // 선택된 항목의 배경색
+                              ? const Color.fromARGB(255, 97, 203, 244) // 선택된 항목의 배경색
                               : const Color.fromARGB(255, 16, 72, 98), // 기본 배경색
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
@@ -189,9 +183,7 @@ class _ChartPageState extends State<ChartPage>
                         onPressed: () {
                           setState(() {
                             _selectedSubCategory = subCategory;
-                            context
-                                .read<AnalysisDataProvider>()
-                                .setSelectedSubCategory(subCategory);
+                            context.read<AnalysisDataProvider>().setSelectedSubCategory(subCategory);
                           });
                         },
                         child: SizedBox(
@@ -202,9 +194,7 @@ class _ChartPageState extends State<ChartPage>
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: constraints.maxHeight * fontSizeRatio,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal, // 선택된 항목의 텍스트를 굵게
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, // 선택된 항목의 텍스트를 굵게
                               ),
                             ),
                           ),
@@ -221,77 +211,8 @@ class _ChartPageState extends State<ChartPage>
     });
   }
 
-  Widget _buildMenuLists() {
-    final dataProvider = context.watch<AnalysisDataProvider>();
-    return LayoutBuilder(builder: (context, constraints) {
-      return Padding(
-        padding: EdgeInsets.fromLTRB(
-          0,
-          constraints.maxHeight * 0.05,
-          0,
-          0,
-        ),
-        child: Container(
-          height: constraints.maxHeight,
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(45),
-          ),
-          padding:
-              EdgeInsets.symmetric(horizontal: constraints.maxWidth * 0.15),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: constraints.maxHeight * 0.05),
-              SizedBox(
-                width: constraints.maxWidth,
-                height: constraints.maxHeight * 0.15,
-                child: AnalysisDataWidget(category: widget.category),
-              ),
-              if (widget.category == AnalysisCategory.industryTech)
-                Expanded(
-                  child: AnalysisTechListWidget(category: widget.category),
-                ),
-              if (widget.category == AnalysisCategory.countryTech ||
-                  widget.category == AnalysisCategory.companyTech ||
-                  widget.category == AnalysisCategory.academicTech ||
-                  widget.category == AnalysisCategory.techCompetition ||
-                  widget.category == AnalysisCategory.techAssessment ||
-                  widget.category == AnalysisCategory.techGap)
-                Expanded(
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: constraints.maxHeight * 0.2,
-                        child:
-                            AnalysisTechListWidget(category: widget.category),
-                      ),
-                      Expanded(
-                        child: AnalysisTargetWidget(category: widget.category),
-                      ),
-                    ],
-                  ),
-                ),
-              SizedBox(
-                width: constraints.maxWidth,
-                height: constraints.maxHeight * 0.15,
-                child: AnalysisPeriodWidget(
-                  analysisType: dataProvider.selectedCategory ==
-                          AnalysisCategory.techAssessment
-                      ? AnalysisType.single
-                      : AnalysisType.range,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    });
-  }
-
   Widget _buildChartWidget() {
-    return ChartWidget(
-        category: widget.category, selectedSubCategory: _selectedSubCategory);
+    return ChartWidget(category: widget.category, selectedSubCategory: _selectedSubCategory);
   }
 
   @override
@@ -310,7 +231,7 @@ class _ChartPageState extends State<ChartPage>
         children: [
           _buildCategoryButton(fontSizeRatio: 0.25),
           _buildSubCategoryButtons(fontSizeRatio: 0.3),
-          _buildMenuLists(),
+          const AnalysisMenuListWidget(),
           _buildChartWidget(),
         ],
       ),

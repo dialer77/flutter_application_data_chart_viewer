@@ -22,10 +22,6 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
   @override
   void initState() {
     super.initState();
-    // build 과정이 끝난 후 초기화하도록 수정
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AnalysisDataProvider>().initializeWithCategory(widget.category);
-    });
   }
 
   List<AnalysisCategory> _getAvailableOptions() {

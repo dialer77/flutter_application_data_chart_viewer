@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/analysis_data_model.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
+import 'package:flutter_application_data_chart_viewer/models/table_chart_data_model.dart';
 import 'package:flutter_application_data_chart_viewer/repositories/analysis_data_repository.dart';
 
 class AnalysisDataProvider extends ChangeNotifier {
@@ -735,6 +736,36 @@ class AnalysisDataProvider extends ChangeNotifier {
     return chartData;
   }
 
+  List<TableChartDataModel> getTableChartDataModels() {
+    var filteredData = currentData
+        .where((data) => data.codeInfo.sheetName == getCategorySheetNames(selectedCategory) && data.codeInfo.techType == selectedTechListType && data.codeInfo.codeName == selectedTechCode)
+        .toList();
+
+    final dataCode = getDataCode() ?? "";
+    filteredData = filteredData.where((data) => data.analysisDatas.containsKey(dataCode)).toList();
+
+    List<TableChartDataModel> tableChartDataModels = [];
+    if (selectedCategory == AnalysisCategory.countryTech) {
+      var countryCodes = _selectedCountries.isNotEmpty ? _selectedCountries : getAvailableCountries(selectedTechCode).take(10).toList();
+
+      var rank = 1;
+      for (var countryCode in countryCodes) {
+        var filteredDataByCountry = filteredData.where((data) => data.codeInfo.country == countryCode).toList();
+
+        TableChartDataModel tableChartDataModel = TableChartDataModel(
+          yearDatas: filteredDataByCountry.first.analysisDatas[dataCode] ?? {},
+          dataInfo: {TableDataType.country: countryCode},
+          name: filteredDataByCountry.first.codeInfo.name,
+          rank: rank,
+        );
+        rank++;
+        tableChartDataModels.add(tableChartDataModel);
+      }
+    }
+
+    return tableChartDataModels;
+  }
+
   // === Utility Methods ===
   // Category Sheet Name
   String getCategorySheetNames(AnalysisCategory category) {
@@ -1274,7 +1305,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     return filteredData.first.codeInfo.country;
   }
 
-  // MC/SC 코드 매핑
+  // Color Mapping
   final Map<String, Color> _mcCodeMap = {};
   final Map<String, Color> _scCodeMap = {};
 
@@ -1282,7 +1313,6 @@ class AnalysisDataProvider extends ChangeNotifier {
   final Map<String, Color> _companyCodeMap = {};
   final Map<String, Color> _academicCodeMap = {};
 
-  // 사용할 색상 리스트
   final List<Color> _defaultColors = [
     Colors.red,
     Colors.blue,
@@ -1310,7 +1340,6 @@ class AnalysisDataProvider extends ChangeNotifier {
     Colors.purpleAccent,
   ];
 
-  // 코드에 대한 색상을 가져오거나 할당
   Color getColorForCode(String code) {
     if (_selectedCategory == AnalysisCategory.countryTech) {
       if (!_countryCodeMap.containsKey(code)) {

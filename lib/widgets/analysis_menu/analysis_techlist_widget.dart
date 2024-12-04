@@ -33,7 +33,7 @@ class _AnalysisTechListWidgetState extends State<AnalysisTechListWidget> {
         SizedBox(
           height: widget.buttonHeight,
           child: LayoutGrid(
-            columnSizes: [1.fr, 1.fr, 1.fr],
+            columnSizes: [1.fr, 1.fr, 1.2.fr],
             rowSizes: [1.fr],
             children: [
               ...AnalysisTechListType.values.map(

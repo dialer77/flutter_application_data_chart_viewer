@@ -5,9 +5,12 @@ import 'package:decimal/decimal.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
+import 'package:flutter_application_data_chart_viewer/models/table_chart_data_model.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart/chart_table_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/table_chart_data.dart';
+import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:provider/provider.dart';
 
 class ChartWidgetTechCompetition extends StatefulWidget {
@@ -49,16 +52,23 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
         child: SizedBox(
           width: constraints.maxWidth,
           height: constraints.maxHeight,
-          child: Column(
+          child: LayoutGrid(
+            columnSizes: [1.fr],
+            rowSizes: [1.fr, 1.fr],
             children: [
-              const Flexible(
-                flex: 1,
-                child: TableChartData(),
+              const SizedBox(
+                height: double.infinity,
+                // child: ChartTableWidget(
+                //   width: constraints.maxWidth,
+                //   height: constraints.maxHeight,
+                //   title: 'Tech Competition',
+                //   headerTitles: const [
+                //     (TableDataType.country, '국가 순위'),
+                //   ],
+                //   tableChartDataModels: CommonUtils.instance.createTestData(),
+                // ),
               ),
-              Flexible(
-                flex: 1,
-                child: _buildChartBarType(),
-              ),
+              _buildChartBarType(),
             ],
           ),
         ),

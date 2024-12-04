@@ -25,7 +25,7 @@ class MainLayout extends StatelessWidget {
               Expanded(
                 flex: 2,
                 child: Container(
-                  color: const Color.fromARGB(255, 37, 52, 103),
+                  color: const Color.fromARGB(255, 0, 32, 96),
                   child: Center(
                     child: Image.asset(
                       'assets/images/logo_amur_white_full.png', // 이미지 경로를 실제 경로로 변경하세요
@@ -54,7 +54,7 @@ class MainLayout extends StatelessWidget {
               Expanded(
                 flex: 2,
                 child: Container(
-                  color: const Color.fromARGB(255, 37, 52, 103),
+                  color: const Color.fromARGB(255, 0, 32, 96),
                 ),
               ),
             ],

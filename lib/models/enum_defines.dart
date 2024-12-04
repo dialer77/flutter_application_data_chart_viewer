@@ -78,3 +78,10 @@ enum ChartType {
   multiline,
   barWithTrendLine,
 }
+
+enum TableDataType {
+  rank,
+  country,
+  name,
+  yearData,
+}

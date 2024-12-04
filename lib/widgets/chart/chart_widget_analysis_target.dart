@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart/chart_table_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/single_chart_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/table_chart_data.dart';
 import 'package:provider/provider.dart';
@@ -88,7 +89,16 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
               return Column(
                 children: [
                   Flexible(child: _buildChartMultiLineType(codes)),
-                  const Flexible(child: TableChartData()),
+                  const SizedBox(height: 20),
+                  Flexible(
+                    child: ChartTableWidget(
+                      title: 'Citation Index',
+                      headerTitles: const [
+                        (TableDataType.country, '국가 순위'),
+                      ],
+                      tableChartDataModels: provider.getTableChartDataModels(),
+                    ),
+                  ),
                 ],
               );
           }

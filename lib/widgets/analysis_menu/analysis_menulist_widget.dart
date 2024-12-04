@@ -214,7 +214,7 @@ class _AnalysisMenuListWidgetState extends State<AnalysisMenuListWidget> {
     return SizedBox(
       height: buttonHeight,
       child: LayoutGrid(
-        columnSizes: [1.fr, 1.fr, 1.fr],
+        columnSizes: [1.fr, 1.fr, 1.2.fr],
         rowSizes: [1.fr],
         children: [
           ...AnalysisDataType.values.map(
@@ -240,6 +240,7 @@ class _AnalysisMenuListWidgetState extends State<AnalysisMenuListWidget> {
                       option.toString(),
                       style: TextStyle(
                         fontSize: fontSize,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

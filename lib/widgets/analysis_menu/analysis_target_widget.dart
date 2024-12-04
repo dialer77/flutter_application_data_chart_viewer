@@ -4,6 +4,7 @@ import 'package:flutter_application_data_chart_viewer/controllers/content_contro
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
+import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:provider/provider.dart';
 
 class AnalysisTargetWidget extends StatefulWidget {
@@ -95,39 +96,43 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
           children: [
             SizedBox(
               height: widget.buttonHeight,
-              child: Row(
-                children: availableOptions.map((option) {
-                  return Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Transform.scale(
-                          scale: widget.buttonHeight * 0.02,
-                          child: Radio<AnalysisCategory>(
-                            value: option,
-                            groupValue: dataProvider.selectedCategory,
-                            onChanged: (AnalysisCategory? value) {
-                              if (value != null) {
-                                dataProvider.setSelectedCategory(value);
-                                context.read<ContentController>().changeContent(value);
-                              }
-                            },
-                          ),
+              child: LayoutGrid(
+                columnSizes: [1.fr, 1.fr, 1.2.fr],
+                rowSizes: [1.fr],
+                children: availableOptions
+                    .map(
+                      (option) => Center(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Transform.scale(
+                              scale: widget.buttonHeight * 0.02,
+                              child: Radio<AnalysisCategory>(
+                                value: option,
+                                groupValue: dataProvider.selectedCategory,
+                                onChanged: (AnalysisCategory? value) {
+                                  if (value != null) {
+                                    dataProvider.setSelectedCategory(value);
+                                    context.read<ContentController>().changeContent(value);
+                                  }
+                                },
+                              ),
+                            ),
+                            Text(
+                              option == AnalysisCategory.countryTech
+                                  ? '국가'
+                                  : option == AnalysisCategory.companyTech
+                                      ? '기업'
+                                      : '대학',
+                              style: TextStyle(
+                                fontSize: widget.fontSize,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          option == AnalysisCategory.countryTech
-                              ? '국가'
-                              : option == AnalysisCategory.companyTech
-                                  ? '기업'
-                                  : '대학',
-                          style: TextStyle(
-                            fontSize: widget.fontSize,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
+                      ),
+                    )
+                    .toList(),
               ),
             ),
             Expanded(

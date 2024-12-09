@@ -1,4 +1,3 @@
-import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
@@ -7,7 +6,8 @@ import 'package:provider/provider.dart';
 import 'dart:math';
 import '../../models/enum_defines.dart';
 import '../../providers/analysis_data_provider.dart';
-import 'package:decimal/decimal.dart'; // Decimal 패키지 임포트
+import 'package:decimal/decimal.dart';
+import 'package:flutter/gestures.dart'; // Decimal 패키지 임포트
 
 class SingleChartWidget extends StatefulWidget {
   final AnalysisCategory category;
@@ -20,8 +20,6 @@ class SingleChartWidget extends StatefulWidget {
   final List<String>? countries;
   final String? targetName;
   final List<String>? targetNames;
-  final double height;
-  final double width;
   final double maxYRatio;
   final Color? chartColor;
   final ChartType chartType;
@@ -39,8 +37,6 @@ class SingleChartWidget extends StatefulWidget {
     this.countries,
     this.targetName,
     this.targetNames,
-    this.height = 400,
-    this.width = 400,
     this.maxYRatio = 1.6,
     this.chartColor,
     this.chartType = ChartType.none,
@@ -154,6 +150,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
 
     if (years.isEmpty) return const SizedBox.shrink();
 
+    final cagrDatas = [];
     // 각 코드별 추세선 생성
     for (var i = 0; i < chartLoopCodes.length; i++) {
       final code = chartLoopCodes[i];
@@ -179,6 +176,15 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
             ? code
             : null,
       );
+
+      final startYear = years.first;
+      final endYear = years.last - 1;
+      final cagr = _calculateCAGR(
+        chartData[startYear] ?? 0,
+        chartData[endYear] ?? 0,
+        endYear - startYear,
+      );
+      cagrDatas.add(cagr);
 
       if (chartData.isEmpty) continue;
 
@@ -233,79 +239,117 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
           builder: (context, child) {
             return Container(
               decoration: const BoxDecoration(color: Colors.white),
-              child: SizedBox(
-                height: widget.height,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    (() {
-                      if (widget.category != AnalysisCategory.techAssessment) {
-                        return Center(
-                          child: _buildLegend(chartLoopCodes, colors),
-                        );
-                      } else {
-                        return const SizedBox.shrink();
-                      }
-                    })(),
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.only(
-                          top: 16,
-                          left: 40,
-                          right: 16,
-                          bottom: 24,
-                        ),
-                        child: LineChart(
-                          LineChartData(
-                            gridData: const FlGridData(show: false),
-                            titlesData: _buildTitlesData(years, interval),
-                            borderData: FlBorderData(
-                              show: true,
-                              border: const Border(
-                                left: BorderSide(color: Colors.grey),
-                                right: BorderSide(color: Colors.transparent),
-                                top: BorderSide(color: Colors.transparent),
-                                bottom: BorderSide(color: Colors.transparent),
-                              ),
-                            ),
-                            lineBarsData: allTrendLines.map((lineData) {
-                              final spots = lineData.spots;
-                              final currentSpots = spots
-                                  .asMap()
-                                  .entries
-                                  .where((entry) {
-                                    return entry.key <= (spots.length - 1) * _controller.value;
-                                  })
-                                  .map((e) => e.value)
-                                  .toList();
-
-                              return lineData.copyWith(
-                                spots: currentSpots,
-                                dotData: FlDotData(
-                                  show: true,
-                                  checkToShowDot: (spot, barData) {
-                                    return spot.x == currentSpots.last.x;
-                                  },
-                                  getDotPainter: (spot, percent, barData, index) {
-                                    return DashedCircleDotPainter(
-                                      radius: 6,
-                                      strokeColor: lineData.color ?? Colors.blue,
-                                      fillColor: Colors.white,
-                                      strokeWidth: 1.5,
-                                      rotationDegree: _rotationController.value * 360,
-                                    );
-                                  },
-                                ),
-                              );
-                            }).toList(),
-                            minY: adjustedMinY,
-                            maxY: maxYValue,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  (() {
+                    if (widget.category != AnalysisCategory.techAssessment) {
+                      return Center(
+                        child: _buildLegend(chartLoopCodes, colors),
+                      );
+                    } else {
+                      return const SizedBox.shrink();
+                    }
+                  })(),
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) => LineChart(
+                        LineChartData(
+                          gridData: const FlGridData(show: false),
+                          titlesData: _buildTitlesData(
+                            years: years,
+                            interval: interval,
+                            constraints: constraints,
                           ),
+                          lineTouchData: LineTouchData(
+                            enabled: true,
+                            touchTooltipData: LineTouchTooltipData(
+                              tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+                              tooltipRoundedRadius: 8,
+                              tooltipPadding: const EdgeInsets.all(8),
+                              tooltipMargin: 1,
+                              getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                                return touchedSpots.map((LineBarSpot spot) {
+                                  if (cagrDatas.isEmpty) return null;
+                                  return LineTooltipItem(
+                                    '\nCAGR: ${(cagrDatas[spot.barIndex] * 100).toStringAsFixed(1)}%',
+                                    const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    children: [
+                                      TextSpan(
+                                        text: '\n${chartLoopCodes[spot.barIndex]}',
+                                        style: TextStyle(
+                                          color: colors[spot.barIndex % colors.length],
+                                          fontWeight: FontWeight.normal,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }).toList();
+                              },
+                            ),
+                            touchSpotThreshold: 100,
+                            getTouchLineStart: (data, index) => 0,
+                            getTouchLineEnd: (data, index) => 0,
+                            getTouchedSpotIndicator: (LineChartBarData barData, List<int> spotIndexes) {
+                              return spotIndexes.map((spotIndex) {
+                                return const TouchedSpotIndicatorData(
+                                  FlLine(color: Colors.transparent),
+                                  FlDotData(show: false),
+                                );
+                              }).toList();
+                            },
+                            handleBuiltInTouches: true,
+                          ),
+                          borderData: FlBorderData(
+                            show: true,
+                            border: const Border(
+                              left: BorderSide(color: Colors.grey),
+                              right: BorderSide(color: Colors.transparent),
+                              top: BorderSide(color: Colors.transparent),
+                              bottom: BorderSide(color: Colors.grey),
+                            ),
+                          ),
+                          lineBarsData: allTrendLines.map((lineData) {
+                            final spots = lineData.spots;
+                            final currentSpots = spots
+                                .asMap()
+                                .entries
+                                .where((entry) {
+                                  return entry.key <= (spots.length - 1) * _controller.value;
+                                })
+                                .map((e) => e.value)
+                                .toList();
+
+                            return lineData.copyWith(
+                              spots: currentSpots,
+                              dotData: FlDotData(
+                                show: true,
+                                checkToShowDot: (spot, barData) {
+                                  return spot.x == currentSpots.last.x;
+                                },
+                                getDotPainter: (spot, percent, barData, index) {
+                                  return DashedCircleDotPainter(
+                                    radius: 6,
+                                    strokeColor: lineData.color ?? Colors.blue,
+                                    fillColor: Colors.white,
+                                    strokeWidth: 1.5,
+                                    rotationDegree: _rotationController.value * 360,
+                                  );
+                                },
+                              ),
+                            );
+                          }).toList(),
+                          minY: adjustedMinY,
+                          maxY: maxYValue,
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             );
           },
@@ -345,104 +389,36 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
         return AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
-            return SizedBox(
-              height: widget.height,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (widget.chartTitle != null) _buildTitle(widget.chartTitle!, widget.chartColor, true),
-                  Expanded(
-                    child: Stack(
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) => Stack(
                       children: [
-                        _buildBarChart(context, years, chartData, maxValue, interval),
-                        Container(
-                          padding: const EdgeInsets.only(
-                            top: 16,
-                            left: 40,
-                            right: 16,
-                            bottom: 24,
-                          ),
-                          child: LineChart(
-                            LineChartData(
-                              gridData: const FlGridData(show: false),
-                              titlesData: FlTitlesData(
-                                show: true,
-                                bottomTitles: AxisTitles(
-                                  sideTitles: SideTitles(
-                                    showTitles: true,
-                                    getTitlesWidget: (_, __) => const SizedBox(height: 36),
-                                    reservedSize: 36,
-                                  ),
-                                ),
-                                leftTitles: AxisTitles(
-                                  sideTitles: SideTitles(
-                                    showTitles: true,
-                                    getTitlesWidget: (_, __) => const SizedBox(width: 40),
-                                    reservedSize: 40,
-                                  ),
-                                ),
-                                rightTitles: const AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
-                                ),
-                                topTitles: const AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
-                                ),
-                              ),
-                              borderData: FlBorderData(show: false),
-                              lineTouchData: const LineTouchData(
-                                enabled: false,
-                                handleBuiltInTouches: true,
-                              ),
-                              lineBarsData: [
-                                LineChartBarData(
-                                  spots: years.asMap().entries.where((entry) {
-                                    // 애니메이션이 완료되면 모든 포인트 표시, 아니면 한 칸 뒤에서 시작
-                                    return _controller.value == 1
-                                        ? true // 애니메이션 완료 시 모든 포인트 표시
-                                        : entry.key < (years.length - 1) * _controller.value; // 진행 중에는 한 칸 뒤에서 따라가기
-                                  }).map((entry) {
-                                    return FlSpot(
-                                      entry.key.toDouble(),
-                                      trendLineData[entry.value] ?? 0,
-                                    );
-                                  }).toList(),
-                                  isCurved: true,
-                                  color: Colors.red,
-                                  dotData: FlDotData(
-                                    show: true,
-                                    checkToShowDot: (spot, barData) {
-                                      final currentLastIndex = ((years.length - 1) * _controller.value - 1).floor();
-                                      return _controller.value == 1
-                                          ? spot.x == years.length - 1 // 애니메이션 완료 시 마지막 점
-                                          : spot.x == currentLastIndex; // 진행 중에는 현재 위치
-                                    },
-                                    getDotPainter: (spot, percent, barData, index) {
-                                      return DashedCircleDotPainter(
-                                        radius: 6,
-                                        strokeColor: Colors.red,
-                                        fillColor: Colors.white,
-                                        strokeWidth: 1.5,
-                                        rotationDegree: _rotationController.value * 360,
-                                      );
-                                    },
-                                  ),
-                                  dashArray: [5, 5],
-                                  barWidth: 2,
-                                ),
-                              ],
-                              minX: -0.5,
-                              maxX: years.length.toDouble() - 0.5,
-                              minY: 0,
-                              maxY: maxValue * widget.maxYRatio,
-                            ),
-                          ),
+                        _buildCagrLineChart(
+                          years: years,
+                          trendLineData: trendLineData,
+                          maxValue: maxValue,
+                          interval: interval,
+                          constraints: constraints,
                         ),
-                        _buildCagrOverlay(cagr),
+                        _buildBarChart(
+                          years: years,
+                          chartData: chartData,
+                          maxValue: maxValue,
+                          interval: interval,
+                          constraints: constraints,
+                        ),
+                        _buildCagrOverlay(
+                          cagr: cagr,
+                          constraints: constraints,
+                        ),
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             );
           },
         );
@@ -515,69 +491,154 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
   }
 
   /// 시각화의 막대 차트 컴포넌트를 생성
-  Widget _buildBarChart(BuildContext context, List<int> years, Map<int, double> chartData, double maxValue, double interval) {
-    final barWidth = (MediaQuery.of(context).size.width / (years.length * 12)).clamp(8.0, 24.0);
-
-    return Container(
-      padding: const EdgeInsets.only(
-        top: 16,
-        left: 40,
-        right: 16,
-        bottom: 24,
-      ),
-      child: BarChart(
-        BarChartData(
-          alignment: BarChartAlignment.spaceAround,
-          maxY: maxValue * widget.maxYRatio,
-          titlesData: _buildTitlesData(years, interval),
-          gridData: const FlGridData(show: false),
-          borderData: FlBorderData(
-            show: true,
-            border: Border(
-              left: BorderSide(color: Colors.grey.shade400),
-              right: const BorderSide(color: Colors.transparent),
-              top: const BorderSide(color: Colors.transparent),
-              bottom: BorderSide(color: Colors.grey.shade400),
-            ),
-          ),
-          barGroups: years.asMap().entries.map((entry) {
-            final index = entry.key;
-            final year = entry.value;
-            final value = chartData[year] ?? 0.0;
-
-            final shouldShow = index <= (years.length - 1) * _controller.value;
-
-            return BarChartGroupData(
-              x: index,
-              barRods: [
-                BarChartRodData(
-                  toY: shouldShow ? value : 0,
-                  color: widget.chartColor ?? Colors.blue,
-                  width: barWidth,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ],
-              barsSpace: 4,
-            );
-          }).toList(),
+  Widget _buildBarChart({
+    required List<int> years,
+    required Map<int, double> chartData,
+    required double maxValue,
+    required double interval,
+    required BoxConstraints constraints,
+  }) {
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.spaceAround,
+        maxY: maxValue * widget.maxYRatio,
+        titlesData: _buildTitlesData(
+          years: years,
+          interval: interval,
+          constraints: constraints,
         ),
+        barTouchData: BarTouchData(
+          enabled: true,
+          touchTooltipData: BarTouchTooltipData(
+            tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+            tooltipPadding: const EdgeInsets.all(8),
+            tooltipMargin: 8,
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              final year = years[group.x.toInt()];
+              final value = chartData[year] ?? 0.0;
+              return BarTooltipItem(
+                '$year\n${value.toStringAsFixed(2)}',
+                const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            },
+          ),
+        ),
+        gridData: const FlGridData(show: false),
+        borderData: FlBorderData(
+          show: true,
+          border: Border(
+            left: BorderSide(color: Colors.grey.shade400),
+            right: const BorderSide(color: Colors.transparent),
+            top: const BorderSide(color: Colors.transparent),
+            bottom: BorderSide(color: Colors.grey.shade400),
+          ),
+        ),
+        barGroups: years.asMap().entries.map((entry) {
+          final index = entry.key;
+          final year = entry.value;
+          final value = chartData[year] ?? 0.0;
+          final shouldShow = index <= (years.length - 1) * _controller.value;
+
+          return BarChartGroupData(
+            x: index,
+            barRods: [
+              BarChartRodData(
+                toY: shouldShow ? value : 0,
+                color: widget.chartColor ?? Colors.blue,
+                width: constraints.maxWidth * 0.01,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ],
+            barsSpace: 4,
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  /// 추세선 차트를 생성
+  Widget _buildCagrLineChart({
+    required List<int> years,
+    required Map<int, double> trendLineData,
+    required double maxValue,
+    required double interval,
+    required BoxConstraints constraints,
+  }) {
+    return LineChart(
+      LineChartData(
+        gridData: const FlGridData(show: false),
+        titlesData: _buildTitlesData(
+          years: years,
+          interval: interval,
+          constraints: constraints,
+          isShowTitle: false,
+        ),
+        borderData: FlBorderData(show: false),
+        lineTouchData: const LineTouchData(
+          enabled: false,
+          handleBuiltInTouches: true,
+        ),
+        lineBarsData: [
+          LineChartBarData(
+            spots: years.asMap().entries.where((entry) {
+              // 애니메이션이 완료되면 모든 포인트 표시, 아니면 한 칸 뒤에서 시작
+              return _controller.value == 1
+                  ? true // 애니메이션 완료 시 모든 포인트 표시
+                  : entry.key < (years.length - 1) * _controller.value; // 진행 중에는 한 칸 뒤에서 따라가기
+            }).map((entry) {
+              return FlSpot(
+                entry.key.toDouble(),
+                trendLineData[entry.value] ?? 0,
+              );
+            }).toList(),
+            isCurved: true,
+            color: Colors.red,
+            dotData: FlDotData(
+              show: true,
+              checkToShowDot: (spot, barData) {
+                final currentLastIndex = ((years.length - 1) * _controller.value - 1).floor();
+                return _controller.value == 1
+                    ? spot.x == years.length - 1 // 애니메이션 완료 시 마지막 점
+                    : spot.x == currentLastIndex; // 진행 중에는 현재 위치
+              },
+              getDotPainter: (spot, percent, barData, index) {
+                return DashedCircleDotPainter(
+                  radius: 6,
+                  strokeColor: Colors.red,
+                  fillColor: Colors.white,
+                  strokeWidth: 1.5,
+                  rotationDegree: _rotationController.value * 360,
+                );
+              },
+            ),
+            dashArray: [5, 5],
+            barWidth: 2,
+          ),
+        ],
+        minX: -0.5,
+        maxX: years.length.toDouble() - 0.5,
+        minY: 0,
+        maxY: maxValue * widget.maxYRatio,
       ),
     );
   }
 
   /// CAGR 값을 보여주는 오버레이 위젯을 생성
-  Widget _buildCagrOverlay(double cagr) {
+  Widget _buildCagrOverlay({required double cagr, required BoxConstraints constraints}) {
     return Positioned(
-      top: widget.height * 0.1, // 차트 높이의 15% 위치에 배치
-      left: widget.width * 0.1, // 차트 너비의 10% 위치에 배치
-      right: widget.width * 0.1, // 차트 너비의 10% 위치에 배치
+      top: constraints.maxHeight * 0.1, // 차트 높이의 15% 위치에 배치
+      left: constraints.maxWidth * 0.1,
+      right: constraints.maxWidth * 0.1,
       child: Center(
         child: Text(
           'CAGR ${(cagr * 100).toStringAsFixed(1)}%',
           style: TextStyle(
             color: Colors.green[700],
             fontWeight: FontWeight.bold,
-            fontSize: 13,
+            fontSize: 15,
           ),
         ),
       ),
@@ -634,99 +695,160 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
     return pow((endValue / startValue), 1 / years) - 1;
   }
 
-  /// 차트 제목을 스타일링하여 생성
-  Widget _buildTitle(String title, Color? textColor, bool isBarChart) {
-    // title -> 좌우 의 [] 제거하면 코드
-    String countryCode = title.replaceAll(RegExp(r'[\[\]]'), '');
-
-    return Container(
-      padding: const EdgeInsets.only(left: 80),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isBarChart ? Colors.white : Colors.blue,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (widget.category == AnalysisCategory.countryTech) ...[
-              CountryFlag.fromCountryCode(
-                countryCode,
-                height: 16,
-                width: 24,
-              ),
-              const SizedBox(width: 4),
-            ],
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: isBarChart ? textColor ?? Colors.blue : Colors.white,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   /// 다중 선 차트를 위한 범례를 생성
   Widget _buildLegend(List<String> codes, List<Color> colors) {
+    final dataProvider = context.read<AnalysisDataProvider>();
+
+    final scrollController = ScrollController();
     return Container(
-      constraints: const BoxConstraints(maxWidth: 1500), // 최대 너비 설정
-      child: Wrap(
-        // Wrap 사용
-        alignment: WrapAlignment.center, // 왼쪽 정렬
-        spacing: 8, // 자식 위젯 간의 간격
-        runSpacing: 4, // 줄 간의 간격
-        children: codes.asMap().entries.map((entry) {
-          return Row(
-            mainAxisSize: MainAxisSize.min, // Row의 크기를 최소로 설정
-            children: [
-              Container(
-                width: 12,
-                height: 2,
-                color: colors[entry.key % colors.length],
+      constraints: const BoxConstraints(maxWidth: 1500),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.grab, // 마우스 커서 모양 변경
+        child: GestureDetector(
+          onHorizontalDragUpdate: (details) {
+            if (scrollController.hasClients) {
+              scrollController.position.moveTo(
+                scrollController.offset - details.delta.dx,
+                clamp: true,
+              );
+            }
+          },
+          child: Listener(
+            onPointerSignal: (pointerSignal) {
+              if (pointerSignal is PointerScrollEvent) {
+                final offset = pointerSignal.scrollDelta.dy;
+                if (scrollController.hasClients) {
+                  scrollController.jumpTo(
+                    (scrollController.offset + offset).clamp(
+                      0.0,
+                      scrollController.position.maxScrollExtent,
+                    ),
+                  );
+                }
+              }
+            },
+            child: SingleChildScrollView(
+              controller: scrollController,
+              scrollDirection: Axis.horizontal,
+              dragStartBehavior: DragStartBehavior.down,
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: codes.asMap().entries.map((entry) {
+                  final color = colors[entry.key % colors.length];
+
+                  // 각 코드별 CAGR 계산
+                  final chartData = _getFilteredChartData(
+                    context: context,
+                    techListType: widget.techListType!,
+                    techCode: widget.category == AnalysisCategory.countryTech ||
+                            widget.category == AnalysisCategory.companyTech ||
+                            widget.category == AnalysisCategory.academicTech ||
+                            widget.category == AnalysisCategory.techGap ||
+                            widget.category == AnalysisCategory.techAssessment
+                        ? widget.techCode ?? widget.selectedCodes![0]
+                        : entry.value,
+                    country: widget.category == AnalysisCategory.countryTech || (widget.category == AnalysisCategory.techGap && dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail)
+                        ? entry.value
+                        : null,
+                    targetName: widget.category == AnalysisCategory.companyTech ||
+                            widget.category == AnalysisCategory.academicTech ||
+                            (widget.category == AnalysisCategory.techGap &&
+                                (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail))
+                        ? entry.value
+                        : null,
+                  );
+
+                  final years = chartData.keys.toList()..sort();
+                  double cagr = 0;
+
+                  if (years.length >= 2) {
+                    final startYear = years.first;
+                    final endYear = years.last - 1;
+                    cagr = _calculateCAGR(
+                      chartData[startYear] ?? 0,
+                      chartData[endYear] ?? 0,
+                      endYear - startYear,
+                    );
+                  }
+
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 2,
+                              color: color,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              entry.value,
+                              style: const TextStyle(fontSize: 15),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'CAGR ${(cagr * 100).toStringAsFixed(1)}%',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: color,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
               ),
-              const SizedBox(width: 4),
-              Text(
-                entry.value,
-                style: const TextStyle(fontSize: 15),
-              ),
-            ],
-          );
-        }).toList(),
+            ),
+          ),
+        ),
       ),
     );
   }
 
   /// 양쪽 축의 타이틀 데이터를 구성
-  FlTitlesData _buildTitlesData(List<int> years, double interval) {
+  FlTitlesData _buildTitlesData({
+    required List<int> years,
+    required double interval,
+    required BoxConstraints constraints,
+    bool isShowTitle = true,
+  }) {
     return FlTitlesData(
       show: true,
       // 하단 타틀 (연도)
       bottomTitles: AxisTitles(
         sideTitles: SideTitles(
           showTitles: true,
+          interval: 1, // 간격을 1로 설정하여 모든 값을 표시
           getTitlesWidget: (value, meta) {
+            if (isShowTitle == false) {
+              return const SizedBox.shrink();
+            }
             final index = value.toInt();
             if (index >= 0 && index < years.length) {
-              return Transform.rotate(
-                angle: -45 * pi / 180,
-                child: Text(
-                  years[index].toString(),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
+              return Transform.translate(
+                offset: Offset(constraints.maxWidth * 0.005, constraints.maxHeight * 0.005),
+                child: Transform.rotate(
+                  angle: -45 * pi / 180,
+                  child: Text(
+                    years[index].toString(),
+                    style: TextStyle(
+                      fontSize: constraints.maxWidth * 0.005,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
               );
             }
-            return const Text('');
+            return const SizedBox.shrink();
           },
-          reservedSize: 36,
+          reservedSize: constraints.maxWidth * 0.03,
         ),
       ),
       // 좌측 타이틀 (값)
@@ -734,6 +856,9 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
         sideTitles: SideTitles(
           showTitles: true,
           getTitlesWidget: (value, meta) {
+            if (isShowTitle == false) {
+              return const SizedBox.shrink();
+            }
             // value를 Decimal로 변환하고 소수점 두 자리로 반올림
             final Decimal roundedValue = Decimal.parse(value.toStringAsFixed(2)); // 소수점 두 자리로 반올림
             final Decimal decimalInterval = Decimal.parse(interval.toString()); // interval을 Decimal로 변환
@@ -741,27 +866,20 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
             if (roundedValue % decimalInterval != Decimal.zero) {
               return const SizedBox.shrink(); // 최댓값일 경우 빈 위젯 반환
             }
-            // roundedValue가 10 이상이면 정수로 표시
-            if (roundedValue >= Decimal.fromInt(10) || decimalInterval >= Decimal.fromInt(10)) {
-              return Text(
-                roundedValue.toString(), // 정수로 표시
-                style: const TextStyle(
-                  fontSize: 12,
+            return Padding(
+              padding: const EdgeInsets.only(right: 5),
+              child: Text(
+                (roundedValue >= Decimal.fromInt(10) || decimalInterval >= Decimal.fromInt(10)) ? roundedValue.toString() : roundedValue.toStringAsFixed(2), // 소수점 2자리까지 표시
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  fontSize: constraints.maxWidth * 0.005,
                   color: Colors.grey,
                 ),
-              );
-            }
-            // roundedValue가 10보다 작으면 소수점 2자리까지 표시
-            return Text(
-              roundedValue.toStringAsFixed(2), // 소수점 2자리까지 표시
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
               ),
             );
           },
           interval: interval,
-          reservedSize: 40,
+          reservedSize: constraints.maxWidth * 0.03,
         ),
       ),
       // 오른쪽과 상단은 숨김 유지

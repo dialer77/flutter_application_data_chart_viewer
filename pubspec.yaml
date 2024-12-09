@@ -110,3 +110,32 @@ flutter:
     - assets/world_map_iso.json
     - assets/country_coordinates.json
 
+  fonts:
+    - family: Paperlogy-1
+      fonts:
+        - asset: assets/fonts/Paperlogy-1.ttf
+    - family: Paperlogy-2
+      fonts:
+        - asset: assets/fonts/Paperlogy-2.ttf
+    - family: Paperlogy-3
+      fonts:
+        - asset: assets/fonts/Paperlogy-3.ttf
+    - family: Paperlogy-4
+      fonts:
+        - asset: assets/fonts/Paperlogy-4.ttf
+    - family: Paperlogy-5
+      fonts:
+        - asset: assets/fonts/Paperlogy-5.ttf
+    - family: Paperlogy-6
+      fonts:
+        - asset: assets/fonts/Paperlogy-6.ttf
+    - family: Paperlogy-7
+      fonts:
+        - asset: assets/fonts/Paperlogy-7.ttf
+    - family: Paperlogy-8
+      fonts:
+        - asset: assets/fonts/Paperlogy-8.ttf
+    - family: Paperlogy-9
+      fonts:
+        - asset: assets/fonts/Paperlogy-9.ttf
+

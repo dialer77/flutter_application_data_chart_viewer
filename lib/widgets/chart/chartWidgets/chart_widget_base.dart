@@ -3,19 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/chart/chart_table_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/single_chart_widget.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/chart/table_chart_data.dart';
 import 'package:provider/provider.dart';
 
-class ChartWidgetAnalysisTarget extends StatefulWidget {
-  const ChartWidgetAnalysisTarget({super.key});
-
+abstract class ChartWidgetBase extends StatefulWidget {
+  const ChartWidgetBase({super.key});
   @override
-  State<ChartWidgetAnalysisTarget> createState() => _ChartWidgetAnalysisTargetState();
+  State<ChartWidgetBase> createState();
 }
 
-class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> with SingleTickerProviderStateMixin {
+abstract class ChartWidgetBaseState<T extends ChartWidgetBase> extends State<T> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -30,83 +27,22 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
     super.dispose();
   }
 
+  Widget buildChartContent(BuildContext context, BoxConstraints constraints);
+
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AnalysisDataProvider>();
-
-    List<String> codes = [];
-    final category = provider.selectedCategory;
-    final techCode = provider.selectedTechCode;
-    final techCodes = provider.selectedTechCodes;
-
-    if (category == AnalysisCategory.countryTech) {
-      codes = provider.selectedCountries.toList();
-      if (codes.isEmpty) {
-        codes = provider.getAvailableCountries(techCode).take(10).toList();
-      }
-    } else if (category == AnalysisCategory.companyTech) {
-      codes = provider.selectedCompanies.toList();
-      if (codes.isEmpty) {
-        codes = provider.getAvailableCompanies().take(10).toList();
-      }
-    } else if (category == AnalysisCategory.academicTech) {
-      codes = provider.selectedAcademics.toList();
-      if (codes.isEmpty) {
-        codes = provider.getAvailableAcademics().take(10).toList();
-      }
-    } else {
-      codes = techCodes.whereType<String>().toList();
-    }
-
     return LayoutBuilder(builder: (context, constraints) {
       return Padding(
         padding: EdgeInsets.only(
           left: constraints.maxWidth * 0.025,
           top: constraints.maxHeight * 0.05,
         ),
-        child: (() {
-          switch (provider.selectedSubCategory) {
-            case AnalysisSubCategory.countryTrend:
-            case AnalysisSubCategory.companyTrend:
-            case AnalysisSubCategory.academicTrend:
-              if (codes.length == 1) {
-                return _buildChartBarType(codes[0]);
-              } else {
-                return GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 2.15, // 높이를 낮추기 위해 비율을 증가시킴
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                  ),
-                  itemCount: codes.length,
-                  itemBuilder: (context, index) {
-                    return _buildChartBarType(codes[index]);
-                  },
-                );
-              }
-            default:
-              return Column(
-                children: [
-                  Flexible(child: _buildChartMultiLineType(codes)),
-                  const SizedBox(height: 20),
-                  Flexible(
-                    child: ChartTableWidget(
-                      title: 'Citation Index',
-                      headerTitles: const [
-                        (TableDataType.country, '국가 순위'),
-                      ],
-                      tableChartDataModels: provider.getTableChartDataModels(),
-                    ),
-                  ),
-                ],
-              );
-          }
-        })(),
+        child: buildChartContent(context, constraints),
       );
     });
   }
 
+  @protected
   Widget _buildChartMultiLineType(List<String> targetNameList) {
     final provider = context.watch<AnalysisDataProvider>();
     return LayoutBuilder(builder: (context, constraints) {
@@ -133,6 +69,7 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
     });
   }
 
+  @protected
   Widget _buildChartBarType(String targetCode) {
     final provider = context.watch<AnalysisDataProvider>();
     final category = provider.selectedCategory;

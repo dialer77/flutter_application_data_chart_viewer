@@ -44,8 +44,8 @@ class MainLayout extends StatelessWidget {
                       '데이터 시각화 프로그램',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 40,
+                        fontFamily: 'Paperlogy-7', // 폰트 변경
                       ),
                     ),
                   ),
@@ -80,6 +80,7 @@ class MainLayout extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 24, // 글자 크기 조정
                   fontWeight: FontWeight.bold,
+                  fontFamily: 'Times New Roman', // 폰트 변경
                 ),
               ),
             ),
@@ -91,6 +92,7 @@ class MainLayout extends StatelessWidget {
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16, // 글자 크기 조정
+                  fontFamily: 'Times New Roman', // 폰트 변경
                 ),
               ),
             ),

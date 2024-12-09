@@ -109,7 +109,6 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
                 Expanded(
                   child: Container(
                     color: const Color.fromARGB(255, 21, 96, 130),
-                    padding: const EdgeInsets.all(10.0),
                     child: Center(
                       child: Text(
                         widget.category.toString(),
@@ -131,7 +130,7 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
     });
   }
 
-  Widget _buildSubCategoryButtons({double fontSizeRatio = 0.25}) {
+  Widget _buildSubCategoryButtons({double fontSizeRatio = 0.2}) {
     final dataProvider = context.watch<AnalysisDataProvider>();
     _selectedSubCategory = dataProvider.selectedSubCategory;
     final subCategories = dataProvider.getAvailableSubCategories(widget.category);
@@ -216,18 +215,25 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(50, 75, 50, 50),
-      child: LayoutGrid(
-        columnSizes: [2.fr, 7.fr],
-        rowSizes: [1.fr, 8.fr],
-        children: [
-          _buildCategoryButton(fontSizeRatio: 0.25),
-          _buildSubCategoryButtons(fontSizeRatio: 0.3),
-          const AnalysisMenuListWidget(),
-          _buildChartWidget(),
-        ],
-      ),
-    );
+    return LayoutBuilder(builder: (context, constraints) {
+      return Padding(
+        padding: EdgeInsets.only(
+          left: constraints.maxWidth * 0.05,
+          top: constraints.maxHeight * 0.1,
+          right: constraints.maxWidth * 0.05,
+          bottom: constraints.maxHeight * 0.05,
+        ),
+        child: LayoutGrid(
+          columnSizes: [2.fr, 7.fr],
+          rowSizes: [1.fr, 8.fr],
+          children: [
+            _buildCategoryButton(fontSizeRatio: 0.25),
+            _buildSubCategoryButtons(fontSizeRatio: 0.25),
+            const AnalysisMenuListWidget(),
+            _buildChartWidget(),
+          ],
+        ),
+      );
+    });
   }
 }

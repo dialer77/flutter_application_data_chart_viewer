@@ -20,9 +20,7 @@ class _TableTechGapDataWidgetState extends State<TableTechGapDataWidget> {
       decoration: const BoxDecoration(
         color: Colors.white,
       ),
-      child: dataProvider.selectedCategory != AnalysisCategory.techGap
-          ? const Text('기술격차 페이지에서만 사용해주세요')
-          : _buildTechGapTable(),
+      child: dataProvider.selectedCategory != AnalysisCategory.techGap ? const Text('기술격차 페이지에서만 사용해주세요') : _buildTechGapTable(),
     );
   }
 
@@ -30,35 +28,16 @@ class _TableTechGapDataWidgetState extends State<TableTechGapDataWidget> {
     final dataProvider = context.watch<AnalysisDataProvider>();
     final techCode = dataProvider.selectedTechCode;
 
-    var countries = dataProvider.selectedCountries.isEmpty
-        ? dataProvider
-            .getAvailableCountriesFormTechGap(techCode)
-            .take(10)
-            .toList()
-        : dataProvider.selectedCountries.toList();
+    var countries = dataProvider.selectedCountries.isEmpty ? dataProvider.getAvailableCountriesFormTechGap(techCode).take(10).toList() : dataProvider.selectedCountries.toList();
 
     List<String> targetNames = [];
     if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail) {
-      targetNames = dataProvider.selectedCompanies.isEmpty
-          ? dataProvider
-              .getAvailableCompaniesFormTechGap(techCode)
-              .take(10)
-              .toList()
-          : dataProvider.selectedCompanies.toList();
-    } else if (dataProvider.selectedSubCategory ==
-        AnalysisSubCategory.academicDetail) {
-      targetNames = dataProvider.selectedAcademics.isEmpty
-          ? dataProvider
-              .getAvailableAcademicsFormTechGap(techCode)
-              .take(10)
-              .toList()
-          : dataProvider.selectedAcademics.toList();
+      targetNames = dataProvider.selectedCompanies.isEmpty ? dataProvider.getAvailableCompaniesFormTechGap(techCode).take(10).toList() : dataProvider.selectedCompanies.toList();
+    } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
+      targetNames = dataProvider.selectedAcademics.isEmpty ? dataProvider.getAvailableAcademicsFormTechGap(techCode).take(10).toList() : dataProvider.selectedAcademics.toList();
     }
 
-    final items =
-        dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail
-            ? countries
-            : targetNames;
+    final items = dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? countries : targetNames;
 
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
@@ -72,20 +51,15 @@ class _TableTechGapDataWidgetState extends State<TableTechGapDataWidget> {
             ),
           ),
           ...items.map((item) {
-            var conturyCode = dataProvider.selectedSubCategory ==
-                    AnalysisSubCategory.countryDetail
-                ? item.replaceAll(RegExp(r'[\[\]]'), '')
-                : dataProvider
-                    .searchCountryCode(item)
-                    .replaceAll(RegExp(r'[\[\]]'), '');
+            var conturyCode =
+                dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? item.replaceAll(RegExp(r'[\[\]]'), '') : dataProvider.searchCountryCode(item).replaceAll(RegExp(r'[\[\]]'), '');
             return DataColumn(
                 label: SizedBox(
               width: 80,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CountryFlag.fromCountryCode(conturyCode,
-                      height: 16, width: 24),
+                  CountryFlag.fromCountryCode(conturyCode, height: 16, width: 24),
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
@@ -100,21 +74,18 @@ class _TableTechGapDataWidgetState extends State<TableTechGapDataWidget> {
           }),
         ],
         rows: items.map((rowItem) {
-          var countryCode = dataProvider.selectedSubCategory ==
-                  AnalysisSubCategory.countryDetail
+          var countryCode = dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail
               ? rowItem.replaceAll(RegExp(r'[\[\]]'), '')
-              : dataProvider
-                  .searchCountryCode(rowItem)
-                  .replaceAll(RegExp(r'[\[\]]'), '');
+              : dataProvider.searchCountryCode(rowItem).replaceAll(RegExp(r'[\[\]]'), '');
           return DataRow(
             cells: [
               DataCell(
                 Container(
+                  width: double.infinity,
                   color: Colors.grey[200],
                   child: Row(
                     children: [
-                      CountryFlag.fromCountryCode(countryCode,
-                          height: 16, width: 24),
+                      CountryFlag.fromCountryCode(countryCode, height: 16, width: 24),
                       Expanded(
                         child: Text(
                           rowItem,
@@ -126,49 +97,34 @@ class _TableTechGapDataWidgetState extends State<TableTechGapDataWidget> {
               ),
               ...items.map((colItem) {
                 if (rowItem == colItem) {
-                  return const DataCell(Text('-'));
+                  return const DataCell(Center(child: Text('-')));
                 }
 
                 double rowValue = dataProvider
                     .getChartData(
                         techListType: dataProvider.selectedTechListType,
                         techCode: techCode,
-                        country: dataProvider.selectedSubCategory ==
-                                AnalysisSubCategory.countryDetail
-                            ? rowItem
-                            : null,
-                        targetName: dataProvider.selectedSubCategory ==
-                                    AnalysisSubCategory.companyDetail ||
-                                dataProvider.selectedSubCategory ==
-                                    AnalysisSubCategory.academicDetail
-                            ? rowItem
-                            : null)
+                        country: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? rowItem : null,
+                        targetName: dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail ? rowItem : null)
                     .values
                     .last;
                 double colValue = dataProvider
                     .getChartData(
                         techListType: dataProvider.selectedTechListType,
                         techCode: techCode,
-                        country: dataProvider.selectedSubCategory ==
-                                AnalysisSubCategory.countryDetail
-                            ? colItem
-                            : null,
-                        targetName: dataProvider.selectedSubCategory ==
-                                    AnalysisSubCategory.companyDetail ||
-                                dataProvider.selectedSubCategory ==
-                                    AnalysisSubCategory.academicDetail
-                            ? colItem
-                            : null)
+                        country: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? colItem : null,
+                        targetName: dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail ? colItem : null)
                     .values
                     .last;
                 double gap = calculateGap(rowValue, colValue);
 
                 return DataCell(
-                  Text(
-                    gap.toStringAsFixed(1),
-                    style: TextStyle(
-                      color: gap < 0 ? Colors.red : Colors.green,
-                      fontWeight: FontWeight.bold,
+                  Center(
+                    child: Text(
+                      gap.toStringAsFixed(1),
+                      style: TextStyle(
+                        color: gap < 0 ? Colors.blue : Colors.red,
+                      ),
                     ),
                   ),
                 );

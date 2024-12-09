@@ -15,7 +15,7 @@ void main() async {
 
     WindowOptions windowOptions = const WindowOptions(
       size: Size(1920, 1080),
-      minimumSize: Size(1600, 900),
+      minimumSize: Size(1280, 720),
       center: true,
       title: 'InnoPatent Analytics v4.5',
       backgroundColor: Colors.transparent,
@@ -60,6 +60,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
+        fontFamily: 'Paperlogy-5',
       ),
       home: const MainLayout(),
     );

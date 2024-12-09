@@ -162,8 +162,6 @@ class AnalysisDataProvider extends ChangeNotifier {
 
     _selectedCategory = category;
 
-    initializeWithCategory(category);
-
     RangeValues yearRange = getYearRange();
     _startYear = yearRange.start.toInt();
     _endYear = yearRange.end.toInt();
@@ -251,6 +249,11 @@ class AnalysisDataProvider extends ChangeNotifier {
           if (_selectedAnalysisTechListType == AnalysisTechListType.lc) {
             _selectedAnalysisTechListType = AnalysisTechListType.mc;
           }
+        }
+        break;
+      case AnalysisCategory.countryTech:
+        if (subCategory == AnalysisSubCategory.marketExpansionIndex) {
+          _selectedDataType = AnalysisDataType.patent;
         }
         break;
       case AnalysisCategory.techCompetition:
@@ -738,7 +741,9 @@ class AnalysisDataProvider extends ChangeNotifier {
 
   List<TableChartDataModel> getTableChartDataModels() {
     var filteredData = currentData
-        .where((data) => data.codeInfo.sheetName == getCategorySheetNames(selectedCategory) && data.codeInfo.techType == selectedTechListType && data.codeInfo.codeName == selectedTechCode)
+        .where((data) => data.codeInfo.sheetName == getCategorySheetNames(selectedCategory))
+        .where((data) => data.codeInfo.techType == selectedTechListType)
+        .where((data) => data.codeInfo.codeName == selectedTechCode)
         .toList();
 
     final dataCode = getDataCode() ?? "";
@@ -756,6 +761,38 @@ class AnalysisDataProvider extends ChangeNotifier {
           yearDatas: filteredDataByCountry.first.analysisDatas[dataCode] ?? {},
           dataInfo: {TableDataType.country: countryCode},
           name: filteredDataByCountry.first.codeInfo.name,
+          rank: rank,
+        );
+        rank++;
+        tableChartDataModels.add(tableChartDataModel);
+      }
+    } else if (selectedCategory == AnalysisCategory.companyTech) {
+      var companyCodes = _selectedCompanies.isNotEmpty ? _selectedCompanies : getAvailableCompanies().take(10).toList();
+
+      var rank = 1;
+      for (var companyCode in companyCodes) {
+        var filteredDataByCompany = filteredData.where((data) => data.codeInfo.name == companyCode).toList();
+
+        TableChartDataModel tableChartDataModel = TableChartDataModel(
+          yearDatas: filteredDataByCompany.first.analysisDatas[dataCode] ?? {},
+          dataInfo: {TableDataType.country: filteredDataByCompany.first.codeInfo.country, TableDataType.name: companyCode},
+          name: filteredDataByCompany.first.codeInfo.name,
+          rank: rank,
+        );
+        rank++;
+        tableChartDataModels.add(tableChartDataModel);
+      }
+    } else if (selectedCategory == AnalysisCategory.academicTech) {
+      var academicCodes = _selectedAcademics.isNotEmpty ? _selectedAcademics : getAvailableAcademics().take(10).toList();
+
+      var rank = 1;
+      for (var academicCode in academicCodes) {
+        var filteredDataByAcademic = filteredData.where((data) => data.codeInfo.name == academicCode).toList();
+
+        TableChartDataModel tableChartDataModel = TableChartDataModel(
+          yearDatas: filteredDataByAcademic.first.analysisDatas[dataCode] ?? {},
+          dataInfo: {TableDataType.country: filteredDataByAcademic.first.codeInfo.country, TableDataType.name: academicCode},
+          name: filteredDataByAcademic.first.codeInfo.name,
           rank: rank,
         );
         rank++;

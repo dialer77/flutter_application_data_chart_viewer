@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_tech_gap.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/chart_circle_widget.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/chart/chart_widget_analysis_target.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/chart/chart_widget_industry_tech.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/chart/chart_widget_tech_competition.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_analysis_target.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_industry_tech.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_tech_competition.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/table_chart_data.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/table_tech_gap_data_widget.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +12,7 @@ import 'dart:math';
 import '../../providers/analysis_data_provider.dart';
 import 'single_chart_widget.dart'; // 새로 분리한 위젯 import
 
-class ChartWidget extends StatelessWidget {
+class ChartWidget extends StatefulWidget {
   final AnalysisCategory category;
   final AnalysisSubCategory? selectedSubCategory;
 
@@ -20,6 +21,13 @@ class ChartWidget extends StatelessWidget {
     required this.category,
     this.selectedSubCategory,
   });
+
+  @override
+  State<ChartWidget> createState() => _ChartWidgetState();
+}
+
+class _ChartWidgetState extends State<ChartWidget> {
+  final bool _isTableVisible = false;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +48,7 @@ class ChartWidget extends StatelessWidget {
     }
 
     // 서브카테고리가 선택되지 않았을 때
-    if (selectedSubCategory == null) {
+    if (widget.selectedSubCategory == null) {
       return const Center(
         child: Text('서브카테고리를 선택해주세요'),
       );
@@ -55,6 +63,8 @@ class ChartWidget extends StatelessWidget {
         return const ChartWidgetAnalysisTarget();
       case AnalysisCategory.techCompetition:
         return const ChartWidgetTechCompetition();
+      case AnalysisCategory.techGap:
+        return const ChartWidgetTechGap();
       default:
         break;
     }
@@ -64,12 +74,12 @@ class ChartWidget extends StatelessWidget {
       AnalysisSubCategory.techInnovationIndex,
       AnalysisSubCategory.marketExpansionIndex,
       AnalysisSubCategory.rdInvestmentIndex,
-    ].contains(selectedSubCategory);
+    ].contains(widget.selectedSubCategory);
 
     final techCode = dataProvider.selectedTechCode;
     final techCodes = dataProvider.selectedTechCodes;
 
-    if (category == AnalysisCategory.techCompetition) {
+    if (widget.category == AnalysisCategory.techCompetition) {
       return Container(
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -81,41 +91,12 @@ class ChartWidget extends StatelessWidget {
           ],
         ),
       );
-    } else if (category == AnalysisCategory.techAssessment) {
+    } else if (widget.category == AnalysisCategory.techAssessment) {
       return Container(
         decoration: const BoxDecoration(
           color: Colors.white,
         ),
         child: const ChartCircleWidget(),
-      );
-    } else if (category == AnalysisCategory.techGap) {
-      var countries = dataProvider.selectedCountries.isEmpty ? dataProvider.getAvailableCountriesFormTechGap(techCode).take(10).toList() : dataProvider.selectedCountries.toList();
-
-      List<String> targetNames = [];
-      if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail) {
-        targetNames = dataProvider.selectedCompanies.isEmpty ? dataProvider.getAvailableCompaniesFormTechGap(techCode).take(10).toList() : dataProvider.selectedCompanies.toList();
-      } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
-        targetNames = dataProvider.selectedAcademics.isEmpty ? dataProvider.getAvailableAcademicsFormTechGap(techCode).take(10).toList() : dataProvider.selectedAcademics.toList();
-      }
-
-      return Column(
-        children: [
-          SingleChartWidget(
-            category: category,
-            selectedSubCategory: selectedSubCategory,
-            techListType: dataProvider.selectedTechListType,
-            techCode: techCode,
-            height: 300,
-            countries: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? countries.toList() : null,
-            targetNames: dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail ? targetNames : null,
-          ),
-          const Expanded(
-            child: SizedBox(
-              width: double.infinity,
-              child: TableTechGapDataWidget(),
-            ),
-          ),
-        ],
       );
     }
 
@@ -138,18 +119,18 @@ class ChartWidget extends StatelessWidget {
 
     // 지수 타입일 때는 하나의 차트에 모든 라인 표시
     if (isIndexType) {
-      if (category == AnalysisCategory.countryTech || category == AnalysisCategory.companyTech || category == AnalysisCategory.academicTech) {
+      if (widget.category == AnalysisCategory.countryTech || widget.category == AnalysisCategory.companyTech || widget.category == AnalysisCategory.academicTech) {
         var countries = dataProvider.selectedCountries.toList();
         if (countries.isEmpty) {
           countries = dataProvider.getAvailableCountries(techCode).take(10).toList();
         }
         List<String> targetNames = [];
-        if (category == AnalysisCategory.companyTech) {
+        if (widget.category == AnalysisCategory.companyTech) {
           targetNames = dataProvider.selectedCompanies.toList();
           if (targetNames.isEmpty) {
             targetNames = dataProvider.getAvailableCompanies().take(10).toList();
           }
-        } else if (category == AnalysisCategory.academicTech) {
+        } else if (widget.category == AnalysisCategory.academicTech) {
           targetNames = dataProvider.selectedAcademics.toList();
           if (targetNames.isEmpty) {
             targetNames = dataProvider.getAvailableAcademics().take(10).toList();
@@ -159,60 +140,57 @@ class ChartWidget extends StatelessWidget {
         return Column(
           children: [
             SingleChartWidget(
-              category: category,
-              selectedSubCategory: selectedSubCategory,
+              category: widget.category,
+              selectedSubCategory: widget.selectedSubCategory,
               techListType: dataProvider.selectedTechListType,
               chartTitle: '지수 추세',
               techCode: techCode,
-              height: 300,
-              countries: category == AnalysisCategory.countryTech ? countries : null,
-              targetNames: (category == AnalysisCategory.companyTech || category == AnalysisCategory.academicTech) ? targetNames : null,
+              countries: widget.category == AnalysisCategory.countryTech ? countries : null,
+              targetNames: (widget.category == AnalysisCategory.companyTech || widget.category == AnalysisCategory.academicTech) ? targetNames : null,
             ),
             const Expanded(child: TableChartData()),
           ],
         );
       } else {
         return SingleChartWidget(
-          category: category,
-          selectedSubCategory: selectedSubCategory,
+          category: widget.category,
+          selectedSubCategory: widget.selectedSubCategory,
           techListType: dataProvider.selectedTechListType,
           chartTitle: '지수 추세',
           techCode: techCode,
-          height: 400,
           selectedCodes: techCodes.whereType<String>().toList(),
         );
       }
     }
 
     // 지수가 아닐 때는 기존 로직 유지
-    if (techCodes.length == 1 && (category != AnalysisCategory.countryTech && category != AnalysisCategory.companyTech && category != AnalysisCategory.academicTech) ||
+    if (techCodes.length == 1 && (widget.category != AnalysisCategory.countryTech && widget.category != AnalysisCategory.companyTech && widget.category != AnalysisCategory.academicTech) ||
         (dataProvider.selectedCountries.length == 1)) {
       return SingleChartWidget(
-        category: category,
-        selectedSubCategory: selectedSubCategory,
+        category: widget.category,
+        selectedSubCategory: widget.selectedSubCategory,
         techListType: dataProvider.selectedTechListType,
-        chartTitle: category == AnalysisCategory.countryTech ? dataProvider.selectedCountries.first : techCode ?? '',
+        chartTitle: widget.category == AnalysisCategory.countryTech ? dataProvider.selectedCountries.first : techCode ?? '',
         techCode: techCodes.first,
-        country: category == AnalysisCategory.countryTech ? dataProvider.selectedCountries.first : null,
-        chartColor: category == AnalysisCategory.countryTech ? dataProvider.getColorForCode(dataProvider.selectedCountries.first) : null,
-        height: 250,
+        country: widget.category == AnalysisCategory.countryTech ? dataProvider.selectedCountries.first : null,
+        chartColor: widget.category == AnalysisCategory.countryTech ? dataProvider.getColorForCode(dataProvider.selectedCountries.first) : null,
       );
     }
 
     const itemsPerRow = 2;
     List<String> codes;
 
-    if (category == AnalysisCategory.countryTech) {
+    if (widget.category == AnalysisCategory.countryTech) {
       codes = dataProvider.selectedCountries.toList();
       if (codes.isEmpty) {
         codes = dataProvider.getAvailableCountries(techCode).take(10).toList();
       }
-    } else if (category == AnalysisCategory.companyTech) {
+    } else if (widget.category == AnalysisCategory.companyTech) {
       codes = dataProvider.selectedCompanies.toList();
       if (codes.isEmpty) {
         codes = dataProvider.getAvailableCompanies().take(10).toList();
       }
-    } else if (category == AnalysisCategory.academicTech) {
+    } else if (widget.category == AnalysisCategory.academicTech) {
       codes = dataProvider.selectedAcademics.toList();
       if (codes.isEmpty) {
         codes = dataProvider.getAvailableAcademics().take(10).toList();
@@ -241,36 +219,33 @@ class ChartWidget extends StatelessWidget {
                             left: j % itemsPerRow == 0 ? 0 : 4,
                             right: j % itemsPerRow == itemsPerRow - 1 ? 0 : 4,
                           ),
-                          child: category == AnalysisCategory.countryTech
+                          child: widget.category == AnalysisCategory.countryTech
                               ? SingleChartWidget(
-                                  category: category,
-                                  selectedSubCategory: selectedSubCategory,
+                                  category: widget.category,
+                                  selectedSubCategory: widget.selectedSubCategory,
                                   techListType: dataProvider.selectedTechListType,
                                   techCode: techCode,
                                   chartTitle: codes[j],
                                   country: codes[j],
-                                  height: 300,
                                   maxYRatio: 1.6,
                                   chartColor: dataProvider.getColorForCode(codes[j]),
                                 )
-                              : category == AnalysisCategory.companyTech || category == AnalysisCategory.academicTech
+                              : widget.category == AnalysisCategory.companyTech || widget.category == AnalysisCategory.academicTech
                                   ? SingleChartWidget(
-                                      category: category,
-                                      selectedSubCategory: selectedSubCategory,
+                                      category: widget.category,
+                                      selectedSubCategory: widget.selectedSubCategory,
                                       techListType: dataProvider.selectedTechListType,
                                       techCode: techCode,
                                       chartTitle: codes[j],
                                       targetName: codes[j],
-                                      height: 300,
                                       chartColor: dataProvider.getColorForCode(codes[j]),
                                     )
                                   : SingleChartWidget(
-                                      category: category,
-                                      selectedSubCategory: selectedSubCategory,
+                                      category: widget.category,
+                                      selectedSubCategory: widget.selectedSubCategory,
                                       techListType: dataProvider.selectedTechListType,
                                       chartTitle: codes[j],
                                       techCode: codes[j],
-                                      height: 300,
                                       chartColor: dataProvider.getColorForCode(codes[j]),
                                     ),
                         ),

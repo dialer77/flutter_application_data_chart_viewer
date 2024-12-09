@@ -219,7 +219,7 @@ class _AnalysisMenuListWidgetState extends State<AnalysisMenuListWidget> {
         children: [
           ...AnalysisDataType.values.map(
             (option) => Opacity(
-              opacity: availableOptions.contains(option) ? 1.0 : 1.0,
+              opacity: availableOptions.contains(option) ? 1.0 : 0.0,
               child: Center(
                 child: Row(
                   mainAxisSize: MainAxisSize.max,

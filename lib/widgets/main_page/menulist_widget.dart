@@ -3,7 +3,6 @@ import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class MenuListWidget extends StatefulWidget {
   final AnalysisCategory analysisCategory;
@@ -89,7 +88,7 @@ class _MenuListWidgetState extends State<MenuListWidget> with SingleTickerProvid
             final subCategory = entry.value;
             return Flexible(
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: widget.constraints.maxWidth * 0.15),
+                padding: EdgeInsets.symmetric(vertical: widget.constraints.maxWidth * 0.09),
                 child: AnimatedOpacity(
                   duration: Duration(milliseconds: 400 + (index * 100)),
                   opacity: _isAnimating ? 0.0 : 1.0,
@@ -109,9 +108,10 @@ class _MenuListWidgetState extends State<MenuListWidget> with SingleTickerProvid
                       child: Center(
                         child: Text(
                           subCategory.toString(),
-                          style: GoogleFonts.notoSansKr(
+                          style: TextStyle(
                             color: Colors.white,
                             fontSize: widget.constraints.maxWidth * 0.1,
+                            fontFamily: 'Paperlogy-4',
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -132,7 +132,7 @@ class _MenuListWidgetState extends State<MenuListWidget> with SingleTickerProvid
     return Flexible(
       flex: 1,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: widget.constraints.maxWidth * 0.1),
+        padding: EdgeInsets.symmetric(vertical: widget.constraints.maxWidth * 0.05),
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 800),
           opacity: _isAnimating ? 0.0 : 1.0,
@@ -153,11 +153,12 @@ class _MenuListWidgetState extends State<MenuListWidget> with SingleTickerProvid
                 ),
                 child: Center(
                   child: Text(
-                    "Execute  ",
-                    style: GoogleFonts.notoSansKr(
+                    "Execute",
+                    style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: widget.constraints.maxWidth * 0.1,
+                      fontSize: widget.constraints.maxWidth * 0.12,
+                      fontFamily: 'Times New Roman',
                     ),
                     textAlign: TextAlign.center,
                   ),

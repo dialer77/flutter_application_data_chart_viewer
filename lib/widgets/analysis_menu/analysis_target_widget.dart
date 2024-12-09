@@ -137,7 +137,6 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
             ),
             Expanded(
               child: Container(
-                margin: const EdgeInsets.only(top: 10),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey),
                   borderRadius: BorderRadius.circular(4),
@@ -155,7 +154,7 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
                             ),
                           Expanded(
                             child: Text(
-                              item,
+                              CommonUtils.instance.replaceCountryCode(item),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),

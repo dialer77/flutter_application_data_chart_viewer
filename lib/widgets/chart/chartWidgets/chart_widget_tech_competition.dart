@@ -3,14 +3,12 @@ import 'dart:math';
 import 'package:country_flags/country_flags.dart';
 import 'package:decimal/decimal.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
-import 'package:flutter_application_data_chart_viewer/models/table_chart_data_model.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/chart/chart_table_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/table_chart_data.dart';
-import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:provider/provider.dart';
 
 class ChartWidgetTechCompetition extends StatefulWidget {
@@ -22,7 +20,8 @@ class ChartWidgetTechCompetition extends StatefulWidget {
 
 class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition> with SingleTickerProviderStateMixin {
   AnalysisCategory get _category => AnalysisCategory.techCompetition;
-  double get _maxYRatio => 1.6;
+  final double _maxYRatio = 1.6;
+  bool _isTableVisible = false;
 
   late AnimationController _controller;
 
@@ -43,50 +42,7 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      return Padding(
-        padding: EdgeInsets.only(
-          left: constraints.maxWidth * 0.025,
-          top: constraints.maxHeight * 0.05,
-        ),
-        child: SizedBox(
-          width: constraints.maxWidth,
-          height: constraints.maxHeight,
-          child: LayoutGrid(
-            columnSizes: [1.fr],
-            rowSizes: [1.fr, 1.fr],
-            children: [
-              const SizedBox(
-                height: double.infinity,
-                // child: ChartTableWidget(
-                //   width: constraints.maxWidth,
-                //   height: constraints.maxHeight,
-                //   title: 'Tech Competition',
-                //   headerTitles: const [
-                //     (TableDataType.country, '국가 순위'),
-                //   ],
-                //   tableChartDataModels: CommonUtils.instance.createTestData(),
-                // ),
-              ),
-              _buildChartBarType(),
-            ],
-          ),
-        ),
-      );
-    });
-  }
-
-  Widget _buildTableChart() {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.green,
-      ),
-    );
-  }
-
-  Widget _buildChartBarType() {
     final provider = context.watch<AnalysisDataProvider>();
-
     List<String> codes = [];
     if (provider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
       codes = provider.selectedCountries.toList();
@@ -104,6 +60,169 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
         codes = provider.getAvailableAcademicsFromTechCompetition(provider.selectedTechCode).take(10).toList();
       }
     }
+    return LayoutBuilder(builder: (context, constraints) {
+      return Padding(
+        padding: EdgeInsets.only(
+          left: constraints.maxWidth * 0.025,
+          top: constraints.maxHeight * 0.05,
+        ),
+        child: SizedBox(
+          width: constraints.maxWidth,
+          height: constraints.maxHeight,
+          child: Column(
+            children: [
+              Center(
+                child: _buildLegend(codes),
+              ),
+              Expanded(
+                child: _buildChartBarType(codes),
+              ),
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    _isTableVisible = !_isTableVisible;
+                  });
+                },
+                child: Container(
+                  width: constraints.maxWidth,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center, // 왼쪽 정렬 유지
+                    children: [
+                      Icon(
+                        _isTableVisible ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                        size: 28,
+                        color: Colors.blue[700],
+                      ),
+                      Text(
+                        _isTableVisible ? '테이블 닫기' : '테이블 보기',
+                        style: TextStyle(
+                          color: Colors.blue[700],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
+                ),
+              ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                height: _isTableVisible ? 300 : 0, // 테이블의 최대 높이를 300으로 설정
+                child: const SingleChildScrollView(
+                  child: SizedBox(
+                    height: 300,
+                    child: TableChartData(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildTableChart() {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.green,
+      ),
+    );
+  }
+
+  Widget _buildLegend(List<String> codes) {
+    final provider = context.watch<AnalysisDataProvider>();
+    final scrollController = ScrollController();
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 1500),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.grab, // 마우스 커서 모양 변경
+        child: GestureDetector(
+          onHorizontalDragUpdate: (details) {
+            if (scrollController.hasClients) {
+              scrollController.position.moveTo(
+                scrollController.offset - details.delta.dx,
+                clamp: true,
+              );
+            }
+          },
+          child: Listener(
+            onPointerSignal: (pointerSignal) {
+              if (pointerSignal is PointerScrollEvent) {
+                final offset = pointerSignal.scrollDelta.dy;
+                if (scrollController.hasClients) {
+                  scrollController.jumpTo(
+                    (scrollController.offset + offset).clamp(
+                      0.0,
+                      scrollController.position.maxScrollExtent,
+                    ),
+                  );
+                }
+              }
+            },
+            child: SingleChildScrollView(
+              controller: scrollController,
+              scrollDirection: Axis.horizontal,
+              dragStartBehavior: DragStartBehavior.down,
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: codes.asMap().entries.map((entry) {
+                  final color = provider.getColorForCode(codes[entry.key]);
+
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 2,
+                              color: color,
+                            ),
+                            const SizedBox(width: 4),
+                            (() {
+                              if (provider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
+                                return CountryFlag.fromCountryCode(
+                                  CommonUtils.instance.replaceCountryCode(codes[entry.key]),
+                                  height: 16,
+                                  width: 16,
+                                );
+                              } else {
+                                return const SizedBox.shrink();
+                              }
+                            }()),
+                            const SizedBox(width: 4),
+                            Text(
+                              CommonUtils.instance.replaceCountryCode(codes[entry.key]),
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: color,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChartBarType(List<String> codes) {
+    final provider = context.watch<AnalysisDataProvider>();
 
     const dataCode = "TC";
 
@@ -155,19 +274,31 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
           alignment: BarChartAlignment.spaceAround,
           maxY: maxValue * _maxYRatio,
           barTouchData: BarTouchData(
-            enabled: false,
+            enabled: true,
             touchTooltipData: BarTouchTooltipData(
-              tooltipBgColor: Colors.transparent,
+              tooltipBgColor: Colors.white.withOpacity(0.8),
+              tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              tooltipMargin: 8,
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
                 try {
+                  final codes = chartData.keys.toList();
+                  final code = codes[groupIndex];
+                  final value = rod.toY;
                   return BarTooltipItem(
-                    rod.toY.toInt().toString(),
-                    const TextStyle(color: Colors.black),
+                    '$code ${value.toStringAsFixed(4)}',
+                    const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                    children: const [],
                   );
                 } catch (e) {
                   return BarTooltipItem(',', const TextStyle(color: Colors.black));
                 }
               },
+              fitInsideHorizontally: true,
+              fitInsideVertically: true,
             ),
           ),
           titlesData: _buildTitlesData(chartData.keys.toList(), interval),
@@ -212,43 +343,10 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
   }
 
   FlTitlesData _buildTitlesData(List<String> codes, double interval) {
-    final provider = context.watch<AnalysisDataProvider>();
     return FlTitlesData(
       show: true,
-      bottomTitles: AxisTitles(
-        sideTitles: SideTitles(
-          showTitles: true,
-          getTitlesWidget: (value, meta) {
-            final index = value.toInt();
-            if (index >= 0 && index < codes.length) {
-              return Column(
-                children: [
-                  // 짝수 인덱스일 경우 상단에 빈 공간 추가
-                  if (index % 2 == 1) const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      if (provider.selectedSubCategory == AnalysisSubCategory.countryDetail)
-                        CountryFlag.fromCountryCode(
-                          CommonUtils.instance.replaceCountryCode(codes[index]),
-                          height: 16,
-                          width: 16,
-                        ),
-                      Text(
-                        CommonUtils.instance.replaceCountryCode(codes[index]),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              );
-            }
-            return const Text('');
-          },
-          reservedSize: 52, // 높이를 늘려서 짝수 타이틀이 겹치지 않도록 함
-        ),
+      bottomTitles: const AxisTitles(
+        sideTitles: SideTitles(showTitles: false),
       ),
       // 좌측 타이틀 (값)
       leftTitles: AxisTitles(

@@ -3,7 +3,6 @@ import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/single_chart_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/table_tech_gap_data_widget.dart';
-import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 
 class ChartWidgetTechGap extends StatefulWidget {
@@ -19,8 +18,6 @@ class _ChartWidgetTechGapState extends State<ChartWidgetTechGap> {
   Widget build(BuildContext context) {
     final dataProvider = context.watch<AnalysisDataProvider>();
     final techCode = dataProvider.selectedTechCode;
-
-    var countries = dataProvider.selectedCountries.isEmpty ? dataProvider.getAvailableCountriesFormTechGap(techCode).take(10).toList() : dataProvider.selectedCountries.toList();
 
     List<String> targetNames = [];
     if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail) {

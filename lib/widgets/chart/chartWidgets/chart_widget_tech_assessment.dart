@@ -1,0 +1,129 @@
+import 'dart:ui';
+import 'package:flutter_layout_grid/flutter_layout_grid.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
+import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
+import 'package:provider/provider.dart';
+
+class ChartWidgetTechAssessment extends StatefulWidget {
+  const ChartWidgetTechAssessment({super.key});
+
+  @override
+  State<ChartWidgetTechAssessment> createState() => _ChartWidgetTechAssessmentState();
+}
+
+class _ChartWidgetTechAssessmentState extends State<ChartWidgetTechAssessment> {
+  String? selectedItem;
+  @override
+  Widget build(BuildContext context) {
+    final dataProvider = context.watch<AnalysisDataProvider>();
+    final items = getItemsBySubCategory(dataProvider);
+    return LayoutBuilder(builder: (context, constraints) {
+      return Padding(
+        padding: EdgeInsets.only(
+          left: constraints.maxWidth * 0.025,
+          top: constraints.maxHeight * 0.05,
+        ),
+        child: LayoutGrid(
+          columnSizes: [1.fr, 1.fr],
+          rowSizes: [1.fr, 4.5.fr, 4.5.fr],
+          children: [
+            Center(
+              child: ScrollConfiguration(
+                behavior: ScrollConfiguration.of(context).copyWith(
+                  dragDevices: {
+                    PointerDeviceKind.touch,
+                    PointerDeviceKind.mouse,
+                  },
+                ),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: items.map((item) {
+                        final isSelected = item == selectedItem;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                selectedItem = item;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                              decoration: BoxDecoration(
+                                color: isSelected ? Colors.blue : Colors.white,
+                                border: Border.all(color: Colors.blue),
+                                borderRadius: BorderRadius.circular(4.0),
+                              ),
+                              child: Text(
+                                item,
+                                style: TextStyle(
+                                  color: isSelected ? Colors.white : Colors.blue,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ),
+            ).withGridPlacement(
+              columnStart: 0,
+              columnSpan: 2,
+              rowStart: 0,
+              rowSpan: 1,
+            ),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.green),
+              ),
+            ).withGridPlacement(
+              columnStart: 0,
+              columnSpan: 1,
+              rowStart: 1,
+              rowSpan: 1,
+            ),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.green),
+              ),
+            ).withGridPlacement(
+              columnStart: 1,
+              columnSpan: 1,
+              rowStart: 1,
+              rowSpan: 1,
+            ),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.red),
+              ),
+            ).withGridPlacement(
+              columnStart: 0,
+              columnSpan: 2,
+              rowStart: 2,
+              rowSpan: 1,
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  List<String> getItemsBySubCategory(AnalysisDataProvider dataProvider) {
+    switch (dataProvider.selectedSubCategory) {
+      case AnalysisSubCategory.countryDetail:
+        return dataProvider.selectedCountries.isEmpty ? dataProvider.getAvailableCountriesFromTechAssessment().take(10).toList() : dataProvider.selectedCountries.toList();
+      case AnalysisSubCategory.companyDetail:
+        return dataProvider.selectedCompanies.isEmpty ? dataProvider.getAvailableCompaniesFromTechAssessment().take(10).toList() : dataProvider.selectedCompanies.toList();
+      case AnalysisSubCategory.academicDetail:
+        return dataProvider.selectedAcademics.isEmpty ? dataProvider.getAvailableAcademicsFromTechAssessment().take(10).toList() : dataProvider.selectedAcademics.toList();
+      default:
+        return [];
+    }
+  }
+}

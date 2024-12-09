@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_tech_assessment.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_tech_gap.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/chart_circle_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_analysis_target.dart';
@@ -63,6 +64,8 @@ class _ChartWidgetState extends State<ChartWidget> {
         return const ChartWidgetAnalysisTarget();
       case AnalysisCategory.techCompetition:
         return const ChartWidgetTechCompetition();
+      case AnalysisCategory.techAssessment:
+        return const ChartWidgetTechAssessment();
       case AnalysisCategory.techGap:
         return const ChartWidgetTechGap();
       default:

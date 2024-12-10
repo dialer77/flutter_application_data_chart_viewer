@@ -19,7 +19,6 @@ class ChartWidgetTechCompetition extends StatefulWidget {
 }
 
 class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition> with SingleTickerProviderStateMixin {
-  AnalysisCategory get _category => AnalysisCategory.techCompetition;
   final double _maxYRatio = 1.6;
   bool _isTableVisible = false;
 
@@ -61,66 +60,60 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
       }
     }
     return LayoutBuilder(builder: (context, constraints) {
-      return Padding(
-        padding: EdgeInsets.only(
-          left: constraints.maxWidth * 0.025,
-          top: constraints.maxHeight * 0.05,
-        ),
-        child: SizedBox(
-          width: constraints.maxWidth,
-          height: constraints.maxHeight,
-          child: Column(
-            children: [
-              Center(
-                child: _buildLegend(codes),
-              ),
-              Expanded(
-                child: _buildChartBarType(codes),
-              ),
-              InkWell(
-                onTap: () {
-                  setState(() {
-                    _isTableVisible = !_isTableVisible;
-                  });
-                },
-                child: Container(
-                  width: constraints.maxWidth,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.blue),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center, // 왼쪽 정렬 유지
-                    children: [
-                      Icon(
-                        _isTableVisible ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
-                        size: 28,
+      return SizedBox(
+        width: constraints.maxWidth,
+        height: constraints.maxHeight,
+        child: Column(
+          children: [
+            Center(
+              child: _buildLegend(codes),
+            ),
+            Expanded(
+              child: _buildChartBarType(codes),
+            ),
+            InkWell(
+              onTap: () {
+                setState(() {
+                  _isTableVisible = !_isTableVisible;
+                });
+              },
+              child: Container(
+                width: constraints.maxWidth,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center, // 왼쪽 정렬 유지
+                  children: [
+                    Icon(
+                      _isTableVisible ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                      size: 28,
+                      color: Colors.blue[700],
+                    ),
+                    Text(
+                      _isTableVisible ? '테이블 닫기' : '테이블 보기',
+                      style: TextStyle(
                         color: Colors.blue[700],
+                        fontWeight: FontWeight.bold,
                       ),
-                      Text(
-                        _isTableVisible ? '테이블 닫기' : '테이블 보기',
-                        style: TextStyle(
-                          color: Colors.blue[700],
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                 ),
               ),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                height: _isTableVisible ? 300 : 0, // 테이블의 최대 높이를 300으로 설정
-                child: const SingleChildScrollView(
-                  child: SizedBox(
-                    height: 300,
-                    child: TableChartData(),
-                  ),
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              height: _isTableVisible ? 300 : 0, // 테이블의 최대 높이를 300으로 설정
+              child: const SingleChildScrollView(
+                child: SizedBox(
+                  height: 300,
+                  child: TableChartData(),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     });

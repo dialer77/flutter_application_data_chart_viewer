@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_tech_assessment.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_tech_gap.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/chart_circle_widget.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_analysis_target.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_industry_tech.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_tech_competition.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/table_chart_data.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/chart/table_tech_gap_data_widget.dart';
 import 'package:provider/provider.dart';
 import '../../models/enum_defines.dart';
 import 'dart:math';
@@ -28,8 +22,6 @@ class ChartWidget extends StatefulWidget {
 }
 
 class _ChartWidgetState extends State<ChartWidget> {
-  final bool _isTableVisible = false;
-
   @override
   Widget build(BuildContext context) {
     final dataProvider = context.watch<AnalysisDataProvider>();
@@ -53,23 +45,6 @@ class _ChartWidgetState extends State<ChartWidget> {
       return const Center(
         child: Text('서브카테고리를 선택해주세요'),
       );
-    }
-
-    switch (dataProvider.selectedCategory) {
-      case AnalysisCategory.industryTech:
-        return const ChartWidgetIndustryTech();
-      case AnalysisCategory.countryTech:
-      case AnalysisCategory.companyTech:
-      case AnalysisCategory.academicTech:
-        return const ChartWidgetAnalysisTarget();
-      case AnalysisCategory.techCompetition:
-        return const ChartWidgetTechCompetition();
-      case AnalysisCategory.techAssessment:
-        return const ChartWidgetTechAssessment();
-      case AnalysisCategory.techGap:
-        return const ChartWidgetTechGap();
-      default:
-        break;
     }
 
     // 지수 타입인지 확인
@@ -143,8 +118,6 @@ class _ChartWidgetState extends State<ChartWidget> {
         return Column(
           children: [
             SingleChartWidget(
-              category: widget.category,
-              selectedSubCategory: widget.selectedSubCategory,
               techListType: dataProvider.selectedTechListType,
               chartTitle: '지수 추세',
               techCode: techCode,
@@ -156,8 +129,6 @@ class _ChartWidgetState extends State<ChartWidget> {
         );
       } else {
         return SingleChartWidget(
-          category: widget.category,
-          selectedSubCategory: widget.selectedSubCategory,
           techListType: dataProvider.selectedTechListType,
           chartTitle: '지수 추세',
           techCode: techCode,
@@ -170,8 +141,6 @@ class _ChartWidgetState extends State<ChartWidget> {
     if (techCodes.length == 1 && (widget.category != AnalysisCategory.countryTech && widget.category != AnalysisCategory.companyTech && widget.category != AnalysisCategory.academicTech) ||
         (dataProvider.selectedCountries.length == 1)) {
       return SingleChartWidget(
-        category: widget.category,
-        selectedSubCategory: widget.selectedSubCategory,
         techListType: dataProvider.selectedTechListType,
         chartTitle: widget.category == AnalysisCategory.countryTech ? dataProvider.selectedCountries.first : techCode ?? '',
         techCode: techCodes.first,
@@ -224,8 +193,6 @@ class _ChartWidgetState extends State<ChartWidget> {
                           ),
                           child: widget.category == AnalysisCategory.countryTech
                               ? SingleChartWidget(
-                                  category: widget.category,
-                                  selectedSubCategory: widget.selectedSubCategory,
                                   techListType: dataProvider.selectedTechListType,
                                   techCode: techCode,
                                   chartTitle: codes[j],
@@ -235,8 +202,6 @@ class _ChartWidgetState extends State<ChartWidget> {
                                 )
                               : widget.category == AnalysisCategory.companyTech || widget.category == AnalysisCategory.academicTech
                                   ? SingleChartWidget(
-                                      category: widget.category,
-                                      selectedSubCategory: widget.selectedSubCategory,
                                       techListType: dataProvider.selectedTechListType,
                                       techCode: techCode,
                                       chartTitle: codes[j],
@@ -244,8 +209,6 @@ class _ChartWidgetState extends State<ChartWidget> {
                                       chartColor: dataProvider.getColorForCode(codes[j]),
                                     )
                                   : SingleChartWidget(
-                                      category: widget.category,
-                                      selectedSubCategory: widget.selectedSubCategory,
                                       techListType: dataProvider.selectedTechListType,
                                       chartTitle: codes[j],
                                       techCode: codes[j],

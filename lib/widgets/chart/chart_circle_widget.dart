@@ -109,8 +109,6 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
           ),
           Flexible(
             child: SingleChartWidget(
-              category: AnalysisCategory.techAssessment,
-              selectedSubCategory: dataProvider.selectedSubCategory,
               techListType: AnalysisTechListType.lc,
               techCode: dataProvider.selectedLcTechCode,
               countries: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? [dataProvider.selectedCountry ?? ''] : null,

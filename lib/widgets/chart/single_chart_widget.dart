@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
 import 'package:flutter_application_data_chart_viewer/utils/dash_circle_dot_painter.dart';
 import 'package:provider/provider.dart';
@@ -10,8 +11,6 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/gestures.dart'; // Decimal 패키지 임포트
 
 class SingleChartWidget extends StatefulWidget {
-  final AnalysisCategory category;
-  final AnalysisSubCategory? selectedSubCategory;
   final String? chartTitle;
   final AnalysisTechListType? techListType;
   final String? techCode;
@@ -27,8 +26,6 @@ class SingleChartWidget extends StatefulWidget {
 
   const SingleChartWidget({
     super.key,
-    required this.category,
-    required this.selectedSubCategory,
     this.chartTitle,
     required this.techListType,
     this.techCode,
@@ -48,8 +45,21 @@ class SingleChartWidget extends StatefulWidget {
 }
 
 class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProviderStateMixin {
+  AnalysisCategory? _category;
+  AnalysisSubCategory? _selectedSubCategory;
+
   late AnimationController _controller;
   late AnimationController _rotationController;
+
+  // 확대/축소 상태를 저장할 변수 추가
+  double _scaleX = 1.0;
+  double _scaleY = 1.0;
+
+  // 드래그 위치 추적을 위한 변수 추가
+  double _dragStartX = 0.0;
+  double _dragStartY = 0.0;
+  double _offsetX = 0.0;
+  double _offsetY = 0.0;
 
   @override
   void initState() {
@@ -65,23 +75,42 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
       duration: const Duration(seconds: 2),
       vsync: this,
     )..repeat(); // 계속 반복
+
+    // 확대/축소 및 드래그 상태 초기화
+    _scaleX = 1.0;
+    _scaleY = 1.0;
+    _offsetX = 0.0;
+    _offsetY = 0.0;
+    _dragStartX = 0.0;
+    _dragStartY = 0.0;
   }
 
   @override
   void dispose() {
     _controller.dispose();
     _rotationController.dispose();
+    // 상태 변수들 초기화
+    _scaleX = 1.0;
+    _scaleY = 1.0;
+    _offsetX = 0.0;
+    _offsetY = 0.0;
+    _dragStartX = 0.0;
+    _dragStartY = 0.0;
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final dataProvider = context.watch<AnalysisDataProvider>();
+
+    _category = dataProvider.selectedCategory;
+    _selectedSubCategory = dataProvider.selectedSubCategory;
+
     final isIndexType = [
       AnalysisSubCategory.techInnovationIndex,
       AnalysisSubCategory.marketExpansionIndex,
       AnalysisSubCategory.rdInvestmentIndex,
-    ].contains(widget.selectedSubCategory);
+    ].contains(_selectedSubCategory);
 
     List<String> chartLoopCodes = [];
     if (widget.selectedCodes != null) {
@@ -122,16 +151,16 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
     // 첫 번째 유효한 데이터에서 years 가져오기
     for (final code in chartLoopCodes) {
       String? countryCode;
-      if (widget.category == AnalysisCategory.countryTech) {
+      if (_category == AnalysisCategory.countryTech) {
         countryCode = code;
-      } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
+      } else if (_selectedSubCategory == AnalysisSubCategory.countryDetail) {
         countryCode = code;
       }
 
       String? targetName;
-      if (widget.category == AnalysisCategory.companyTech || widget.category == AnalysisCategory.academicTech) {
+      if (_category == AnalysisCategory.companyTech || _category == AnalysisCategory.academicTech) {
         targetName = code;
-      } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
+      } else if (_selectedSubCategory == AnalysisSubCategory.companyDetail || _selectedSubCategory == AnalysisSubCategory.academicDetail) {
         targetName = code;
       }
 
@@ -157,22 +186,21 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
       final chartData = _getFilteredChartData(
         context: context,
         techListType: widget.techListType!,
-        techCode: widget.category == AnalysisCategory.countryTech ||
-                widget.category == AnalysisCategory.companyTech ||
-                widget.category == AnalysisCategory.academicTech ||
-                widget.category == AnalysisCategory.techGap ||
-                widget.category == AnalysisCategory.techAssessment
+        techCode: _category == AnalysisCategory.countryTech ||
+                _category == AnalysisCategory.companyTech ||
+                _category == AnalysisCategory.academicTech ||
+                _category == AnalysisCategory.techGap ||
+                _category == AnalysisCategory.techAssessment
             ? widget.techCode ?? widget.selectedCodes![0]
             : code,
-        country: widget.category == AnalysisCategory.countryTech ||
-                (widget.category == AnalysisCategory.techGap && dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) ||
-                (widget.category == AnalysisCategory.techAssessment && dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail)
+        country: _category == AnalysisCategory.countryTech ||
+                (_category == AnalysisCategory.techGap && _selectedSubCategory == AnalysisSubCategory.countryDetail) ||
+                (_category == AnalysisCategory.techAssessment && _selectedSubCategory == AnalysisSubCategory.countryDetail)
             ? code
             : null,
-        targetName: widget.category == AnalysisCategory.companyTech ||
-                widget.category == AnalysisCategory.academicTech ||
-                (widget.category == AnalysisCategory.techGap &&
-                    (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail))
+        targetName: _category == AnalysisCategory.companyTech ||
+                _category == AnalysisCategory.academicTech ||
+                (_category == AnalysisCategory.techGap && (_selectedSubCategory == AnalysisSubCategory.companyDetail || _selectedSubCategory == AnalysisSubCategory.academicDetail))
             ? code
             : null,
       );
@@ -234,16 +262,52 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
     return AnimatedBuilder(
       animation: _rotationController,
       builder: (context, child) {
-        return AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            return Container(
+        return Listener(
+          onPointerSignal: (PointerSignalEvent event) {
+            if (_controller.isAnimating) return;
+
+            if (event is PointerScrollEvent) {
+              setState(() {
+                if (event.kind == PointerDeviceKind.mouse) {
+                  _scaleY = (_scaleY * (event.scrollDelta.dy > 0 ? 0.95 : 1.05)).clamp(1, 5.0);
+                  _scaleX = (_scaleX * (event.scrollDelta.dy > 0 ? 0.95 : 1.05)).clamp(1, 5.0);
+                }
+              });
+            }
+          },
+          child: GestureDetector(
+            onPanStart: (details) {
+              if (_controller.isAnimating) return;
+
+              setState(() {
+                _dragStartX = details.localPosition.dx;
+                _dragStartY = details.localPosition.dy;
+              });
+            },
+            onPanUpdate: (details) {
+              if (_controller.isAnimating) return;
+
+              setState(() {
+                final deltaX = (details.localPosition.dx - _dragStartX) / 100;
+                final deltaY = (details.localPosition.dy - _dragStartY) / 100;
+
+                _offsetX += deltaX;
+                _offsetY += deltaY;
+
+                _dragStartX = details.localPosition.dx;
+                _dragStartY = details.localPosition.dy;
+
+                _offsetX = _offsetX.clamp(-5.0, 5.0);
+                _offsetY = _offsetY.clamp(-5.0, 5.0);
+              });
+            },
+            child: Container(
               decoration: const BoxDecoration(color: Colors.white),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   (() {
-                    if (widget.category != AnalysisCategory.techAssessment) {
+                    if (dataProvider.selectedCategory != AnalysisCategory.techAssessment) {
                       return Center(
                         child: _buildLegend(chartLoopCodes, colors),
                       );
@@ -343,16 +407,19 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                               ),
                             );
                           }).toList(),
-                          minY: adjustedMinY,
-                          maxY: maxYValue,
+                          minY: adjustedMinY / _scaleY,
+                          maxY: maxYValue / _scaleY,
+                          minX: (-0.5 - _offsetX) / _scaleX,
+                          maxX: ((years.length - 0.5) - _offsetX) / _scaleX,
+                          clipData: const FlClipData.all(),
                         ),
                       ),
                     ),
                   ),
                 ],
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );
@@ -741,20 +808,19 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                   final chartData = _getFilteredChartData(
                     context: context,
                     techListType: widget.techListType!,
-                    techCode: widget.category == AnalysisCategory.countryTech ||
-                            widget.category == AnalysisCategory.companyTech ||
-                            widget.category == AnalysisCategory.academicTech ||
-                            widget.category == AnalysisCategory.techGap ||
-                            widget.category == AnalysisCategory.techAssessment
+                    techCode: _category == AnalysisCategory.countryTech ||
+                            _category == AnalysisCategory.companyTech ||
+                            _category == AnalysisCategory.academicTech ||
+                            _category == AnalysisCategory.techGap ||
+                            _category == AnalysisCategory.techAssessment
                         ? widget.techCode ?? widget.selectedCodes![0]
                         : entry.value,
-                    country: widget.category == AnalysisCategory.countryTech || (widget.category == AnalysisCategory.techGap && dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail)
+                    country: _category == AnalysisCategory.countryTech || (_category == AnalysisCategory.techGap && dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail)
                         ? entry.value
                         : null,
-                    targetName: widget.category == AnalysisCategory.companyTech ||
-                            widget.category == AnalysisCategory.academicTech ||
-                            (widget.category == AnalysisCategory.techGap &&
-                                (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail))
+                    targetName: _category == AnalysisCategory.companyTech ||
+                            _category == AnalysisCategory.academicTech ||
+                            (_category == AnalysisCategory.techGap && (_selectedSubCategory == AnalysisSubCategory.companyDetail || _selectedSubCategory == AnalysisSubCategory.academicDetail))
                         ? entry.value
                         : null,
                   );

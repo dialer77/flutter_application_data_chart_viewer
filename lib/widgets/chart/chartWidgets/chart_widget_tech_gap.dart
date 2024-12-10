@@ -27,58 +27,52 @@ class _ChartWidgetTechGapState extends State<ChartWidgetTechGap> {
     }
 
     return LayoutBuilder(builder: (context, constraints) {
-      return Padding(
-        padding: EdgeInsets.only(
-          left: constraints.maxWidth * 0.025,
-          top: constraints.maxHeight * 0.05,
-        ),
-        child: Column(
-          children: [
-            Expanded(child: _buildChartMultiLineType(targetNames, dataProvider)),
-            InkWell(
-              onTap: () {
-                setState(() {
-                  _isTableVisible = !_isTableVisible;
-                });
-              },
-              child: Container(
-                width: constraints.maxWidth,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center, // 왼쪽 정렬 유지
-                  children: [
-                    Icon(
-                      _isTableVisible ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
-                      size: 28,
+      return Column(
+        children: [
+          Expanded(child: _buildChartMultiLineType(targetNames, dataProvider)),
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isTableVisible = !_isTableVisible;
+              });
+            },
+            child: Container(
+              width: constraints.maxWidth,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center, // 왼쪽 정렬 유지
+                children: [
+                  Icon(
+                    _isTableVisible ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                    size: 28,
+                    color: Colors.blue[700],
+                  ),
+                  Text(
+                    _isTableVisible ? '테이블 닫기' : '테이블 보기',
+                    style: TextStyle(
                       color: Colors.blue[700],
+                      fontWeight: FontWeight.bold,
                     ),
-                    Text(
-                      _isTableVisible ? '테이블 닫기' : '테이블 보기',
-                      style: TextStyle(
-                        color: Colors.blue[700],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
               ),
             ),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              height: _isTableVisible ? 300 : 0, // 테이블의 최대 높이를 300으로 설정
-              child: const SingleChildScrollView(
-                child: SizedBox(
-                  height: 300,
-                  child: TableTechGapDataWidget(),
-                ),
+          ),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            height: _isTableVisible ? 300 : 0, // 테이블의 최대 높이를 300으로 설정
+            child: const SingleChildScrollView(
+              child: SizedBox(
+                height: 300,
+                child: TableTechGapDataWidget(),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       );
     });
   }
@@ -98,8 +92,6 @@ class _ChartWidgetTechGapState extends State<ChartWidgetTechGap> {
               border: Border.all(color: Colors.grey),
             ),
             child: SingleChartWidget(
-              category: AnalysisCategory.techGap,
-              selectedSubCategory: dataProvider.selectedSubCategory,
               techListType: dataProvider.selectedTechListType,
               techCode: techCode,
               countries: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? countries.toList() : null,

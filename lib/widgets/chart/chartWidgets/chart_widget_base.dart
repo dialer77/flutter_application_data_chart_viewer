@@ -56,8 +56,6 @@ abstract class ChartWidgetBaseState<T extends ChartWidgetBase> extends State<T> 
               border: Border.all(color: Colors.grey),
             ),
             child: SingleChartWidget(
-              category: provider.selectedCategory,
-              selectedSubCategory: provider.selectedSubCategory,
               techListType: provider.selectedTechListType,
               techCode: provider.selectedTechCode,
               targetNames: targetNameList,
@@ -138,8 +136,6 @@ abstract class ChartWidgetBaseState<T extends ChartWidgetBase> extends State<T> 
                 border: Border.all(color: Colors.grey),
               ),
               child: SingleChartWidget(
-                category: category,
-                selectedSubCategory: provider.selectedSubCategory,
                 techListType: provider.selectedTechListType,
                 techCode: provider.selectedTechCode,
                 country: category == AnalysisCategory.countryTech ? targetCode : null,

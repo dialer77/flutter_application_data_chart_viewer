@@ -33,49 +33,43 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
     final provider = context.watch<AnalysisDataProvider>();
     List<String> techCodeList = provider.selectedTechCodes;
 
-    return LayoutBuilder(builder: (context, constraints) {
-      return Padding(
-        padding: EdgeInsets.only(
-          left: constraints.maxWidth * 0.025,
-          top: constraints.maxHeight * 0.05,
-        ),
-        child: (() {
-          if (techCodeList.isEmpty) {
-            return Center(
-              child: Text(
-                "${provider.selectedTechListType} 항목을 선택해주세요",
-                style: TextStyle(
-                  fontSize: constraints.maxHeight * 0.1,
-                  fontWeight: FontWeight.bold,
-                ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (techCodeList.isEmpty) {
+          return Center(
+            child: Text(
+              "${provider.selectedTechListType} 항목을 선택해주세요",
+              style: TextStyle(
+                fontSize: constraints.maxHeight * 0.1,
+                fontWeight: FontWeight.bold,
               ),
-            );
-          }
+            ),
+          );
+        }
 
-          switch (provider.selectedSubCategory) {
-            case AnalysisSubCategory.techTrend:
-              if (techCodeList.length == 1) {
-                return _buildChartBarType(techCodeList[0]);
-              } else {
-                return GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 2.15, // 높이를 낮추기 위해 비율을 증가시킴
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                  ),
-                  itemCount: techCodeList.length,
-                  itemBuilder: (context, index) {
-                    return _buildChartBarType(techCodeList[index]);
-                  },
-                );
-              }
-            default:
-              return _buildChartMultiLineType(techCodeList);
-          }
-        })(),
-      );
-    });
+        switch (provider.selectedSubCategory) {
+          case AnalysisSubCategory.techTrend:
+            if (techCodeList.length == 1) {
+              return _buildChartBarType(techCodeList[0]);
+            } else {
+              return GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 2.15, // 높이를 낮추기 위해 비율을 증가시킴
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                ),
+                itemCount: techCodeList.length,
+                itemBuilder: (context, index) {
+                  return _buildChartBarType(techCodeList[index]);
+                },
+              );
+            }
+          default:
+            return _buildChartMultiLineType(techCodeList);
+        }
+      },
+    );
   }
 
   Widget _buildChartMultiLineType(List<String> techCodeList) {
@@ -91,8 +85,6 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
               border: Border.all(color: Colors.grey),
             ),
             child: SingleChartWidget(
-              category: _category,
-              selectedSubCategory: provider.selectedSubCategory,
               techListType: provider.selectedTechListType,
               techCode: techCodeList[0],
               selectedCodes: techCodeList,
@@ -149,8 +141,6 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
                 border: Border.all(color: Colors.grey),
               ),
               child: SingleChartWidget(
-                category: _category,
-                selectedSubCategory: provider.selectedSubCategory,
                 techListType: provider.selectedTechListType,
                 techCode: techCode,
                 chartColor: provider.getColorForCode(techCode),

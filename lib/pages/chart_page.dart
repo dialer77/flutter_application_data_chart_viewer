@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/analysis_menu/analysis_menulist_widget.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/chart/chart_widget.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_analysis_target.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_industry_tech.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_tech_assessment.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_tech_competition.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_tech_gap.dart';
 import 'package:provider/provider.dart';
 import '../controllers/content_controller.dart';
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
@@ -204,7 +208,34 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
   }
 
   Widget _buildChartWidget() {
-    return ChartWidget(category: widget.category, selectedSubCategory: _selectedSubCategory);
+    final dataProvider = context.watch<AnalysisDataProvider>();
+
+    return LayoutBuilder(builder: (context, constraints) {
+      return Padding(
+        padding: EdgeInsets.only(
+          left: constraints.maxWidth * 0.025,
+          top: constraints.maxHeight * 0.05,
+        ),
+        child: (() {
+          switch (dataProvider.selectedCategory) {
+            case AnalysisCategory.industryTech:
+              return const ChartWidgetIndustryTech();
+            case AnalysisCategory.countryTech:
+            case AnalysisCategory.companyTech:
+            case AnalysisCategory.academicTech:
+              return const ChartWidgetAnalysisTarget();
+            case AnalysisCategory.techCompetition:
+              return const ChartWidgetTechCompetition();
+            case AnalysisCategory.techAssessment:
+              return const ChartWidgetTechAssessment();
+            case AnalysisCategory.techGap:
+              return const ChartWidgetTechGap();
+            default:
+              return const SizedBox.shrink();
+          }
+        })(),
+      );
+    });
   }
 
   @override

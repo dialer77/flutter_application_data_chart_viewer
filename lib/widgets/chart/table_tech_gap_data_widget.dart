@@ -2,6 +2,7 @@ import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
+import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
 import 'package:provider/provider.dart';
 
 class TableTechGapDataWidget extends StatefulWidget {
@@ -39,101 +40,160 @@ class _TableTechGapDataWidgetState extends State<TableTechGapDataWidget> {
 
     final items = dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? countries : targetNames;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: DataTable(
-        headingRowHeight: 56,
-        headingRowColor: WidgetStateProperty.all(Colors.grey[200]),
-        columns: [
-          const DataColumn(
-            label: SizedBox(
-              child: Center(child: Text('기준')),
-            ),
-          ),
-          ...items.map((item) {
-            var conturyCode =
-                dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? item.replaceAll(RegExp(r'[\[\]]'), '') : dataProvider.searchCountryCode(item).replaceAll(RegExp(r'[\[\]]'), '');
-            return DataColumn(
-                label: SizedBox(
-              width: 80,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CountryFlag.fromCountryCode(conturyCode, height: 16, width: 24),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      item,
-                      overflow: TextOverflow.ellipsis,
-                      softWrap: false,
-                    ),
-                  ),
-                ],
-              ),
-            ));
-          }),
-        ],
-        rows: items.map((rowItem) {
-          var countryCode = dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail
-              ? rowItem.replaceAll(RegExp(r'[\[\]]'), '')
-              : dataProvider.searchCountryCode(rowItem).replaceAll(RegExp(r'[\[\]]'), '');
-          return DataRow(
-            cells: [
-              DataCell(
-                Container(
-                  width: double.infinity,
-                  color: Colors.grey[200],
-                  child: Row(
-                    children: [
-                      CountryFlag.fromCountryCode(countryCode, height: 16, width: 24),
-                      Expanded(
-                        child: Text(
-                          rowItem,
-                        ),
-                      ),
-                    ],
+    return LayoutBuilder(builder: (context, constraints) {
+      return Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: DataTable(
+              columnSpacing: 0,
+              horizontalMargin: 0,
+              headingRowHeight: 56,
+              headingRowColor: WidgetStateProperty.all(Colors.grey[200]),
+              columns: [
+                DataColumn(
+                  label: SizedBox(
+                    width: constraints.maxWidth * 0.1,
+                    child: const Center(child: Text('기준')),
                   ),
                 ),
-              ),
-              ...items.map((colItem) {
-                if (rowItem == colItem) {
-                  return const DataCell(Center(child: Text('-')));
-                }
-
-                double rowValue = dataProvider
-                    .getChartData(
-                        techListType: dataProvider.selectedTechListType,
-                        techCode: techCode,
-                        country: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? rowItem : null,
-                        targetName: dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail ? rowItem : null)
-                    .values
-                    .last;
-                double colValue = dataProvider
-                    .getChartData(
-                        techListType: dataProvider.selectedTechListType,
-                        techCode: techCode,
-                        country: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? colItem : null,
-                        targetName: dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail ? colItem : null)
-                    .values
-                    .last;
-                double gap = calculateGap(rowValue, colValue);
-
-                return DataCell(
-                  Center(
-                    child: Text(
-                      gap.toStringAsFixed(1),
-                      style: TextStyle(
-                        color: gap < 0 ? Colors.blue : Colors.red,
+                ...items.map((item) {
+                  var countryCode = dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? item : dataProvider.searchCountryCode(item);
+                  countryCode = CommonUtils.instance.replaceCountryCode(countryCode);
+                  return DataColumn(
+                      label: SizedBox(
+                    width: constraints.maxWidth * 0.9 / items.length,
+                    child: Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          (() {
+                            if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
+                              return Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CountryFlag.fromCountryCode(countryCode, height: 16, width: 24),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    countryCode,
+                                    overflow: TextOverflow.ellipsis,
+                                    softWrap: false,
+                                  ),
+                                ],
+                              );
+                            } else {
+                              return Expanded(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    CountryFlag.fromCountryCode(countryCode, height: 16, width: 24),
+                                    Text(
+                                      item,
+                                      overflow: TextOverflow.ellipsis,
+                                      softWrap: false,
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                          })(),
+                        ],
                       ),
                     ),
-                  ),
-                );
-              }),
-            ],
-          );
-        }).toList(),
-      ),
-    );
+                  ));
+                }),
+              ],
+              rows: const [],
+            ),
+          ),
+          Expanded(
+            child: SizedBox(
+              width: double.infinity,
+              child: SingleChildScrollView(
+                child: DataTable(
+                  columnSpacing: 0,
+                  horizontalMargin: 0,
+                  headingRowHeight: 0,
+                  columns: [
+                    const DataColumn(label: SizedBox()),
+                    ...items.map((item) => const DataColumn(label: SizedBox())),
+                  ],
+                  rows: items.map((rowItem) {
+                    var countryCode = dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? rowItem : dataProvider.searchCountryCode(rowItem);
+                    countryCode = CommonUtils.instance.replaceCountryCode(countryCode);
+                    return DataRow(
+                      cells: [
+                        DataCell(
+                          Container(
+                            width: constraints.maxWidth * 0.1,
+                            color: Colors.grey[200],
+                            child: Center(
+                              child: Row(
+                                children: [
+                                  CountryFlag.fromCountryCode(countryCode, height: 16, width: 24),
+                                  Expanded(
+                                    child: Text(
+                                      CommonUtils.instance.replaceCountryCode(rowItem),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        ...items.map((colItem) {
+                          if (rowItem == colItem) {
+                            return DataCell(SizedBox(
+                              width: constraints.maxWidth * 0.9 / items.length,
+                              child: const Center(child: Text('-')),
+                            ));
+                          }
+
+                          double rowValue = dataProvider
+                              .getChartData(
+                                  techListType: dataProvider.selectedTechListType,
+                                  techCode: techCode,
+                                  country: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? rowItem : null,
+                                  targetName:
+                                      dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail ? rowItem : null)
+                              .values
+                              .last;
+                          double colValue = dataProvider
+                              .getChartData(
+                                  techListType: dataProvider.selectedTechListType,
+                                  techCode: techCode,
+                                  country: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? colItem : null,
+                                  targetName:
+                                      dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail ? colItem : null)
+                              .values
+                              .last;
+                          double gap = calculateGap(rowValue, colValue);
+
+                          return DataCell(
+                            SizedBox(
+                              width: constraints.maxWidth * 0.9 / items.length,
+                              child: Center(
+                                child: Text(
+                                  gap.toStringAsFixed(1),
+                                  style: TextStyle(
+                                    color: gap < 0 ? Colors.blue : Colors.red,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    });
   }
 
   double calculateGap(double currentValue, double baseValue) {

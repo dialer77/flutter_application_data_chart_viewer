@@ -405,17 +405,21 @@ class AnalysisDataProvider extends ChangeNotifier {
   // 국가의 값을 가져오는 헬퍼 메서드
   double getCountryValue(String country) {
     double value = 0.0;
+    AnalysisCategory category = _selectedCategory;
+    if (category == AnalysisCategory.techGap) {
+      category = AnalysisCategory.techCompetition;
+    }
+
     for (var data in currentData) {
-      if (data.codeInfo.sheetName == getCategorySheetNames(selectedCategory) &&
+      if (data.codeInfo.sheetName == getCategorySheetNames(category) &&
           data.codeInfo.techType == selectedTechListType &&
           data.codeInfo.codeName == selectedTechCode &&
           data.codeInfo.country == country) {
-        var dataCode = getDataCode();
-        if (dataCode != null) {
-          var yearData = data.analysisDatas[dataCode];
-          if (yearData != null && yearData.isNotEmpty) {
-            value = yearData[yearData.keys.last] ?? 0.0;
-          }
+        var dataCode = getDataCode() ?? "";
+
+        var yearData = data.analysisDatas[dataCode];
+        if (yearData != null && yearData.isNotEmpty) {
+          value = yearData[yearData.keys.last - 1] ?? 0.0;
         }
       }
     }
@@ -425,17 +429,20 @@ class AnalysisDataProvider extends ChangeNotifier {
   // 회사의 값을 가져오는 헬퍼 메서드
   double getTargetNameValue(String targetName) {
     double value = 0.0;
+
+    AnalysisCategory category = _selectedCategory;
+    if (category == AnalysisCategory.techGap) {
+      category = AnalysisCategory.techCompetition;
+    }
     for (var data in currentData) {
-      if (data.codeInfo.sheetName == getCategorySheetNames(selectedCategory) &&
+      if (data.codeInfo.sheetName == getCategorySheetNames(category) &&
           data.codeInfo.techType == selectedTechListType &&
           data.codeInfo.codeName == selectedTechCode &&
           data.codeInfo.name == targetName) {
-        var dataCode = getDataCode();
-        if (dataCode != null) {
-          var yearData = data.analysisDatas[dataCode];
-          if (yearData != null && yearData.isNotEmpty) {
-            value = yearData[yearData.keys.last] ?? 0.0;
-          }
+        var dataCode = getDataCode() ?? "";
+        var yearData = data.analysisDatas[dataCode];
+        if (yearData != null && yearData.isNotEmpty) {
+          value = yearData[yearData.keys.last] ?? 0.0;
         }
       }
     }
@@ -612,8 +619,11 @@ class AnalysisDataProvider extends ChangeNotifier {
       }
     }
 
-    var filteredData =
-        dataModels.where((data) => data.codeInfo.sheetName == sheetName && data.codeInfo.techType == selectedTechListType && data.codeInfo.codeName == (techCode ?? selectedTechCode)).toList();
+    var filteredData = dataModels
+        .where((data) => data.codeInfo.sheetName == sheetName)
+        .where((data) => data.codeInfo.techType == selectedTechListType)
+        .where((data) => data.codeInfo.codeName == (techCode ?? selectedTechCode))
+        .toList();
 
     if (country != null) {
       filteredData = filteredData.where((data) => data.codeInfo.country == country).toList();
@@ -732,8 +742,11 @@ class AnalysisDataProvider extends ChangeNotifier {
       }
 
       filteredData = filteredData.where((data) => data.analysisDatas.containsKey("")).toList();
-
-      chartData[techCode] = filteredData.first.analysisDatas[""]?[year] ?? 0.0;
+      if (filteredData.isEmpty) {
+        chartData[techCode] = 0.0;
+      } else {
+        chartData[techCode] = filteredData.first.analysisDatas[""]?[year] ?? 0.0;
+      }
     }
 
     return chartData;
@@ -988,6 +1001,8 @@ class AnalysisDataProvider extends ChangeNotifier {
         default:
           return null;
       }
+    } else if (selectedCategory == AnalysisCategory.techGap) {
+      return "";
     }
 
     return null;
@@ -1043,7 +1058,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
-          value = yearData[yearData.keys.last] ?? 0.0;
+          value = yearData[yearData.keys.last - 1] ?? 0.0;
         }
         countries[data.codeInfo.country] = value;
       }
@@ -1068,7 +1083,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
-          value = yearData[yearData.keys.last] ?? 0.0;
+          value = yearData[yearData.keys.last - 1] ?? 0.0;
         }
         companies[data.codeInfo.name] = value;
       }
@@ -1093,7 +1108,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
-          value = yearData[yearData.keys.last] ?? 0.0;
+          value = yearData[yearData.keys.last - 1] ?? 0.0;
         }
         academics[data.codeInfo.name] = value;
       }
@@ -1117,7 +1132,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
-          value = yearData[yearData.keys.last] ?? 0.0;
+          value = yearData[yearData.keys.last - 1] ?? 0.0;
         }
         countries[data.codeInfo.country] = value;
       }
@@ -1140,7 +1155,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
-          value = yearData[yearData.keys.last] ?? 0.0;
+          value = yearData[yearData.keys.last - 1] ?? 0.0;
         }
         companies[data.codeInfo.name] = value;
       }
@@ -1163,7 +1178,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
-          value = yearData[yearData.keys.last] ?? 0.0;
+          value = yearData[yearData.keys.last - 1] ?? 0.0;
         }
         academics[data.codeInfo.name] = value;
       }
@@ -1186,7 +1201,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
-          value = yearData[yearData.keys.last] ?? 0.0;
+          value = yearData[yearData.keys.last - 1] ?? 0.0;
         }
         companies[data.codeInfo.name] = value;
       }
@@ -1209,7 +1224,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
-          value = yearData[yearData.keys.last] ?? 0.0;
+          value = yearData[yearData.keys.last - 1] ?? 0.0;
         }
         companies[data.codeInfo.name] = value;
       }
@@ -1232,7 +1247,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
-          value = yearData[yearData.keys.last] ?? 0.0;
+          value = yearData[yearData.keys.last - 1] ?? 0.0;
         }
         countries[data.codeInfo.country] = value;
       }

@@ -67,6 +67,7 @@ class _ChartWidgetTechGapState extends State<ChartWidgetTechGap> {
             height: _isTableVisible ? 300 : 0, // 테이블의 최대 높이를 300으로 설정
             child: const SingleChildScrollView(
               child: SizedBox(
+                width: double.infinity,
                 height: 300,
                 child: TableTechGapDataWidget(),
               ),

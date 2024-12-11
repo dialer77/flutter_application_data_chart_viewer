@@ -109,6 +109,7 @@ flutter:
     - assets/world_map.json
     - assets/world_map_iso.json
     - assets/country_coordinates.json
+    - assets/images/image1.jpg
 
   fonts:
     - family: Paperlogy-1

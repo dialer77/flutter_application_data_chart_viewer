@@ -1,13 +1,18 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
-import 'package:flutter_application_data_chart_viewer/widgets/chart/single_chart_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class ChartCircleWidget extends StatefulWidget {
-  const ChartCircleWidget({super.key});
+  final AnalysisTechListType techListType;
+  final List<String> techCodes;
+
+  const ChartCircleWidget({
+    super.key,
+    required this.techListType,
+    required this.techCodes,
+  });
 
   @override
   State<ChartCircleWidget> createState() => _ChartCircleWidgetState();
@@ -86,7 +91,6 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
   // 차트 컨테이너 생성 함수
   Widget _buildChartContainer(AnalysisDataProvider dataProvider) {
     // 임시 데이터 예시
-    var raderChartMCData = dataProvider.getRaderChartData(AnalysisTechListType.mc, dataProvider.selectedYear);
     var raderChartSCData = dataProvider.getRaderChartData(AnalysisTechListType.sc, dataProvider.selectedYear);
 
     return Container(
@@ -97,36 +101,9 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
       ),
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              selectedItem ?? '',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          Flexible(
-            child: SingleChartWidget(
-              techListType: AnalysisTechListType.lc,
-              techCode: dataProvider.selectedLcTechCode,
-              countries: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? [dataProvider.selectedCountry ?? ''] : null,
-              targetNames: dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail
-                  ? [dataProvider.selectedCompany ?? '']
-                  : dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail
-                      ? [dataProvider.selectedAcademic ?? '']
-                      : null,
-            ),
-          ),
           Flexible(
             child: Row(
               children: [
-                _buildRadarChart(
-                  color: Colors.blue,
-                  data: raderChartMCData,
-                  isFilled: true,
-                ),
                 _buildRadarChart(
                   color: Colors.red,
                   data: raderChartSCData,
@@ -160,57 +137,7 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
   @override
   Widget build(BuildContext context) {
     final dataProvider = context.watch<AnalysisDataProvider>();
-    final items = getItemsBySubCategory(dataProvider);
 
-    return Column(
-      children: [
-        ScrollConfiguration(
-          behavior: ScrollConfiguration.of(context).copyWith(
-            dragDevices: {
-              PointerDeviceKind.touch,
-              PointerDeviceKind.mouse,
-            },
-          ),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: items.map((item) {
-                final isSelected = item ==
-                    (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail
-                        ? dataProvider.selectedCountry
-                        : dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail
-                            ? dataProvider.selectedCompany
-                            : dataProvider.selectedAcademic);
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: InkWell(
-                    onTap: () {
-                      setState(() {
-                        selectedItem = item;
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                      decoration: BoxDecoration(
-                        color: isSelected ? Colors.blue : Colors.white,
-                        border: Border.all(color: Colors.blue),
-                        borderRadius: BorderRadius.circular(4.0),
-                      ),
-                      child: Text(
-                        item,
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.blue,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-        Expanded(child: _buildChartContainer(dataProvider)),
-      ],
-    );
+    return _buildChartContainer(dataProvider);
   }
 }

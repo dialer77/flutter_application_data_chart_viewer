@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/main_page/menulist_widget.dart';
@@ -70,49 +72,56 @@ class MainPage extends StatelessWidget {
       color: Color.fromARGB(255, 0, 32, 96),
     );
 
-    return RichText(
-      text: TextSpan(
-        style: TextStyle(
-          fontFamily: 'Paperlogy-5',
-          fontSize: constraints.maxWidth * 0.01,
-          height: 3,
-          letterSpacing: constraints.maxWidth * 0.0025,
-          color: Colors.black,
+    return LayoutGrid(
+      columnSizes: [6.fr, 1.fr],
+      rowSizes: [1.fr],
+      children: [
+        RichText(
+          text: TextSpan(
+            style: TextStyle(
+              fontFamily: 'Paperlogy-5',
+              fontSize: constraints.maxWidth * 0.0098,
+              height: min(constraints.maxHeight * 0.003, 3),
+              letterSpacing: constraints.maxWidth * 0.0025,
+              color: Colors.black,
+            ),
+            children: const [
+              TextSpan(text: '특허·논문 빅데이터 분석 솔루션'),
+              TextSpan(
+                text: '(InnoPatent Analytics v4.5)',
+                style: englishStyle,
+              ),
+              TextSpan(text: '은 과학기술의 연구개발 산물인 특허·논문 빅데이터를 전처리'),
+              TextSpan(
+                text: '(Pre-Processing)',
+                style: englishStyle,
+              ),
+              TextSpan(text: '하고,\n인덱싱'),
+              TextSpan(
+                text: '(Indexing)',
+                style: englishStyle,
+              ),
+              TextSpan(text: '하여, 기계학습'),
+              TextSpan(
+                text: '(Machine Learning)',
+                style: englishStyle,
+              ),
+              TextSpan(text: '을 통해 최신 산업기술정보, '),
+              TextSpan(
+                text: 'R&D',
+                style: englishStyle,
+              ),
+              TextSpan(text: ' 정보를 도출하여  공공 기관, 기업, 연구기관의 '),
+              TextSpan(
+                text: 'R&D',
+                style: englishStyle,
+              ),
+              TextSpan(text: ' 정책 결정을\n지원하는 혁신적인 데이터 분석 도구입니다.'),
+            ],
+          ),
         ),
-        children: const [
-          TextSpan(text: '특허·논문 빅데이터 분석 솔루션'),
-          TextSpan(
-            text: '(InnoPatent Analytics v4.5)',
-            style: englishStyle,
-          ),
-          TextSpan(text: '은 과학기술의 연구개발 산물인 특허·논문 빅데이터를 전처리'),
-          TextSpan(
-            text: '(Pre-Processing)',
-            style: englishStyle,
-          ),
-          TextSpan(text: '하고, 인덱싱'),
-          TextSpan(
-            text: '(Indexing)',
-            style: englishStyle,
-          ),
-          TextSpan(text: '하여, 기계학습'),
-          TextSpan(
-            text: '(Machine Learning)',
-            style: englishStyle,
-          ),
-          TextSpan(text: '을 통해 최신 산업기술정보, '),
-          TextSpan(
-            text: 'R&D',
-            style: englishStyle,
-          ),
-          TextSpan(text: ' 정보를 도출하여  공공 기관, 기업, 연구기관의 '),
-          TextSpan(
-            text: 'R&D',
-            style: englishStyle,
-          ),
-          TextSpan(text: ' 정책 결정을 지원하는 혁신적인 데이터 분석 도구입니다.'),
-        ],
-      ),
+        Image.asset('assets/images/image1.jpg'),
+      ],
     );
   }
 

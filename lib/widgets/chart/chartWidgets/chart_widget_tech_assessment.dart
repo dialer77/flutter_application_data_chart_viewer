@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
+import 'package:flutter_application_data_chart_viewer/widgets/chart/chart_circle_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/single_chart_widget.dart';
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:flutter/material.dart';
@@ -123,10 +124,9 @@ class _ChartWidgetTechAssessmentState extends State<ChartWidgetTechAssessment> {
             rowStart: 1,
             rowSpan: 1,
           ),
-          Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.red),
-            ),
+          ChartCircleWidget(
+            techListType: AnalysisTechListType.sc,
+            techCodes: dataProvider.selectedScTechCodes.toList(),
           ).withGridPlacement(
             columnStart: 0,
             columnSpan: 2,

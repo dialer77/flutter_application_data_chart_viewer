@@ -50,72 +50,88 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
     }
   }
 
+  Widget _buildPieChart({
+    required Map<String, double> data,
+  }) {
+    final dataProvider = context.read<AnalysisDataProvider>();
+    final dataEntries = data.entries.toList();
+
+    return Stack(
+      children: [
+        ...dataEntries.asMap().entries.map((entry) {
+          final index = entry.key;
+          final mapEntry = entry.value;
+
+          return PieChart(
+            PieChartData(
+              centerSpaceRadius: 0,
+              startDegreeOffset: 360 / data.length * index,
+              sections: [
+                PieChartSectionData(
+                  value: 360 / data.length,
+                  color: dataProvider.getColorForCode(mapEntry.key),
+                  title: '',
+                  radius: mapEntry.value * 100,
+                ),
+                PieChartSectionData(
+                  value: 360 / data.length * (data.length - 1),
+                  color: Colors.transparent,
+                  title: '',
+                  radius: 50,
+                ),
+              ],
+            ),
+          );
+        }),
+        Container(
+          width: 100,
+          height: 100,
+          color: Colors.white,
+        ),
+      ],
+    );
+  }
+
   // 레이더 차트 데이터 생성 함수
-  RadarChartData _createRadarChartData({
+  RadarChart _createRadarChartData({
     required Color color,
     required Map<String, double> data,
     required bool isFilled,
   }) {
     final entries = data.entries.toList();
 
-    return RadarChartData(
-      radarShape: RadarShape.circle,
-      ticksTextStyle: const TextStyle(color: Colors.transparent),
-      tickBorderData: const BorderSide(color: Colors.grey, width: 0.5),
-      gridBorderData: const BorderSide(color: Colors.grey, width: 0.5),
-      titleTextStyle: const TextStyle(fontSize: 12),
-      dataSets: [
-        RadarDataSet(
-          fillColor: isFilled ? color.withOpacity(0.3) : Colors.transparent,
-          borderColor: Colors.transparent,
-          entryRadius: 0,
-          dataEntries: entries.map((e) => RadarEntry(value: e.value)).toList(),
-        ),
-      ],
-      getTitle: (index, angle) {
-        return RadarChartTitle(
-          text: entries[index].key,
-          angle: angle,
-        );
-      },
-      tickCount: 10,
-      radarBorderData: BorderSide(color: Colors.grey.shade300, width: 1),
-    );
-  }
-
-  // 개별 레이더 차트 위젯 생성 함수
-  Widget _buildRadarChart({
-    required Color color,
-    required Map<String, double> data,
-    required bool isFilled,
-  }) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: (() {
-          if (data.length < 3) {
-            return Center(
-              child: Text("${widget.techListType} 데이터가 부족합니다.\n3개 이상 선택해주세요.",
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
-            );
-          }
-          return RadarChart(
-            _createRadarChartData(
-              color: color,
-              data: data,
-              isFilled: isFilled,
-            ),
+    return RadarChart(
+      RadarChartData(
+        radarShape: RadarShape.circle,
+        ticksTextStyle: const TextStyle(color: Colors.transparent),
+        tickBorderData: const BorderSide(color: Colors.grey, width: 0.5),
+        gridBorderData: const BorderSide(color: Colors.grey, width: 0.5),
+        titleTextStyle: const TextStyle(fontSize: 12),
+        dataSets: [
+          RadarDataSet(
+            fillColor: isFilled ? color.withOpacity(0.3) : Colors.transparent,
+            borderColor: Colors.transparent,
+            entryRadius: 0,
+            dataEntries:
+                entries.map((e) => RadarEntry(value: e.value)).toList(),
+          ),
+        ],
+        getTitle: (index, angle) {
+          return RadarChartTitle(
+            text: entries[index].key,
+            angle: angle,
           );
-        })(),
+        },
+        tickCount: 10,
+        radarBorderData: BorderSide(color: Colors.grey.shade300, width: 1),
       ),
     );
   }
 
   // 차트 컨테이너 생성 함수
   Widget _buildChartContainer(AnalysisDataProvider dataProvider) {
-    // 임시 데이터 예시
-    var raderChartSCData = dataProvider.getRaderChartData(
-        AnalysisTechListType.sc, dataProvider.selectedYear);
+    var raderChartData = dataProvider.getRaderChartData(
+        widget.techListType, dataProvider.selectedYear);
 
     return Container(
       margin: const EdgeInsets.all(16.0),
@@ -123,20 +139,27 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
         border: Border.all(color: Colors.grey),
         borderRadius: BorderRadius.circular(8.0),
       ),
-      child: Column(
-        children: [
-          Flexible(
-            child: Row(
-              children: [
-                _buildRadarChart(
-                  color: Colors.red,
-                  data: raderChartSCData,
-                  isFilled: true,
-                ),
-              ],
-            ),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: (() {
+          if (raderChartData.length < 3) {
+            return Center(
+              child: Text("${widget.techListType} 데이터가 부족합니다.\n3개 이상 선택해주세요.",
+                  style: const TextStyle(
+                      fontSize: 30, fontWeight: FontWeight.bold)),
+            );
+          }
+
+          if (widget.techListType == AnalysisTechListType.sc) {
+            return _createRadarChartData(
+              color: Colors.red,
+              data: raderChartData,
+              isFilled: true,
+            );
+          } else {
+            return _buildPieChart(data: raderChartData);
+          }
+        })(),
       ),
     );
   }

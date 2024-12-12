@@ -25,11 +25,26 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
   List<String> getItemsBySubCategory(AnalysisDataProvider dataProvider) {
     switch (dataProvider.selectedSubCategory) {
       case AnalysisSubCategory.countryDetail:
-        return dataProvider.selectedCountries.isEmpty ? dataProvider.getAvailableCountriesFromTechAssessment().take(10).toList() : dataProvider.selectedCountries.toList();
+        return dataProvider.selectedCountries.isEmpty
+            ? dataProvider
+                .getAvailableCountriesFromTechAssessment()
+                .take(10)
+                .toList()
+            : dataProvider.selectedCountries.toList();
       case AnalysisSubCategory.companyDetail:
-        return dataProvider.selectedCompanies.isEmpty ? dataProvider.getAvailableCompaniesFromTechAssessment().take(10).toList() : dataProvider.selectedCompanies.toList();
+        return dataProvider.selectedCompanies.isEmpty
+            ? dataProvider
+                .getAvailableCompaniesFromTechAssessment()
+                .take(10)
+                .toList()
+            : dataProvider.selectedCompanies.toList();
       case AnalysisSubCategory.academicDetail:
-        return dataProvider.selectedAcademics.isEmpty ? dataProvider.getAvailableAcademicsFromTechAssessment().take(10).toList() : dataProvider.selectedAcademics.toList();
+        return dataProvider.selectedAcademics.isEmpty
+            ? dataProvider
+                .getAvailableAcademicsFromTechAssessment()
+                .take(10)
+                .toList()
+            : dataProvider.selectedAcademics.toList();
       default:
         return [];
     }
@@ -77,13 +92,21 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: RadarChart(
-          _createRadarChartData(
-            color: color,
-            data: data,
-            isFilled: isFilled,
-          ),
-        ),
+        child: (() {
+          if (data.length < 3) {
+            return Center(
+              child: Text("${widget.techListType} 데이터가 부족합니다.\n3개 이상 선택해주세요.",
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+            );
+          }
+          return RadarChart(
+            _createRadarChartData(
+              color: color,
+              data: data,
+              isFilled: isFilled,
+            ),
+          );
+        })(),
       ),
     );
   }
@@ -91,7 +114,8 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
   // 차트 컨테이너 생성 함수
   Widget _buildChartContainer(AnalysisDataProvider dataProvider) {
     // 임시 데이터 예시
-    var raderChartSCData = dataProvider.getRaderChartData(AnalysisTechListType.sc, dataProvider.selectedYear);
+    var raderChartSCData = dataProvider.getRaderChartData(
+        AnalysisTechListType.sc, dataProvider.selectedYear);
 
     return Container(
       margin: const EdgeInsets.all(16.0),

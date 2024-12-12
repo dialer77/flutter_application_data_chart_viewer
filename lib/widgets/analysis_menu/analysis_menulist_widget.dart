@@ -59,7 +59,8 @@ class _AnalysisMenuListWidgetState extends State<AnalysisMenuListWidget> {
                 color: const Color.fromARGB(255, 70, 177, 225),
               ),
               (() {
-                if (dataProvider.selectedCategory == AnalysisCategory.industryTech) {
+                if (dataProvider.selectedCategory ==
+                    AnalysisCategory.industryTech) {
                   return Expanded(
                     child: AnalysisTechListWidget(
                       buttonHeight: buttonHeight,
@@ -71,7 +72,14 @@ class _AnalysisMenuListWidgetState extends State<AnalysisMenuListWidget> {
                     child: Column(
                       children: [
                         SizedBox(
-                            height: buttonHeight * 2,
+                            height: (() {
+                              if (dataProvider.selectedCategory ==
+                                  AnalysisCategory.techAssessment) {
+                                return buttonHeight * 4;
+                              } else {
+                                return buttonHeight * 2;
+                              }
+                            })(),
                             child: AnalysisTechListWidget(
                               buttonHeight: buttonHeight,
                               fontSize: fontSize,
@@ -106,7 +114,8 @@ class _AnalysisMenuListWidgetState extends State<AnalysisMenuListWidget> {
                 fontSize: fontSize,
                 provider: dataProvider,
                 analysisType: () {
-                  if (dataProvider.selectedCategory == AnalysisCategory.techAssessment) {
+                  if (dataProvider.selectedCategory ==
+                      AnalysisCategory.techAssessment) {
                     return AnalysisType.single;
                   } else {
                     return AnalysisType.range;
@@ -183,7 +192,8 @@ class _AnalysisMenuListWidgetState extends State<AnalysisMenuListWidget> {
             ),
             min: currentRangeValue.start.toDouble(),
             max: currentRangeValue.end.toDouble(),
-            divisions: currentRangeValue.end.toInt() - currentRangeValue.start.toInt(),
+            divisions:
+                currentRangeValue.end.toInt() - currentRangeValue.start.toInt(),
             labels: RangeLabels(
               provider.startYear.toString(),
               provider.endYear.toString(),
@@ -209,7 +219,8 @@ class _AnalysisMenuListWidgetState extends State<AnalysisMenuListWidget> {
     required double fontSize,
   }) {
     final provider = context.watch<AnalysisDataProvider>();
-    final availableOptions = provider.getAvailableDataTypes(provider.selectedCategory);
+    final availableOptions =
+        provider.getAvailableDataTypes(provider.selectedCategory);
 
     return SizedBox(
       height: buttonHeight,
@@ -231,7 +242,9 @@ class _AnalysisMenuListWidgetState extends State<AnalysisMenuListWidget> {
                         groupValue: provider.selectedDataType,
                         onChanged: (AnalysisDataType? value) {
                           if (value != null) {
-                            context.read<AnalysisDataProvider>().setSelectedDataType(value);
+                            context
+                                .read<AnalysisDataProvider>()
+                                .setSelectedDataType(value);
                           }
                         },
                       ),

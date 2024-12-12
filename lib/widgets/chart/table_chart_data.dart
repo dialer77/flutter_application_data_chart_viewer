@@ -19,7 +19,8 @@ class TableChartData extends StatelessWidget {
     final techCode = dataProvider.selectedTechCode;
     var countries = dataProvider.selectedCountries.toList();
     if (countries.isEmpty) {
-      countries = dataProvider.getAvailableCountries(techCode).take(10).toList();
+      countries =
+          dataProvider.getAvailableCountries(techCode).take(10).toList();
     }
 
     var companies = dataProvider.selectedCompanies.toList();
@@ -60,10 +61,12 @@ class TableChartData extends StatelessWidget {
                     onPointerSignal: (pointerSignal) {
                       if (pointerSignal is PointerScrollEvent) {
                         horizontalController.position.moveTo(
-                          horizontalController.position.pixels + pointerSignal.scrollDelta.dx,
+                          horizontalController.position.pixels +
+                              pointerSignal.scrollDelta.dx,
                         );
                         verticalController.position.moveTo(
-                          verticalController.position.pixels + pointerSignal.scrollDelta.dy,
+                          verticalController.position.pixels +
+                              pointerSignal.scrollDelta.dy,
                         );
                       }
                     },
@@ -72,8 +75,10 @@ class TableChartData extends StatelessWidget {
                       scrollDirection: Axis.horizontal,
                       child: (() {
                         var data = dataProvider.getTechCompetitionData();
-                        var dataCodes = dataProvider.getTechCompetitionDataCodes();
-                        return _buildDataTableTechCompetition(dataProvider, data, dataCodes, constraints);
+                        var dataCodes =
+                            dataProvider.getTechCompetitionDataCodes();
+                        return _buildDataTableTechCompetition(
+                            dataProvider, data, dataCodes, constraints);
                       }()),
                     ),
                   ),
@@ -86,14 +91,18 @@ class TableChartData extends StatelessWidget {
     );
   }
 
-  DataTable _buildDataTableTechCompetition(AnalysisDataProvider dataProvider, Map<String, Map<String, double>> data, List<String> dataCodes, BoxConstraints constraints) {
+  DataTable _buildDataTableTechCompetition(
+      AnalysisDataProvider dataProvider,
+      Map<String, Map<String, double>> data,
+      List<String> dataCodes,
+      BoxConstraints constraints) {
     return DataTable(
-      headingRowColor: WidgetStateProperty.all(const Color.fromARGB(255, 16, 72, 98)),
+      headingRowColor:
+          WidgetStateProperty.all(const Color.fromARGB(255, 16, 72, 98)),
       horizontalMargin: 0,
       columnSpacing: 0,
       columns: [
         DataColumn(
-          headingRowAlignment: MainAxisAlignment.center,
           label: SizedBox(
             width: constraints.maxWidth * 0.075,
             child: const Center(
@@ -105,14 +114,15 @@ class TableChartData extends StatelessWidget {
           ),
         ),
         DataColumn(
-          headingRowAlignment: MainAxisAlignment.center,
           label: SizedBox(
             width: constraints.maxWidth * (1 - 0.1 * dataCodes.length - 0.075),
             child: Center(
               child: Text(
-                  dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail
+                  dataProvider.selectedSubCategory ==
+                          AnalysisSubCategory.countryDetail
                       ? 'COUNTRY'
-                      : dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail
+                      : dataProvider.selectedSubCategory ==
+                              AnalysisSubCategory.companyDetail
                           ? 'COMPANY'
                           : 'INSTITUTE',
                   style: const TextStyle(fontSize: 12, color: Colors.white)),
@@ -121,7 +131,6 @@ class TableChartData extends StatelessWidget {
         ),
         ...dataCodes.map(
           (code) => DataColumn(
-            headingRowAlignment: MainAxisAlignment.center,
             label: SizedBox(
               width: constraints.maxWidth * 0.1,
               child: Center(
@@ -152,9 +161,14 @@ class TableChartData extends StatelessWidget {
                 Row(
                   children: [
                     CountryFlag.fromCountryCode(
-                      dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail
-                          ? data.keys.elementAt(index).replaceAll(RegExp(r'[\[\]]'), '')
-                          : dataProvider.searchCountryCode(data.keys.elementAt(index)).replaceAll(RegExp(r'[\[\]]'), ''),
+                      dataProvider.selectedSubCategory ==
+                              AnalysisSubCategory.countryDetail
+                          ? data.keys
+                              .elementAt(index)
+                              .replaceAll(RegExp(r'[\[\]]'), '')
+                          : dataProvider
+                              .searchCountryCode(data.keys.elementAt(index))
+                              .replaceAll(RegExp(r'[\[\]]'), ''),
                       height: 16,
                       width: 24,
                     ),
@@ -164,7 +178,10 @@ class TableChartData extends StatelessWidget {
               ),
               ...dataCodes.map(
                 (code) => DataCell(
-                  Center(child: Text(data[data.keys.elementAt(index)]?[code]?.toStringAsFixed(3) ?? '0.000')),
+                  Center(
+                      child: Text(data[data.keys.elementAt(index)]?[code]
+                              ?.toStringAsFixed(3) ??
+                          '0.000')),
                 ),
               ),
             ],

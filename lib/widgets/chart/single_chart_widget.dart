@@ -205,48 +205,107 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
             : null,
       );
 
-      final startYear = years.first;
+      // Find first non-zero start year
+      var startYear = years.first;
+      while (startYear < years.last && (chartData[startYear] == null || chartData[startYear] == 0)) {
+        startYear++;
+      }
+
       final endYear = years.last - 1;
       final cagr = _calculateCAGR(
         chartData[startYear] ?? 0,
         chartData[endYear] ?? 0,
-        endYear - startYear,
+        years.last - years.first - 1, // 전체 연도 수를 고정
       );
       cagrDatas.add(cagr);
 
       if (chartData.isEmpty) continue;
 
-      final trendLineSpots = _calculateTrendLine(chartData, years);
-      allTrendLines.add(
-        LineChartBarData(
-          spots: trendLineSpots,
-          isCurved: true,
-          color: colors[i % colors.length],
-          barWidth: 2,
-          dotData: FlDotData(
-            show: true,
-            checkToShowDot: (spot, barData) {
-              return spot.x == trendLineSpots.last.x;
-            },
-            getDotPainter: (spot, percent, barData, index) {
-              return DashedCircleDotPainter(
-                radius: 6,
-                strokeColor: colors[i % colors.length],
-                fillColor: Colors.white,
-                strokeWidth: 1.5,
-              );
-            },
+      List<FlSpot> trendLineSpots = [];
+      if (dataProvider.selectedCategory == AnalysisCategory.techAssessment) {
+        trendLineSpots = chartData.entries.map((entry) {
+          return FlSpot(
+            years.indexOf(entry.key).toDouble(),
+            entry.value,
+          );
+        }).toList();
+      } else {
+        trendLineSpots = _calculateTrendLine(chartData, years);
+      }
+
+      // 현재 연도를 기준으로 데이터 분리
+      final currentYear = DateTime.now().year;
+      final splitIndex = years.indexWhere((year) => year > currentYear);
+
+      if (splitIndex != -1) {
+        // 실선 부분 (현재까지)
+        final solidLineSpots = trendLineSpots.sublist(0, splitIndex);
+        allTrendLines.add(
+          LineChartBarData(
+            spots: solidLineSpots,
+            isCurved: true,
+            color: colors[i % colors.length],
+            barWidth: 2,
+            dotData: const FlDotData(show: false),
+            isStrokeCapRound: true,
+            belowBarData: BarAreaData(show: false),
           ),
-          isStrokeCapRound: true,
-          belowBarData: BarAreaData(show: false),
-          showingIndicators: List.generate(
-            trendLineSpots.length,
-            (index) => index,
-          ).where((index) {
-            return index <= (trendLineSpots.length - 1) * _controller.value;
-          }).toList(),
-        ),
-      );
+        );
+
+        // 점선 부분 (미래)
+        final dashedLineSpots = trendLineSpots.sublist(splitIndex - 1);
+        allTrendLines.add(
+          LineChartBarData(
+            spots: dashedLineSpots,
+            isCurved: true,
+            color: colors[i % colors.length],
+            barWidth: 2,
+            dashArray: [5, 5], // 점선 처리
+            dotData: FlDotData(
+              show: true,
+              checkToShowDot: (spot, barData) {
+                return spot.x == trendLineSpots.last.x;
+              },
+              getDotPainter: (spot, percent, barData, index) {
+                return DashedCircleDotPainter(
+                  radius: 6,
+                  strokeColor: colors[i % colors.length],
+                  fillColor: Colors.white,
+                  strokeWidth: 1.5,
+                );
+              },
+            ),
+            isStrokeCapRound: true,
+            belowBarData: BarAreaData(show: false),
+          ),
+        );
+      } else {
+        // 모든 데이터가 현재 이전인 경우 실선으로 처리
+        allTrendLines.add(
+          LineChartBarData(
+            spots: trendLineSpots,
+            isCurved: true,
+            color: colors[i % colors.length],
+            barWidth: 2,
+            dotData: FlDotData(
+              show: true,
+              checkToShowDot: (spot, barData) {
+                return spot.x == trendLineSpots.last.x;
+              },
+              getDotPainter: (spot, percent, barData, index) {
+                return DashedCircleDotPainter(
+                  radius: 6,
+                  strokeColor: colors[i % colors.length],
+                  fillColor: Colors.white,
+                  strokeWidth: 1.5,
+                );
+              },
+            ),
+            isStrokeCapRound: true,
+            belowBarData: BarAreaData(show: false),
+          ),
+        );
+      }
 
       final currentMax = trendLineSpots.map((spot) => spot.y).reduce(max);
       maxValue = max(maxValue, currentMax);
@@ -334,7 +393,30 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                               tooltipMargin: 1,
                               getTooltipItems: (List<LineBarSpot> touchedSpots) {
                                 return touchedSpots.map((LineBarSpot spot) {
-                                  if (cagrDatas.isEmpty) return null;
+                                  if (cagrDatas.isEmpty) {
+                                    return null;
+                                  }
+                                  if (spot.barIndex >= cagrDatas.length) return null;
+                                  if (dataProvider.selectedCategory == AnalysisCategory.techAssessment) {
+                                    return LineTooltipItem(
+                                      '${years[spot.x.toInt()]}\n${spot.y.toStringAsFixed(4)}',
+                                      const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text: '\n${CommonUtils.instance.replaceCountryCode(chartLoopCodes[spot.barIndex])}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.normal,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }
+
                                   return LineTooltipItem(
                                     '\nCAGR: ${(cagrDatas[spot.barIndex] * 100).toStringAsFixed(1)}%',
                                     const TextStyle(
@@ -344,8 +426,8 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                                     children: [
                                       TextSpan(
                                         text: '\n${chartLoopCodes[spot.barIndex]}',
-                                        style: TextStyle(
-                                          color: colors[spot.barIndex % colors.length],
+                                        style: const TextStyle(
+                                          color: Colors.white,
                                           fontWeight: FontWeight.normal,
                                           fontSize: 12,
                                         ),
@@ -379,11 +461,19 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                           ),
                           lineBarsData: allTrendLines.map((lineData) {
                             final spots = lineData.spots;
+                            final isSecondLine = lineData.dashArray != null; // 점선 여부 확인
+
+                            // 애니메이션 진행률 계산
+                            // 실선은 0~0.5 구간에서, 점선은 0.5~1.0 구간에서 애니메이션
+                            final progress = isSecondLine
+                                ? (_controller.value <= 0.5 ? 0.0 : (_controller.value - 0.5) * 2) // 점선
+                                : (_controller.value >= 0.5 ? 1.0 : _controller.value * 2); // 실선
+
                             final currentSpots = spots
                                 .asMap()
                                 .entries
                                 .where((entry) {
-                                  return entry.key <= (spots.length - 1) * _controller.value;
+                                  return entry.key <= (spots.length - 1) * progress;
                                 })
                                 .map((e) => e.value)
                                 .toList();
@@ -391,7 +481,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                             return lineData.copyWith(
                               spots: currentSpots,
                               dotData: FlDotData(
-                                show: true,
+                                show: isSecondLine, // 점선인 경우만 점 표시
                                 checkToShowDot: (spot, barData) {
                                   return spot.x == currentSpots.last.x;
                                 },
@@ -854,7 +944,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                             const SizedBox(width: 4),
                             Text(
                               entry.value,
-                              style: const TextStyle(fontSize: 15),
+                              style: const TextStyle(fontSize: 10),
                             ),
                           ],
                         ),
@@ -862,7 +952,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                         Text(
                           'CAGR ${(cagr * 100).toStringAsFixed(1)}%',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 8,
                             color: color,
                           ),
                         ),

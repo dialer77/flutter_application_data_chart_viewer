@@ -119,14 +119,6 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
     });
   }
 
-  Widget _buildTableChart() {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.green,
-      ),
-    );
-  }
-
   Widget _buildLegend(List<String> codes) {
     final provider = context.watch<AnalysisDataProvider>();
     final scrollController = ScrollController();
@@ -196,7 +188,7 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
                             Text(
                               CommonUtils.instance.replaceCountryCode(codes[entry.key]),
                               style: TextStyle(
-                                fontSize: 15,
+                                fontSize: 12,
                                 color: color,
                               ),
                             ),

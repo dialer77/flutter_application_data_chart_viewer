@@ -25,26 +25,11 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
   List<String> getItemsBySubCategory(AnalysisDataProvider dataProvider) {
     switch (dataProvider.selectedSubCategory) {
       case AnalysisSubCategory.countryDetail:
-        return dataProvider.selectedCountries.isEmpty
-            ? dataProvider
-                .getAvailableCountriesFromTechAssessment()
-                .take(10)
-                .toList()
-            : dataProvider.selectedCountries.toList();
+        return dataProvider.selectedCountries.isEmpty ? dataProvider.getAvailableCountriesFromTechAssessment().take(10).toList() : dataProvider.selectedCountries.toList();
       case AnalysisSubCategory.companyDetail:
-        return dataProvider.selectedCompanies.isEmpty
-            ? dataProvider
-                .getAvailableCompaniesFromTechAssessment()
-                .take(10)
-                .toList()
-            : dataProvider.selectedCompanies.toList();
+        return dataProvider.selectedCompanies.isEmpty ? dataProvider.getAvailableCompaniesFromTechAssessment().take(10).toList() : dataProvider.selectedCompanies.toList();
       case AnalysisSubCategory.academicDetail:
-        return dataProvider.selectedAcademics.isEmpty
-            ? dataProvider
-                .getAvailableAcademicsFromTechAssessment()
-                .take(10)
-                .toList()
-            : dataProvider.selectedAcademics.toList();
+        return dataProvider.selectedAcademics.isEmpty ? dataProvider.getAvailableAcademicsFromTechAssessment().take(10).toList() : dataProvider.selectedAcademics.toList();
       default:
         return [];
     }
@@ -53,9 +38,9 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
   Widget _buildPieChart({
     required Map<String, double> data,
   }) {
-    final dataProvider = context.read<AnalysisDataProvider>();
     final dataEntries = data.entries.toList();
-
+    // 기준 값
+    final baseValue = 360 / data.length * 0.8;
     return Stack(
       children: [
         ...dataEntries.asMap().entries.map((entry) {
@@ -65,16 +50,16 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
           return PieChart(
             PieChartData(
               centerSpaceRadius: 0,
-              startDegreeOffset: 360 / data.length * index,
+              startDegreeOffset: (360 / data.length * index) + 270 - baseValue / 2,
               sections: [
                 PieChartSectionData(
-                  value: 360 / data.length,
-                  color: dataProvider.getColorForCode(mapEntry.key),
+                  value: baseValue,
+                  color: const Color.fromARGB(255, 103, 183, 220),
                   title: '',
-                  radius: mapEntry.value * 100,
+                  radius: mapEntry.value * 90,
                 ),
                 PieChartSectionData(
-                  value: 360 / data.length * (data.length - 1),
+                  value: 360 - baseValue,
                   color: Colors.transparent,
                   title: '',
                   radius: 50,
@@ -83,10 +68,30 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
             ),
           );
         }),
-        Container(
-          width: 100,
-          height: 100,
-          color: Colors.white,
+        RadarChart(
+          RadarChartData(
+            radarShape: RadarShape.circle,
+            ticksTextStyle: const TextStyle(color: Colors.transparent),
+            tickBorderData: const BorderSide(color: Colors.grey, width: 0.5),
+            gridBorderData: const BorderSide(color: Colors.grey, width: 0.5),
+            titleTextStyle: const TextStyle(fontSize: 12),
+            dataSets: [
+              RadarDataSet(
+                fillColor: Colors.transparent,
+                borderColor: Colors.transparent,
+                entryRadius: 0,
+                dataEntries: data.entries.toList().map((e) => RadarEntry(value: e.value)).toList(),
+              ),
+            ],
+            getTitle: (index, angle) {
+              return RadarChartTitle(
+                text: data.entries.toList()[index].key,
+                angle: 0,
+              );
+            },
+            tickCount: 5,
+            radarBorderData: BorderSide(color: Colors.grey.shade300, width: 1),
+          ),
         ),
       ],
     );
@@ -112,14 +117,13 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
             fillColor: isFilled ? color.withOpacity(0.3) : Colors.transparent,
             borderColor: Colors.transparent,
             entryRadius: 0,
-            dataEntries:
-                entries.map((e) => RadarEntry(value: e.value)).toList(),
+            dataEntries: entries.map((e) => RadarEntry(value: e.value)).toList(),
           ),
         ],
         getTitle: (index, angle) {
-          return RadarChartTitle(
-            text: entries[index].key,
-            angle: angle,
+          return const RadarChartTitle(
+            text: "TESTData123450000000000000000000000",
+            angle: 0,
           );
         },
         tickCount: 10,
@@ -130,8 +134,7 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
 
   // 차트 컨테이너 생성 함수
   Widget _buildChartContainer(AnalysisDataProvider dataProvider) {
-    var raderChartData = dataProvider.getRaderChartData(
-        widget.techListType, dataProvider.selectedYear);
+    var raderChartData = dataProvider.getRaderChartData(widget.techListType, dataProvider.selectedYear);
 
     return Container(
       margin: const EdgeInsets.all(16.0),
@@ -144,9 +147,7 @@ class _ChartCircleWidgetState extends State<ChartCircleWidget> {
         child: (() {
           if (raderChartData.length < 3) {
             return Center(
-              child: Text("${widget.techListType} 데이터가 부족합니다.\n3개 이상 선택해주세요.",
-                  style: const TextStyle(
-                      fontSize: 30, fontWeight: FontWeight.bold)),
+              child: Text("${widget.techListType} 데이터가 부족합니다.\n3개 이상 선택해주세요.", style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
             );
           }
 

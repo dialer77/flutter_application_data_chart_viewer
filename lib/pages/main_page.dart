@@ -22,7 +22,7 @@ class MainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) => Container(
-        padding: EdgeInsets.symmetric(horizontal: constraints.maxWidth * 0.05, vertical: constraints.maxWidth * 0.05),
+        padding: EdgeInsets.only(left: constraints.maxWidth * 0.05, right: constraints.maxWidth * 0.05, top: constraints.maxWidth * 0.04, bottom: constraints.maxWidth * 0.05),
         height: constraints.maxHeight,
         child: LayoutGrid(
           columnSizes: [1.fr],
@@ -82,7 +82,7 @@ class MainPage extends StatelessWidget {
               fontFamily: 'Paperlogy-5',
               fontSize: constraints.maxWidth * 0.0098,
               height: min(constraints.maxHeight * 0.003, 3),
-              letterSpacing: constraints.maxWidth * 0.0025,
+              letterSpacing: constraints.maxWidth * 0.00125,
               color: Colors.black,
             ),
             children: const [
@@ -120,7 +120,7 @@ class MainPage extends StatelessWidget {
             ],
           ),
         ),
-        Image.asset('assets/images/image1.jpg'),
+        Container(padding: EdgeInsets.only(bottom: constraints.maxWidth * 0.02), child: Image.asset('assets/images/image1.jpg')),
       ],
     );
   }

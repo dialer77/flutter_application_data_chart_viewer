@@ -23,6 +23,9 @@ class AnalysisTargetWidget extends StatefulWidget {
 }
 
 class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
+  late double listViewFontSize;
+  late double flagSize;
+
   @override
   void initState() {
     super.initState();
@@ -35,6 +38,8 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
   @override
   Widget build(BuildContext context) {
     final dataProvider = context.watch<AnalysisDataProvider>();
+    listViewFontSize = widget.fontSize * 0.75;
+    flagSize = widget.fontSize * 1.3;
 
     return LayoutBuilder(
       builder: (context, constraints) => Column(
@@ -149,13 +154,16 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
                           if (dataProvider.selectedCategory == AnalysisCategory.countryTech)
                             CountryFlag.fromCountryCode(
                               CommonUtils.instance.replaceCountryCode(item),
-                              height: 16,
-                              width: 24,
+                              height: flagSize,
+                              width: flagSize,
                             ),
                           Expanded(
                             child: Text(
                               CommonUtils.instance.replaceCountryCode(item),
                               overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: listViewFontSize,
+                              ),
                             ),
                           ),
                         ],
@@ -239,8 +247,18 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
                   return CheckboxListTile(
                     title: Row(
                       children: [
-                        CountryFlag.fromCountryCode(country.replaceAll(RegExp(r'[\[\]]'), ''), height: 16, width: 24),
-                        Text(country),
+                        CountryFlag.fromCountryCode(
+                          CommonUtils.instance.replaceCountryCode(country),
+                          height: flagSize,
+                          width: flagSize,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          CommonUtils.instance.replaceCountryCode(country),
+                          style: TextStyle(
+                            fontSize: listViewFontSize,
+                          ),
+                        ),
                       ],
                     ),
                     value: dataProvider.selectedCountries.contains(country),
@@ -271,11 +289,19 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
                   return CheckboxListTile(
                     title: Row(
                       children: [
-                        CountryFlag.fromCountryCode(dataProvider.searchCountryCode(company).replaceAll(RegExp(r'[\[\]]'), ''), height: 16, width: 24),
+                        CountryFlag.fromCountryCode(
+                          CommonUtils.instance.replaceCountryCode(dataProvider.searchCountryCode(company)),
+                          height: flagSize,
+                          width: flagSize,
+                        ),
+                        const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             company,
                             overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: listViewFontSize,
+                            ),
                           ),
                         ),
                       ],
@@ -308,11 +334,19 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
                   return CheckboxListTile(
                     title: Row(
                       children: [
-                        CountryFlag.fromCountryCode(dataProvider.searchCountryCode(academic).replaceAll(RegExp(r'[\[\]]'), ''), height: 16, width: 24),
+                        CountryFlag.fromCountryCode(
+                          CommonUtils.instance.replaceCountryCode(dataProvider.searchCountryCode(academic)),
+                          height: flagSize,
+                          width: flagSize,
+                        ),
+                        const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             academic,
                             overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: listViewFontSize,
+                            ),
                           ),
                         ),
                       ],

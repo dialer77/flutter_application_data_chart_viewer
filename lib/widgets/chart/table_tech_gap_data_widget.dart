@@ -54,7 +54,11 @@ class _TableTechGapDataWidgetState extends State<TableTechGapDataWidget> {
                 DataColumn(
                   label: SizedBox(
                     width: constraints.maxWidth * 0.1,
-                    child: const Center(child: Text('기준')),
+                    child: const Center(
+                        child: Text(
+                      '기준',
+                      style: TextStyle(fontSize: 10),
+                    )),
                   ),
                 ),
                 ...items.map((item) {
@@ -72,12 +76,13 @@ class _TableTechGapDataWidgetState extends State<TableTechGapDataWidget> {
                               return Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  CountryFlag.fromCountryCode(countryCode, height: 16, width: 24),
+                                  CountryFlag.fromCountryCode(countryCode, height: 12, width: 18),
                                   const SizedBox(width: 4),
                                   Text(
                                     countryCode,
                                     overflow: TextOverflow.ellipsis,
                                     softWrap: false,
+                                    style: const TextStyle(fontSize: 10),
                                   ),
                                 ],
                               );
@@ -86,11 +91,12 @@ class _TableTechGapDataWidgetState extends State<TableTechGapDataWidget> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    CountryFlag.fromCountryCode(countryCode, height: 16, width: 24),
+                                    CountryFlag.fromCountryCode(countryCode, height: 12, width: 18),
                                     Text(
                                       item,
                                       overflow: TextOverflow.ellipsis,
                                       softWrap: false,
+                                      style: const TextStyle(fontSize: 10),
                                     ),
                                   ],
                                 ),
@@ -130,11 +136,12 @@ class _TableTechGapDataWidgetState extends State<TableTechGapDataWidget> {
                             child: Center(
                               child: Row(
                                 children: [
-                                  CountryFlag.fromCountryCode(countryCode, height: 16, width: 24),
+                                  CountryFlag.fromCountryCode(countryCode, height: 12, width: 18),
                                   Expanded(
                                     child: Text(
                                       CommonUtils.instance.replaceCountryCode(rowItem),
                                       overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 10),
                                     ),
                                   ),
                                 ],
@@ -175,9 +182,10 @@ class _TableTechGapDataWidgetState extends State<TableTechGapDataWidget> {
                               width: constraints.maxWidth * 0.9 / items.length,
                               child: Center(
                                 child: Text(
-                                  gap.toStringAsFixed(1),
+                                  '${gap >= 0 ? '+' : ''}${(gap * 10).toStringAsFixed(1)}',
                                   style: TextStyle(
                                     color: gap < 0 ? Colors.blue : Colors.red,
+                                    fontSize: 10,
                                   ),
                                 ),
                               ),

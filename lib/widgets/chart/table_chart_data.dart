@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
+import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
 import 'package:provider/provider.dart';
 
 class TableChartData extends StatelessWidget {
@@ -19,8 +20,7 @@ class TableChartData extends StatelessWidget {
     final techCode = dataProvider.selectedTechCode;
     var countries = dataProvider.selectedCountries.toList();
     if (countries.isEmpty) {
-      countries =
-          dataProvider.getAvailableCountries(techCode).take(10).toList();
+      countries = dataProvider.getAvailableCountries(techCode).take(10).toList();
     }
 
     var companies = dataProvider.selectedCompanies.toList();
@@ -61,12 +61,10 @@ class TableChartData extends StatelessWidget {
                     onPointerSignal: (pointerSignal) {
                       if (pointerSignal is PointerScrollEvent) {
                         horizontalController.position.moveTo(
-                          horizontalController.position.pixels +
-                              pointerSignal.scrollDelta.dx,
+                          horizontalController.position.pixels + pointerSignal.scrollDelta.dx,
                         );
                         verticalController.position.moveTo(
-                          verticalController.position.pixels +
-                              pointerSignal.scrollDelta.dy,
+                          verticalController.position.pixels + pointerSignal.scrollDelta.dy,
                         );
                       }
                     },
@@ -75,10 +73,8 @@ class TableChartData extends StatelessWidget {
                       scrollDirection: Axis.horizontal,
                       child: (() {
                         var data = dataProvider.getTechCompetitionData();
-                        var dataCodes =
-                            dataProvider.getTechCompetitionDataCodes();
-                        return _buildDataTableTechCompetition(
-                            dataProvider, data, dataCodes, constraints);
+                        var dataCodes = dataProvider.getTechCompetitionDataCodes();
+                        return _buildDataTableTechCompetition(dataProvider, data, dataCodes, constraints);
                       }()),
                     ),
                   ),
@@ -91,14 +87,9 @@ class TableChartData extends StatelessWidget {
     );
   }
 
-  DataTable _buildDataTableTechCompetition(
-      AnalysisDataProvider dataProvider,
-      Map<String, Map<String, double>> data,
-      List<String> dataCodes,
-      BoxConstraints constraints) {
+  DataTable _buildDataTableTechCompetition(AnalysisDataProvider dataProvider, Map<String, Map<String, double>> data, List<String> dataCodes, BoxConstraints constraints) {
     return DataTable(
-      headingRowColor:
-          WidgetStateProperty.all(const Color.fromARGB(255, 16, 72, 98)),
+      headingRowColor: WidgetStateProperty.all(const Color.fromARGB(255, 16, 72, 98)),
       horizontalMargin: 0,
       columnSpacing: 0,
       columns: [
@@ -108,7 +99,7 @@ class TableChartData extends StatelessWidget {
             child: const Center(
               child: Text(
                 'RANK',
-                style: TextStyle(fontSize: 12, color: Colors.white),
+                style: TextStyle(fontSize: 10, color: Colors.white),
               ),
             ),
           ),
@@ -118,14 +109,12 @@ class TableChartData extends StatelessWidget {
             width: constraints.maxWidth * (1 - 0.1 * dataCodes.length - 0.075),
             child: Center(
               child: Text(
-                  dataProvider.selectedSubCategory ==
-                          AnalysisSubCategory.countryDetail
+                  dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail
                       ? 'COUNTRY'
-                      : dataProvider.selectedSubCategory ==
-                              AnalysisSubCategory.companyDetail
+                      : dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail
                           ? 'COMPANY'
                           : 'INSTITUTE',
-                  style: const TextStyle(fontSize: 12, color: Colors.white)),
+                  style: const TextStyle(fontSize: 10, color: Colors.white)),
             ),
           ),
         ),
@@ -136,7 +125,7 @@ class TableChartData extends StatelessWidget {
               child: Center(
                 child: Text(
                   code,
-                  style: const TextStyle(fontSize: 12, color: Colors.white),
+                  style: const TextStyle(fontSize: 10, color: Colors.white),
                 ),
               ),
             ),
@@ -153,6 +142,9 @@ class TableChartData extends StatelessWidget {
                   child: Center(
                     child: Text(
                       (index + 1).toString(),
+                      style: const TextStyle(
+                        fontSize: 10,
+                      ),
                     ),
                   ),
                 ),
@@ -161,27 +153,23 @@ class TableChartData extends StatelessWidget {
                 Row(
                   children: [
                     CountryFlag.fromCountryCode(
-                      dataProvider.selectedSubCategory ==
-                              AnalysisSubCategory.countryDetail
-                          ? data.keys
-                              .elementAt(index)
-                              .replaceAll(RegExp(r'[\[\]]'), '')
-                          : dataProvider
-                              .searchCountryCode(data.keys.elementAt(index))
-                              .replaceAll(RegExp(r'[\[\]]'), ''),
-                      height: 16,
-                      width: 24,
+                      dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail
+                          ? CommonUtils.instance.replaceCountryCode(data.keys.elementAt(index))
+                          : CommonUtils.instance.replaceCountryCode(dataProvider.searchCountryCode(data.keys.elementAt(index))),
+                      height: 12,
+                      width: 18,
                     ),
-                    Text(data.keys.elementAt(index)),
+                    Text(CommonUtils.instance.replaceCountryCode(data.keys.elementAt(index)), style: const TextStyle(fontSize: 10)),
                   ],
                 ),
               ),
               ...dataCodes.map(
                 (code) => DataCell(
                   Center(
-                      child: Text(data[data.keys.elementAt(index)]?[code]
-                              ?.toStringAsFixed(3) ??
-                          '0.000')),
+                      child: Text(
+                    data[data.keys.elementAt(index)]?[code]?.toStringAsFixed(3) ?? '0.000',
+                    style: const TextStyle(fontSize: 10),
+                  )),
                 ),
               ),
             ],

@@ -157,6 +157,7 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
                               height: flagSize,
                               width: flagSize,
                             ),
+                          const SizedBox(width: 4),
                           Expanded(
                             child: Text(
                               CommonUtils.instance.replaceCountryCode(item),

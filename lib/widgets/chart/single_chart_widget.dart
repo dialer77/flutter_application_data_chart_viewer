@@ -245,7 +245,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
             spots: solidLineSpots,
             isCurved: true,
             color: colors[i % colors.length],
-            barWidth: 2,
+            barWidth: 1,
             dotData: const FlDotData(show: false),
             isStrokeCapRound: true,
             belowBarData: BarAreaData(show: false),
@@ -259,7 +259,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
             spots: dashedLineSpots,
             isCurved: true,
             color: colors[i % colors.length],
-            barWidth: 2,
+            barWidth: 1,
             dashArray: [5, 5], // 점선 처리
             dotData: FlDotData(
               show: true,
@@ -286,7 +286,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
             spots: trendLineSpots,
             isCurved: true,
             color: colors[i % colors.length],
-            barWidth: 2,
+            barWidth: 1,
             dotData: FlDotData(
               show: true,
               checkToShowDot: (spot, barData) {

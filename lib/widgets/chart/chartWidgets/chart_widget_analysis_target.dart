@@ -212,44 +212,88 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
             // Title
             child: Container(
               alignment: Alignment.centerLeft,
-              width: category == AnalysisCategory.countryTech ? constraints.maxWidth * 0.175 : constraints.maxWidth * 0.5,
+              width: constraints.maxWidth,
               height: constraints.maxHeight * 0.1,
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 109, 207, 245),
-                borderRadius: BorderRadius.circular(10),
+              padding: EdgeInsets.only(
+                right: constraints.maxWidth * 0.035,
               ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: category == AnalysisCategory.countryTech ? constraints.maxWidth * 0.035 : 8,
-                  vertical: 4.0,
-                ),
-                child: Center(
-                  child: Row(
-                    mainAxisAlignment: category == AnalysisCategory.countryTech ? MainAxisAlignment.spaceAround : MainAxisAlignment.center,
-                    children: [
-                      (() {
-                        if (category == AnalysisCategory.countryTech) {
-                          return CountryFlag.fromCountryCode(
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: category == AnalysisCategory.countryTech ? constraints.maxWidth * 0.035 : 8,
+                      vertical: 4.0,
+                    ),
+                    width: category == AnalysisCategory.countryTech ? constraints.maxWidth * 0.175 : constraints.maxWidth * 0.5,
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 109, 207, 245),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: category == AnalysisCategory.countryTech ? MainAxisAlignment.spaceAround : MainAxisAlignment.center,
+                        children: [
+                          (() {
+                            if (category == AnalysisCategory.countryTech) {
+                              return CountryFlag.fromCountryCode(
+                                CommonUtils.instance.replaceCountryCode(targetCode),
+                                height: 16,
+                                width: 24,
+                              );
+                            } else {
+                              return const SizedBox.shrink();
+                            }
+                          }()),
+                          Text(
                             CommonUtils.instance.replaceCountryCode(targetCode),
-                            height: 16,
-                            width: 24,
-                          );
-                        } else {
-                          return const SizedBox.shrink();
-                        }
-                      }()),
-                      Text(
-                        CommonUtils.instance.replaceCountryCode(targetCode),
-                        style: TextStyle(
-                          fontSize: constraints.maxHeight * 0.035,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: constraints.maxHeight * 0.035,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontFamily: 'Times New Roman',
+                              shadows: const [
+                                Shadow(
+                                  offset: Offset(-1, -1),
+                                  color: Colors.black,
+                                  blurRadius: 0,
+                                ),
+                                Shadow(
+                                  offset: Offset(1, -1),
+                                  color: Colors.black,
+                                  blurRadius: 0,
+                                ),
+                                Shadow(
+                                  offset: Offset(-1, 1),
+                                  color: Colors.black,
+                                  blurRadius: 0,
+                                ),
+                                Shadow(
+                                  offset: Offset(1, 1),
+                                  color: Colors.black,
+                                  blurRadius: 0,
+                                ),
+                              ],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                  const Spacer(), // 중간 공간을 채움
+                  Container(
+                    width: constraints.maxHeight * 0.12,
+                    height: constraints.maxHeight * 0.08,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: const Color.fromARGB(255, 109, 207, 245),
+                      ),
+                    ),
+                    child: CommonUtils.instance.saveMenuPopup(constraints: constraints),
+                  ),
+                ],
               ),
             ),
           ),
@@ -264,18 +308,21 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: Colors.grey),
               ),
-              child: SingleChartWidget(
-                techListType: provider.selectedTechListType,
-                techCode: provider.selectedTechCode,
-                country: category == AnalysisCategory.countryTech ? targetCode : null,
-                targetName: (targetCode) {
-                  if (category == AnalysisCategory.companyTech || category == AnalysisCategory.academicTech) {
-                    return targetCode;
-                  } else {
-                    return null;
-                  }
-                }(targetCode),
-                chartColor: provider.getColorForCode(targetCode),
+              child: RepaintBoundary(
+                key: CommonUtils.chartKey,
+                child: SingleChartWidget(
+                  techListType: provider.selectedTechListType,
+                  techCode: provider.selectedTechCode,
+                  country: category == AnalysisCategory.countryTech ? targetCode : null,
+                  targetName: (targetCode) {
+                    if (category == AnalysisCategory.companyTech || category == AnalysisCategory.academicTech) {
+                      return targetCode;
+                    } else {
+                      return null;
+                    }
+                  }(targetCode),
+                  chartColor: provider.getColorForCode(targetCode),
+                ),
               ),
             ),
           ),

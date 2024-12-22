@@ -65,11 +65,32 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
         height: constraints.maxHeight,
         child: Column(
           children: [
-            Center(
-              child: _buildLegend(codes),
+            Row(
+              children: [
+                Expanded(
+                  child: Center(
+                    child: _buildLegend(codes),
+                  ),
+                ),
+                Container(
+                  width: constraints.maxHeight * 0.12,
+                  height: constraints.maxHeight * 0.08,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: const Color.fromARGB(255, 109, 207, 245),
+                    ),
+                  ),
+                  child: CommonUtils.instance.saveMenuPopup(constraints: constraints),
+                ),
+              ],
             ),
             Expanded(
-              child: _buildChartBarType(codes),
+              child: RepaintBoundary(
+                key: CommonUtils.chartKey,
+                child: _buildChartBarType(codes),
+              ),
             ),
             InkWell(
               onTap: () {

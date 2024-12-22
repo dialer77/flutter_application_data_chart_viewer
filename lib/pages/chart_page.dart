@@ -106,6 +106,28 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
                         color: Colors.white,
                         fontSize: constraints.maxHeight * fontSizeRatio,
                         fontWeight: FontWeight.bold,
+                        shadows: const [
+                          Shadow(
+                            offset: Offset(-1, -1),
+                            color: Colors.black,
+                            blurRadius: 0,
+                          ),
+                          Shadow(
+                            offset: Offset(1, -1),
+                            color: Colors.black,
+                            blurRadius: 0,
+                          ),
+                          Shadow(
+                            offset: Offset(-1, 1),
+                            color: Colors.black,
+                            blurRadius: 0,
+                          ),
+                          Shadow(
+                            offset: Offset(1, 1),
+                            color: Colors.black,
+                            blurRadius: 0,
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -191,6 +213,30 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
                                 color: Colors.white,
                                 fontSize: constraints.maxHeight * fontSizeRatio,
                                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, // 선택된 항목의 텍스트를 굵게
+                                shadows: isSelected
+                                    ? const [
+                                        Shadow(
+                                          offset: Offset(-1, -1),
+                                          color: Colors.black,
+                                          blurRadius: 0,
+                                        ),
+                                        Shadow(
+                                          offset: Offset(1, -1),
+                                          color: Colors.black,
+                                          blurRadius: 0,
+                                        ),
+                                        Shadow(
+                                          offset: Offset(-1, 1),
+                                          color: Colors.black,
+                                          blurRadius: 0,
+                                        ),
+                                        Shadow(
+                                          offset: Offset(1, 1),
+                                          color: Colors.black,
+                                          blurRadius: 0,
+                                        ),
+                                      ]
+                                    : [],
                               ),
                             ),
                           ),

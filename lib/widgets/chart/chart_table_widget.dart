@@ -153,7 +153,7 @@ class _ChartTableWidgetState extends State<ChartTableWidget> {
                   child: const Center(
                     child: Text(
                       'RANK',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: Colors.white, fontSize: 13),
                     ),
                   ),
                 ).withGridPlacement(
@@ -172,7 +172,10 @@ class _ChartTableWidgetState extends State<ChartTableWidget> {
                     child: Center(
                       child: Text(
                         widget.headerTitles[index].$2,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   ).withGridPlacement(
@@ -188,7 +191,10 @@ class _ChartTableWidgetState extends State<ChartTableWidget> {
                   child: Center(
                     child: Text(
                       widget.title,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ).withGridPlacement(
@@ -216,6 +222,10 @@ class _ChartTableWidgetState extends State<ChartTableWidget> {
                             child: Center(
                               child: Text(
                                 (provider.getYearRange().start.toInt() + index).toString(),
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 10,
+                                ),
                               ),
                             ),
                           );
@@ -250,7 +260,10 @@ class _ChartTableWidgetState extends State<ChartTableWidget> {
                           child: Center(
                             child: Text(
                               sortTableDataModels[index].rank.toString(),
-                              style: const TextStyle(fontSize: 12, color: Colors.black),
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Colors.black,
+                              ),
                             ),
                           ),
                         );
@@ -298,9 +311,13 @@ class _ChartTableWidgetState extends State<ChartTableWidget> {
                                   return Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                     children: [
-                                      CountryFlag.fromCountryCode(countryCode, height: 25, width: 25),
+                                      CountryFlag.fromCountryCode(countryCode, height: 20, width: 20),
                                       Text(
                                         countryCode,
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 10,
+                                        ),
                                       ),
                                     ],
                                   );
@@ -310,6 +327,10 @@ class _ChartTableWidgetState extends State<ChartTableWidget> {
                                     child: Text(
                                       sortTableDataModels[sortIndex].name,
                                       overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 10,
+                                      ),
                                     ),
                                   );
                                 default:
@@ -357,7 +378,10 @@ class _ChartTableWidgetState extends State<ChartTableWidget> {
                                     child: Center(
                                       child: Text(
                                         sortTableDataModels[dataIndex].yearDatas[provider.getYearRange().start.toInt() + yearIndex]?.toStringAsFixed(4) ?? '0.0',
-                                        style: const TextStyle(fontSize: 12, color: Colors.black),
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.black,
+                                        ),
                                       ),
                                     ),
                                   );

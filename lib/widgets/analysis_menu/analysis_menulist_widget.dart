@@ -149,25 +149,22 @@ class _AnalysisMenuListWidgetState extends State<AnalysisMenuListWidget> {
     );
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          '연도 선택: ',
+          '${provider.selectedYear}년',
           style: TextStyle(fontSize: fontSize),
         ),
-        DropdownButton<int>(
-          value: provider.selectedYear,
-          items: years.map<DropdownMenuItem<int>>((int year) {
-            return DropdownMenuItem<int>(
-              value: year,
-              child: Text('$year년'),
-            );
-          }).toList(),
-          onChanged: (int? newValue) {
-            if (newValue != null) {
-              provider.setSelectedYear(newValue);
-            }
-          },
+        Expanded(
+          child: Slider(
+            value: provider.selectedYear.toDouble(),
+            min: years.first.toDouble(),
+            max: years.last.toDouble(),
+            divisions: years.length - 1,
+            label: provider.selectedYear.toString(),
+            onChanged: (double value) {
+              provider.setSelectedYear(value.round());
+            },
+          ),
         ),
       ],
     );

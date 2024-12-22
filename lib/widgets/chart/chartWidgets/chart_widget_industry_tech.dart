@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
+import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/single_chart_widget.dart';
 import 'package:provider/provider.dart';
 
@@ -102,31 +103,72 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: EdgeInsets.only(
-              left: constraints.maxWidth * 0.035,
+          Container(
+            width: constraints.maxWidth,
+            height: constraints.maxHeight * 0.1,
+            padding: EdgeInsets.symmetric(
+              horizontal: constraints.maxWidth * 0.035,
             ),
-            child: Container(
-              alignment: Alignment.centerLeft,
-              width: constraints.maxWidth * 0.175,
-              height: constraints.maxHeight * 0.1,
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 109, 207, 245),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Center(
-                  child: Text(
-                    techCode,
-                    style: TextStyle(
-                      fontSize: constraints.maxHeight * 0.035,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+            child: Row(
+              children: [
+                Container(
+                  alignment: Alignment.centerLeft,
+                  width: constraints.maxWidth * 0.175,
+                  height: constraints.maxHeight * 0.1,
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 109, 207, 245),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: Text(
+                        " $techCode ",
+                        style: TextStyle(
+                          fontSize: constraints.maxHeight * 0.035,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          shadows: const [
+                            Shadow(
+                              offset: Offset(-1, -1),
+                              color: Colors.black,
+                              blurRadius: 0,
+                            ),
+                            Shadow(
+                              offset: Offset(1, -1),
+                              color: Colors.black,
+                              blurRadius: 0,
+                            ),
+                            Shadow(
+                              offset: Offset(-1, 1),
+                              color: Colors.black,
+                              blurRadius: 0,
+                            ),
+                            Shadow(
+                              offset: Offset(1, 1),
+                              color: Colors.black,
+                              blurRadius: 0,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
+                const Spacer(), // 중간 공간을 채움
+                Container(
+                  width: constraints.maxHeight * 0.12,
+                  height: constraints.maxHeight * 0.08,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: const Color.fromARGB(255, 109, 207, 245),
+                    ),
+                  ),
+                  child: CommonUtils.instance.saveMenuPopup(constraints: constraints),
+                ),
+              ],
             ),
           ),
           Padding(
@@ -140,11 +182,14 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: Colors.grey),
               ),
-              child: SingleChartWidget(
-                techListType: provider.selectedTechListType,
-                techCode: techCode,
-                chartColor: provider.getColorForCode(techCode),
-                chartType: ChartType.barWithTrendLine,
+              child: RepaintBoundary(
+                key: CommonUtils.chartKey,
+                child: SingleChartWidget(
+                  techListType: provider.selectedTechListType,
+                  techCode: techCode,
+                  chartColor: provider.getColorForCode(techCode),
+                  chartType: ChartType.barWithTrendLine,
+                ),
               ),
             ),
           ),

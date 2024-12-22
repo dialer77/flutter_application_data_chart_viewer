@@ -112,6 +112,29 @@ class _MenuListWidgetState extends State<MenuListWidget> with SingleTickerProvid
                             color: Colors.white,
                             fontSize: widget.constraints.maxWidth * 0.1,
                             fontFamily: 'Paperlogy-4',
+                            shadows: const [
+                              // 상하좌우 방향으로 그림자를 추가하여 테두리 효과 생성
+                              Shadow(
+                                offset: Offset(-1, -1),
+                                color: Colors.black,
+                                blurRadius: 0,
+                              ),
+                              Shadow(
+                                offset: Offset(1, -1),
+                                color: Colors.black,
+                                blurRadius: 0,
+                              ),
+                              Shadow(
+                                offset: Offset(-1, 1),
+                                color: Colors.black,
+                                blurRadius: 0,
+                              ),
+                              Shadow(
+                                offset: Offset(1, 1),
+                                color: Colors.black,
+                                blurRadius: 0,
+                              ),
+                            ],
                           ),
                           textAlign: TextAlign.center,
                         ),

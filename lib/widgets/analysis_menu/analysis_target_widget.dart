@@ -38,7 +38,7 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
   @override
   Widget build(BuildContext context) {
     final dataProvider = context.watch<AnalysisDataProvider>();
-    listViewFontSize = widget.fontSize * 0.75;
+    listViewFontSize = widget.fontSize * 0.80;
     flagSize = widget.fontSize * 1.3;
 
     return LayoutBuilder(
@@ -164,6 +164,7 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: listViewFontSize,
+                                color: Colors.black,
                               ),
                             ),
                           ),

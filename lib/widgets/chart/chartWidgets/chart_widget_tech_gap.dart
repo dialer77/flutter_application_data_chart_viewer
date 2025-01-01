@@ -21,9 +21,9 @@ class _ChartWidgetTechGapState extends State<ChartWidgetTechGap> {
 
     List<String> targetNames = [];
     if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail) {
-      targetNames = dataProvider.selectedCompanies.isEmpty ? dataProvider.getAvailableCompaniesFormTechGap(techCode).take(10).toList() : dataProvider.selectedCompanies.toList();
+      targetNames = dataProvider.selectedCompanies.isEmpty ? dataProvider.getAvailableCompaniesFromTechGap(techCode).take(10).toList() : dataProvider.selectedCompanies.toList();
     } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
-      targetNames = dataProvider.selectedAcademics.isEmpty ? dataProvider.getAvailableAcademicsFormTechGap(techCode).take(10).toList() : dataProvider.selectedAcademics.toList();
+      targetNames = dataProvider.selectedAcademics.isEmpty ? dataProvider.getAvailableAcademicsFromTechGap(techCode).take(10).toList() : dataProvider.selectedAcademics.toList();
     }
 
     return LayoutBuilder(builder: (context, constraints) {
@@ -81,7 +81,7 @@ class _ChartWidgetTechGapState extends State<ChartWidgetTechGap> {
   Widget _buildChartMultiLineType(List<String> targetNames, AnalysisDataProvider dataProvider) {
     final techCode = dataProvider.selectedTechCode;
 
-    var countries = dataProvider.selectedCountries.isEmpty ? dataProvider.getAvailableCountriesFormTechGap(techCode).take(10).toList() : dataProvider.selectedCountries.toList();
+    var countries = dataProvider.selectedCountries.isEmpty ? dataProvider.getAvailableCountriesFromTechGap(techCode).take(10).toList() : dataProvider.selectedCountries.toList();
     return LayoutBuilder(builder: (context, constraints) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,

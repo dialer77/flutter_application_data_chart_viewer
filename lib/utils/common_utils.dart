@@ -1,13 +1,13 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
-import 'package:flutter_application_data_chart_viewer/models/table_chart_data_model.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:image/image.dart' as img;
+import 'package:file_picker/file_picker.dart';
 
 class CommonUtils {
   static CommonUtils? _instance;
@@ -68,54 +68,32 @@ class CommonUtils {
     return base * 20; // 2배 증가
   }
 
-  List<TableChartDataModel> createTestData() {
-    return [
-      TableChartDataModel(
-        rank: 1,
-        name: 'Korea',
-        dataInfo: {
-          TableDataType.country: 'KR',
-        },
-        yearDatas: {
-          2018: 85.5,
-          2019: 87.2,
-          2020: 89.1,
-          2021: 90.5,
-          2022: 92.3,
-        },
+  List<Shadow> getTextBorderShadow() {
+    return const [
+      Shadow(
+        offset: Offset(-1, -1),
+        color: Colors.black,
+        blurRadius: 0,
       ),
-      TableChartDataModel(
-        rank: 2,
-        name: 'Japan',
-        dataInfo: {
-          TableDataType.country: 'JP',
-        },
-        yearDatas: {
-          2018: 82.1,
-          2019: 83.5,
-          2020: 85.2,
-          2021: 86.8,
-          2022: 88.4,
-        },
+      Shadow(
+        offset: Offset(1, -1),
+        color: Colors.black,
+        blurRadius: 0,
       ),
-      TableChartDataModel(
-        rank: 3,
-        name: 'China',
-        dataInfo: {
-          TableDataType.country: 'CN',
-        },
-        yearDatas: {
-          2018: 78.3,
-          2019: 80.5,
-          2020: 82.9,
-          2021: 84.7,
-          2022: 86.2,
-        },
+      Shadow(
+        offset: Offset(-1, 1),
+        color: Colors.black,
+        blurRadius: 0,
+      ),
+      Shadow(
+        offset: Offset(1, 1),
+        color: Colors.black,
+        blurRadius: 0,
       ),
     ];
   }
 
-  Widget saveMenuPopup({required BoxConstraints constraints}) {
+  Widget saveMenuPopup({required BoxConstraints constraints, required GlobalKey globalKey, required AnalysisDataProvider dataProvider}) {
     return PopupMenuButton<String>(
       offset: Offset(constraints.maxHeight * 0, constraints.maxHeight * 0.02),
       position: PopupMenuPosition.under,
@@ -123,14 +101,10 @@ class CommonUtils {
         switch (value) {
           case 'PNG':
           case 'JPG':
-            _handleImageExport(format: value);
-            break;
-          case 'SVG':
-            // SVG 내보내기는 아직 구현되지 않음
-            print('SVG export is not implemented yet');
+            _handleImageExport(format: value, globalKey: globalKey);
             break;
           case 'CSV':
-            _handleCsvExport();
+            _handleCsvExport(globalKey, dataProvider);
             break;
         }
       },
@@ -171,16 +145,13 @@ class CommonUtils {
     );
   }
 
-  // GlobalKey 선언
-  static final GlobalKey chartKey = GlobalKey();
-
-  Future<void> _handleImageExport({required String format}) async {
+  Future<void> _handleImageExport({required String format, required GlobalKey globalKey}) async {
     try {
-      RenderRepaintBoundary? boundary = CommonUtils.chartKey.currentContext!.findRenderObject() as RenderRepaintBoundary?;
+      RenderRepaintBoundary? boundary = globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary?;
 
       if (boundary != null) {
         showDialog(
-          context: CommonUtils.chartKey.currentContext!,
+          context: globalKey.currentContext!,
           barrierDismissible: false,
           builder: (BuildContext context) {
             return const Center(
@@ -189,9 +160,9 @@ class CommonUtils {
           },
         );
 
-        final directory = await getApplicationDocumentsDirectory();
-        late final File file;
+        // 이미지 생성 로직
         late final List<int> bytes;
+        late final String defaultFileName;
 
         switch (format) {
           case 'PNG':
@@ -206,72 +177,78 @@ class CommonUtils {
             final imageWithBg = await picture.toImage(image.width, image.height);
             final byteData = await imageWithBg.toByteData(format: ImageByteFormat.png);
             bytes = byteData!.buffer.asUint8List();
-            file = File('${directory.path}/chart.png');
+            defaultFileName = 'chart.png';
             break;
 
           case 'JPG':
             final image = await boundary.toImage(pixelRatio: 3.0);
             final byteData = await image.toByteData(format: ImageByteFormat.rawRgba);
-            final bytes = byteData!.buffer.asUint8List();
+            final rawBytes = byteData!.buffer.asUint8List();
 
-            // RGBA 데이터를 이미지로 변환
             final imgData = img.Image.fromBytes(
               width: image.width,
               height: image.height,
-              bytes: bytes.buffer,
+              bytes: rawBytes.buffer,
               numChannels: 4,
             );
 
-            // JPG로 인코딩
-            final jpgBytes = img.encodeJpg(imgData, quality: 90);
-
-            file = File('${directory.path}/chart.jpg');
-            await file.writeAsBytes(jpgBytes);
-            break;
-
-          case 'SVG':
-            // SVG 변환은 별도의 라이브러리가 필요합니다
-            throw UnimplementedError('SVG export is not implemented yet');
+            bytes = img.encodeJpg(imgData, quality: 90);
+            defaultFileName = 'chart.jpg';
             break;
 
           default:
             throw UnsupportedError('Unsupported format: $format');
         }
 
-        await file.writeAsBytes(bytes);
-
-        if (CommonUtils.chartKey.currentContext != null) {
-          Navigator.of(CommonUtils.chartKey.currentContext!).pop();
+        // 저장 다이얼로그 닫기
+        if (globalKey.currentContext != null) {
+          Navigator.of(globalKey.currentContext!).pop();
         }
 
-        if (CommonUtils.chartKey.currentContext != null) {
-          showDialog(
-            context: CommonUtils.chartKey.currentContext!,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('저장 완료'),
-                content: Text('차트가 $format 형식으로 저장되었습니다.\n저장 위치: ${file.path}'),
-                actions: <Widget>[
-                  TextButton(
-                    child: const Text('확인'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
+        // 파일 저장 위치 선택
+        String? outputFile = await FilePicker.platform.saveFile(
+          dialogTitle: '저장할 위치를 선택하세요',
+          fileName: defaultFileName,
+          type: FileType.custom,
+          allowedExtensions: [format.toLowerCase()],
+        );
+
+        if (outputFile != null) {
+          // 파일 확장자 확인 및 추가
+          if (!outputFile.toLowerCase().endsWith('.${format.toLowerCase()}')) {
+            outputFile = '$outputFile.${format.toLowerCase()}';
+          }
+
+          final file = File(outputFile);
+          await file.writeAsBytes(bytes);
+
+          if (globalKey.currentContext != null) {
+            showDialog(
+              context: globalKey.currentContext!,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text('저장 완료'),
+                  content: Text('차트가 저장되었습니다.\n저장 위치: ${file.path}'),
+                  actions: <Widget>[
+                    TextButton(
+                      child: const Text('확인'),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                );
+              },
+            );
+          }
         }
       }
     } catch (e) {
-      if (CommonUtils.chartKey.currentContext != null) {
-        Navigator.of(CommonUtils.chartKey.currentContext!).pop();
+      if (globalKey.currentContext != null) {
+        Navigator.of(globalKey.currentContext!).pop();
       }
 
-      if (CommonUtils.chartKey.currentContext != null) {
+      if (globalKey.currentContext != null) {
         showDialog(
-          context: CommonUtils.chartKey.currentContext!,
+          context: globalKey.currentContext!,
           builder: (BuildContext context) {
             return AlertDialog(
               title: const Text('오류'),
@@ -288,12 +265,98 @@ class CommonUtils {
           },
         );
       }
-      print('Error saving chart: $e');
     }
   }
 
-  void _handleCsvExport() {
-    // CSV 내보내기 로직 구현
-    print('Exporting as CSV...');
+  Future<void> _handleCsvExport(GlobalKey globalKey, AnalysisDataProvider dataProvider) async {
+    try {
+      // CSV 헤더와 데이터 생성
+      final StringBuffer csvContent = StringBuffer();
+
+      String techCode = dataProvider.selectedTechCode ?? '';
+      // 헤더 추가 (순위, 국가명, 연도별 데이터)
+      csvContent.writeln('${dataProvider.selectedCategory},${dataProvider.selectedSubCategory},${dataProvider.selectedDataType},${dataProvider.selectedTechListType},$techCode');
+
+      var chartData = dataProvider.getChartData(
+        techListType: dataProvider.selectedTechListType,
+        techCode: techCode,
+      );
+
+      String dataCode = dataProvider.getDataCode() ?? '';
+      if (dataCode != '') {
+        String yearData = chartData.keys.map((key) => '${dataCode}_$key').join(',');
+        csvContent.writeln(yearData);
+      } else {
+        String yearData = chartData.keys.join(',');
+        csvContent.writeln(yearData);
+      }
+
+      csvContent.writeln(chartData.values.join(','));
+      // 데이터 행 추가
+      // for (var data in chartData) {
+
+      //   csvContent.write('${data.rank},${data.name}');
+      //   for (var year in [2018, 2019, 2020, 2021, 2022]) {
+      //     csvContent.write(',${data.yearDatas[year]}');
+      //   }
+      //   csvContent.writeln();
+      // }
+
+      // 파일 저장 위치 선택
+      String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: '저장할 위치를 선택하세요',
+        fileName: 'chart_data.csv',
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+      );
+
+      if (outputFile != null) {
+        // 파일 확장자 확인 및 추가
+        if (!outputFile.toLowerCase().endsWith('.csv')) {
+          outputFile = '$outputFile.csv';
+        }
+
+        // 파일 저장 - UTF-8 인코딩 적용
+        final file = File(outputFile);
+        // UTF-8 with BOM을 위한 바이트 배열
+        final List<int> bom = [0xEF, 0xBB, 0xBF];
+        final List<int> content = [...bom, ...utf8.encode(csvContent.toString())];
+        await file.writeAsBytes(content);
+
+        // 저장 완료 다이얼로그 표시
+        showDialog(
+          context: globalKey.currentContext!,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('저장 완료'),
+              content: Text('CSV 파일이 저장되었습니다.\n저장 위치: ${file.path}'),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('확인'),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } catch (e) {
+      // 에러 발생 시 다이얼로그 표시
+      showDialog(
+        context: globalKey.currentContext!,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('오류'),
+            content: Text('CSV 파일 저장 중 오류가 발생했습니다.\n$e'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('확인'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 }

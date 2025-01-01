@@ -2,8 +2,9 @@ import 'package:excel/excel.dart';
 import 'dart:io'; // File 클래스를 사용하기 위해 추가
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:path/path.dart' as path;
+import 'package:flutter/foundation.dart'; // compute 함수를 사용하기 위해 추가
 
-class AnalysisDataRepository {
+class AnalysisDataRepository extends ChangeNotifier {
   late final String _baseDir;
 
   // 현재 사용중인 경로를 저장할 변수들
@@ -31,8 +32,7 @@ class AnalysisDataRepository {
   String get patentDbPath => _patentDbPath;
   String get combinedDbPath => _combinedDbPath;
 
-  Future<Map<String, List<Map<String, dynamic>>>> loadAnalysisData(
-      AnalysisDataType dataType) async {
+  Future<Map<String, List<Map<String, dynamic>>>> loadAnalysisData(AnalysisDataType dataType) async {
     final String path;
     switch (dataType) {
       case AnalysisDataType.paper:
@@ -47,40 +47,44 @@ class AnalysisDataRepository {
     }
 
     try {
-      // File 클래스를 사용하여 외부 파일 읽기
-      final file = File(path);
-      final bytes = await file.readAsBytes();
-      final excel = Excel.decodeBytes(bytes);
+      // compute를 사용하여 별도의 isolate에서 파일 처리
+      return await compute(_loadExcelFile, path);
+    } catch (e) {
+      throw Exception('Failed to load ${dataType.name} database from $path: ${e.toString()}');
+    }
+  }
 
-      final Map<String, List<Map<String, dynamic>>> sheetResults = {};
+  // 별도의 isolate에서 실행될 정적 메서드
+  static Future<Map<String, List<Map<String, dynamic>>>> _loadExcelFile(String path) async {
+    final file = File(path);
+    final bytes = await file.readAsBytes();
+    final excel = Excel.decodeBytes(bytes);
 
-      for (var table in excel.tables.entries) {
-        final String sheetName = table.key;
-        final sheet = table.value;
-        final List<Map<String, dynamic>> results = [];
+    final Map<String, List<Map<String, dynamic>>> sheetResults = {};
 
-        final headers = sheet.rows[0];
+    for (var table in excel.tables.entries) {
+      final String sheetName = table.key;
+      final sheet = table.value;
+      final List<Map<String, dynamic>> results = [];
 
-        for (var row in sheet.rows.skip(1)) {
-          final Map<String, dynamic> rowData = {};
-          for (var i = 0; i < headers.length; i++) {
-            if (headers[i]?.value != null && row[i]?.value != null) {
-              rowData[headers[i]!.value.toString()] = row[i]!.value;
-            }
-          }
-          if (rowData.isNotEmpty) {
-            results.add(rowData);
+      final headers = sheet.rows[0];
+
+      for (var row in sheet.rows.skip(1)) {
+        final Map<String, dynamic> rowData = {};
+        for (var i = 0; i < headers.length; i++) {
+          if (headers[i]?.value != null && row[i]?.value != null) {
+            rowData[headers[i]!.value.toString()] = row[i]!.value;
           }
         }
-
-        sheetResults[sheetName] = results;
+        if (rowData.isNotEmpty) {
+          results.add(rowData);
+        }
       }
 
-      return sheetResults;
-    } catch (e) {
-      throw Exception(
-          'Failed to load ${dataType.name} database from $path: ${e.toString()}');
+      sheetResults[sheetName] = results;
     }
+
+    return sheetResults;
   }
 
   // 데이터 코드 목록 추출 (예: TCN, TCI 등)

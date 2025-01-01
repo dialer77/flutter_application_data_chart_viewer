@@ -60,6 +60,7 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
       }
     }
     return LayoutBuilder(builder: (context, constraints) {
+      final globalKey = GlobalKey();
       return SizedBox(
         width: constraints.maxWidth,
         height: constraints.maxHeight,
@@ -67,11 +68,11 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
           children: [
             Row(
               children: [
-                Expanded(
-                  child: Center(
-                    child: _buildLegend(codes),
-                  ),
-                ),
+                // Expanded(
+                //   child: Center(
+                //     child: _buildLegend(codes),
+                //   ),
+                // ),
                 Container(
                   width: constraints.maxHeight * 0.12,
                   height: constraints.maxHeight * 0.08,
@@ -82,13 +83,17 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
                       color: const Color.fromARGB(255, 109, 207, 245),
                     ),
                   ),
-                  child: CommonUtils.instance.saveMenuPopup(constraints: constraints),
+                  child: CommonUtils.instance.saveMenuPopup(
+                    constraints: constraints,
+                    globalKey: globalKey,
+                    dataProvider: provider,
+                  ),
                 ),
               ],
             ),
             Expanded(
               child: RepaintBoundary(
-                key: CommonUtils.chartKey,
+                key: globalKey,
                 child: _buildChartBarType(codes),
               ),
             ),
@@ -250,10 +255,66 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        return _buildBarChart(
-          chartData: chartDataList,
-          maxValue: maxValue,
-          interval: interval,
+        return Stack(
+          children: [
+            LayoutBuilder(builder: (context, constraints) {
+              return Container(
+                margin: EdgeInsets.only(
+                  left: constraints.maxWidth * 0.7,
+                  bottom: constraints.maxHeight * 0.3,
+                ),
+                width: constraints.maxWidth,
+                height: constraints.maxHeight,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: codes.asMap().entries.map((entry) {
+                      final color = provider.getColorForCode(codes[entry.key]);
+
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 2,
+                              color: color,
+                            ),
+                            const SizedBox(width: 4),
+                            (() {
+                              if (provider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
+                                return CountryFlag.fromCountryCode(
+                                  CommonUtils.instance.replaceCountryCode(codes[entry.key]),
+                                  height: 16,
+                                  width: 16,
+                                );
+                              } else {
+                                return const SizedBox.shrink();
+                              }
+                            }()),
+                            const SizedBox(width: 4),
+                            Text(
+                              CommonUtils.instance.replaceCountryCode(codes[entry.key]),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: color,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              );
+            }),
+            _buildBarChart(
+              chartData: chartDataList,
+              maxValue: maxValue,
+              interval: interval,
+            ),
+          ],
         );
       },
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
+import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/analysis_menu/analysis_menulist_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_analysis_target.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_industry_tech.dart';
@@ -106,28 +107,7 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
                         color: Colors.white,
                         fontSize: constraints.maxHeight * fontSizeRatio,
                         fontWeight: FontWeight.bold,
-                        shadows: const [
-                          Shadow(
-                            offset: Offset(-1, -1),
-                            color: Colors.black,
-                            blurRadius: 0,
-                          ),
-                          Shadow(
-                            offset: Offset(1, -1),
-                            color: Colors.black,
-                            blurRadius: 0,
-                          ),
-                          Shadow(
-                            offset: Offset(-1, 1),
-                            color: Colors.black,
-                            blurRadius: 0,
-                          ),
-                          Shadow(
-                            offset: Offset(1, 1),
-                            color: Colors.black,
-                            blurRadius: 0,
-                          ),
-                        ],
+                        shadows: CommonUtils.instance.getTextBorderShadow(),
                       ),
                     ),
                   ),
@@ -213,30 +193,7 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
                                 color: Colors.white,
                                 fontSize: constraints.maxHeight * fontSizeRatio,
                                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, // 선택된 항목의 텍스트를 굵게
-                                shadows: isSelected
-                                    ? const [
-                                        Shadow(
-                                          offset: Offset(-1, -1),
-                                          color: Colors.black,
-                                          blurRadius: 0,
-                                        ),
-                                        Shadow(
-                                          offset: Offset(1, -1),
-                                          color: Colors.black,
-                                          blurRadius: 0,
-                                        ),
-                                        Shadow(
-                                          offset: Offset(-1, 1),
-                                          color: Colors.black,
-                                          blurRadius: 0,
-                                        ),
-                                        Shadow(
-                                          offset: Offset(1, 1),
-                                          color: Colors.black,
-                                          blurRadius: 0,
-                                        ),
-                                      ]
-                                    : [],
+                                shadows: isSelected ? CommonUtils.instance.getTextBorderShadow() : [],
                               ),
                             ),
                           ),

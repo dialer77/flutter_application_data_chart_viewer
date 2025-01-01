@@ -22,6 +22,20 @@ class _ChartWidgetTechAssessmentState extends State<ChartWidgetTechAssessment> {
   Widget build(BuildContext context) {
     final dataProvider = context.watch<AnalysisDataProvider>();
     final items = getItemsBySubCategory(dataProvider);
+    switch (dataProvider.selectedSubCategory) {
+      case AnalysisSubCategory.countryDetail:
+        selectedItem = dataProvider.selectedCountry;
+        break;
+      case AnalysisSubCategory.companyDetail:
+        selectedItem = dataProvider.selectedCompany;
+        break;
+      case AnalysisSubCategory.academicDetail:
+        selectedItem = dataProvider.selectedAcademic;
+        break;
+      default:
+        break;
+    }
+    final globalKey = GlobalKey();
     return LayoutBuilder(builder: (context, constraints) {
       return LayoutGrid(
         columnSizes: [1.fr, 1.fr],
@@ -45,6 +59,12 @@ class _ChartWidgetTechAssessmentState extends State<ChartWidgetTechAssessment> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: items.map((item) {
                             final isSelected = item == selectedItem;
+                            late String countryCode;
+                            if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
+                              countryCode = CommonUtils.instance.replaceCountryCode(item);
+                            } else {
+                              countryCode = CommonUtils.instance.replaceCountryCode(dataProvider.searchCountryCode(item));
+                            }
                             return Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 8.0),
                               child: InkWell(
@@ -70,11 +90,7 @@ class _ChartWidgetTechAssessmentState extends State<ChartWidgetTechAssessment> {
                                   child: Row(
                                     children: [
                                       (() {
-                                        if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
-                                          final countryCode = CommonUtils.instance.replaceCountryCode(item);
-                                          return CountryFlag.fromCountryCode(countryCode, height: 20, width: 20);
-                                        }
-                                        return const SizedBox.shrink();
+                                        return CountryFlag.fromCountryCode(countryCode, height: 20, width: 20);
                                       })(),
                                       Text(
                                         item,
@@ -104,7 +120,11 @@ class _ChartWidgetTechAssessmentState extends State<ChartWidgetTechAssessment> {
                     color: const Color.fromARGB(255, 109, 207, 245),
                   ),
                 ),
-                child: CommonUtils.instance.saveMenuPopup(constraints: constraints),
+                child: CommonUtils.instance.saveMenuPopup(
+                  constraints: constraints,
+                  globalKey: globalKey,
+                  dataProvider: dataProvider,
+                ),
               ),
             ],
           ).withGridPlacement(
@@ -113,27 +133,24 @@ class _ChartWidgetTechAssessmentState extends State<ChartWidgetTechAssessment> {
             rowStart: 0,
             rowSpan: 1,
           ),
-          RepaintBoundary(
-            key: CommonUtils.chartKey,
-            child: SingleChartWidget(
-              techListType: dataProvider.selectedTechListType,
-              techCode: dataProvider.selectedTechCode,
-              countries: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? [dataProvider.selectedCountry ?? ''] : null,
-              targetNames: (() {
-                List<String> targetNames = [];
-                if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail) {
-                  targetNames.add(dataProvider.selectedCompany ?? '');
-                } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
-                  targetNames.add(dataProvider.selectedAcademic ?? '');
-                }
-                return targetNames;
-              })(),
-            ).withGridPlacement(
-              columnStart: 0,
-              columnSpan: 1,
-              rowStart: 1,
-              rowSpan: 1,
-            ),
+          SingleChartWidget(
+            techListType: dataProvider.selectedTechListType,
+            techCode: dataProvider.selectedTechCode,
+            countries: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? [dataProvider.selectedCountry ?? ''] : null,
+            targetNames: (() {
+              List<String> targetNames = [];
+              if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail) {
+                targetNames.add(dataProvider.selectedCompany ?? '');
+              } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
+                targetNames.add(dataProvider.selectedAcademic ?? '');
+              }
+              return targetNames;
+            })(),
+          ).withGridPlacement(
+            columnStart: 0,
+            columnSpan: 1,
+            rowStart: 1,
+            rowSpan: 1,
           ),
           ChartCircleWidget(
             techListType: AnalysisTechListType.mc,
@@ -161,11 +178,11 @@ class _ChartWidgetTechAssessmentState extends State<ChartWidgetTechAssessment> {
   List<String> getItemsBySubCategory(AnalysisDataProvider dataProvider) {
     switch (dataProvider.selectedSubCategory) {
       case AnalysisSubCategory.countryDetail:
-        return dataProvider.selectedCountries.isEmpty ? dataProvider.getAvailableCountriesFromTechAssessment().take(10).toList() : dataProvider.selectedCountries.toList();
+        return dataProvider.getAvailableCountriesFromTechAssessment().toList();
       case AnalysisSubCategory.companyDetail:
-        return dataProvider.selectedCompanies.isEmpty ? dataProvider.getAvailableCompaniesFromTechAssessment().take(10).toList() : dataProvider.selectedCompanies.toList();
+        return dataProvider.getAvailableCompaniesFromTechAssessment().toList();
       case AnalysisSubCategory.academicDetail:
-        return dataProvider.selectedAcademics.isEmpty ? dataProvider.getAvailableAcademicsFromTechAssessment().take(10).toList() : dataProvider.selectedAcademics.toList();
+        return dataProvider.getAvailableAcademicsFromTechAssessment().toList();
       default:
         return [];
     }

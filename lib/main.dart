@@ -6,6 +6,7 @@ import 'controllers/content_controller.dart';
 import 'package:provider/provider.dart';
 import 'repositories/analysis_data_repository.dart';
 import 'providers/analysis_data_provider.dart';
+import 'pages/splash_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,24 +31,24 @@ void main() async {
   final repository = AnalysisDataRepository();
   final dataProvider = AnalysisDataProvider(repository);
 
-  await dataProvider.loadAllData();
+  runApp(const SplashPage());
 
-  runApp(
-    AspectRatio(
-      aspectRatio: 16 / 9,
-      child: MultiProvider(
-        providers: [
-          ChangeNotifierProvider.value(
-            value: dataProvider,
-          ),
-          ChangeNotifierProvider(
-            create: (context) => ContentController(),
-          ),
-        ],
-        child: const MyApp(),
+  Future.microtask(() async {
+    await dataProvider.loadAllData();
+
+    runApp(
+      AspectRatio(
+        aspectRatio: 16 / 9,
+        child: MultiProvider(
+          providers: [
+            ChangeNotifierProvider.value(value: dataProvider),
+            ChangeNotifierProvider(create: (context) => ContentController()),
+          ],
+          child: const MyApp(),
+        ),
       ),
-    ),
-  );
+    );
+  });
 }
 
 class MyApp extends StatelessWidget {

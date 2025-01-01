@@ -26,8 +26,7 @@ class _AnalysisTechListWidgetState extends State<AnalysisTechListWidget> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AnalysisDataProvider>();
-    final availableOptions =
-        provider.getAvailableTechListTypes(provider.selectedCategory);
+    final availableOptions = provider.getAvailableTechListTypes(provider.selectedCategory);
 
     return Column(
       children: [
@@ -51,9 +50,7 @@ class _AnalysisTechListWidgetState extends State<AnalysisTechListWidget> {
                             groupValue: provider.selectedTechListType,
                             onChanged: (AnalysisTechListType? value) {
                               if (value != null) {
-                                context
-                                    .read<AnalysisDataProvider>()
-                                    .setSelectedTechListType(value);
+                                context.read<AnalysisDataProvider>().setSelectedTechListType(value);
                               }
                             },
                           ),
@@ -80,8 +77,7 @@ class _AnalysisTechListWidgetState extends State<AnalysisTechListWidget> {
   Widget _buildAdditionalControls() {
     final provider = context.watch<AnalysisDataProvider>();
 
-    if (provider.selectedCategory == AnalysisCategory.industryTech ||
-        provider.selectedCategory == AnalysisCategory.techAssessment) {
+    if (provider.selectedCategory == AnalysisCategory.industryTech || provider.selectedCategory == AnalysisCategory.techAssessment) {
       if (provider.selectedTechListType == AnalysisTechListType.lc) {
         return _buildDropdownControl(
           provider.selectedTechListType.toString(),
@@ -122,30 +118,11 @@ class _AnalysisTechListWidgetState extends State<AnalysisTechListWidget> {
   }
 
   // 드롭다운 컨트롤을 위한 헬퍼 메서드
-  Widget _buildDropdownControl(String label, String? selectedValue,
-      Set<String> items, Function(String?) onChanged) {
+  Widget _buildDropdownControl(String label, String? selectedValue, Set<String> items, Function(String?) onChanged) {
     return LayoutBuilder(
       builder: (context, constraints) => Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: widget.buttonHeight,
-            width: constraints.maxWidth * 0.3,
-            padding: EdgeInsets.only(
-              left: constraints.maxWidth * 0.05,
-            ),
-            margin: EdgeInsets.only(
-              top: constraints.maxHeight * 0.05,
-            ),
-            alignment: Alignment.centerLeft,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: constraints.maxWidth * 0.06,
-              ),
-            ),
-          ),
           Expanded(
             child: Container(
               height: widget.buttonHeight,
@@ -183,26 +160,11 @@ class _AnalysisTechListWidgetState extends State<AnalysisTechListWidget> {
   }
 
   // 체크박스 리스트를 위한 헬퍼 메서드
-  Widget _buildCheckboxList(String label, Set<String> items,
-      Set<String> selectedItems, Function(String) onChanged) {
+  Widget _buildCheckboxList(String label, Set<String> items, Set<String> selectedItems, Function(String) onChanged) {
     return LayoutBuilder(
       builder: (context, constraints) => Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: constraints.maxWidth * 0.3,
-            padding: EdgeInsets.only(
-              left: constraints.maxWidth * 0.05,
-              top: constraints.maxHeight * 0.08,
-            ),
-            child: Text(
-              label,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: constraints.maxWidth * 0.06,
-              ),
-            ),
-          ),
           Expanded(
             child: Container(
               margin: EdgeInsets.only(top: constraints.maxHeight * 0.05),
@@ -213,9 +175,7 @@ class _AnalysisTechListWidgetState extends State<AnalysisTechListWidget> {
               child: ListView(
                 children: items.map((code) {
                   return CheckboxListTile(
-                    title: Text(code,
-                        style:
-                            TextStyle(fontSize: constraints.maxWidth * 0.05)),
+                    title: Text(code, style: TextStyle(fontSize: constraints.maxWidth * 0.05)),
                     value: selectedItems.contains(code),
                     onChanged: (bool? value) {
                       onChanged(code);

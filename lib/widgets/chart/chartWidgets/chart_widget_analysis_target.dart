@@ -200,6 +200,7 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
   Widget _buildChartBarType(String targetCode) {
     final provider = context.watch<AnalysisDataProvider>();
     final category = provider.selectedCategory;
+    final globalKey = GlobalKey();
 
     return LayoutBuilder(builder: (context, constraints) {
       return Column(
@@ -244,37 +245,19 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                               return const SizedBox.shrink();
                             }
                           }()),
-                          Text(
-                            CommonUtils.instance.replaceCountryCode(targetCode),
-                            style: TextStyle(
-                              fontSize: constraints.maxHeight * 0.035,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontFamily: 'Times New Roman',
-                              shadows: const [
-                                Shadow(
-                                  offset: Offset(-1, -1),
-                                  color: Colors.black,
-                                  blurRadius: 0,
-                                ),
-                                Shadow(
-                                  offset: Offset(1, -1),
-                                  color: Colors.black,
-                                  blurRadius: 0,
-                                ),
-                                Shadow(
-                                  offset: Offset(-1, 1),
-                                  color: Colors.black,
-                                  blurRadius: 0,
-                                ),
-                                Shadow(
-                                  offset: Offset(1, 1),
-                                  color: Colors.black,
-                                  blurRadius: 0,
-                                ),
-                              ],
+                          Expanded(
+                            child: Text(
+                              CommonUtils.instance.replaceCountryCode(targetCode),
+                              style: TextStyle(
+                                fontSize: constraints.maxHeight * 0.035,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontFamily: 'Times New Roman',
+                                shadows: CommonUtils.instance.getTextBorderShadow(),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            textAlign: TextAlign.center,
                           ),
                         ],
                       ),
@@ -291,7 +274,11 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                         color: const Color.fromARGB(255, 109, 207, 245),
                       ),
                     ),
-                    child: CommonUtils.instance.saveMenuPopup(constraints: constraints),
+                    child: CommonUtils.instance.saveMenuPopup(
+                      constraints: constraints,
+                      globalKey: globalKey,
+                      dataProvider: provider,
+                    ),
                   ),
                 ],
               ),
@@ -309,7 +296,7 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                 border: Border.all(color: Colors.grey),
               ),
               child: RepaintBoundary(
-                key: CommonUtils.chartKey,
+                key: globalKey,
                 child: SingleChartWidget(
                   techListType: provider.selectedTechListType,
                   techCode: provider.selectedTechCode,

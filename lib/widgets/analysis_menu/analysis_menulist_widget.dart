@@ -59,7 +59,7 @@ class _AnalysisMenuListWidgetState extends State<AnalysisMenuListWidget> {
                 color: const Color.fromARGB(255, 70, 177, 225),
               ),
               (() {
-                if (dataProvider.selectedCategory == AnalysisCategory.industryTech) {
+                if (dataProvider.selectedCategory == AnalysisCategory.industryTech || dataProvider.selectedCategory == AnalysisCategory.techAssessment) {
                   return Expanded(
                     child: AnalysisTechListWidget(
                       buttonHeight: buttonHeight,
@@ -71,13 +71,7 @@ class _AnalysisMenuListWidgetState extends State<AnalysisMenuListWidget> {
                     child: Column(
                       children: [
                         SizedBox(
-                            height: (() {
-                              if (dataProvider.selectedCategory == AnalysisCategory.techAssessment) {
-                                return buttonHeight * 4;
-                              } else {
-                                return buttonHeight * 2;
-                              }
-                            })(),
+                            height: buttonHeight * 2,
                             child: AnalysisTechListWidget(
                               buttonHeight: buttonHeight,
                               fontSize: fontSize,

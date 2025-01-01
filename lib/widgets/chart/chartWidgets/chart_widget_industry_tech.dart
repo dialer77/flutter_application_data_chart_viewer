@@ -75,6 +75,7 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
 
   Widget _buildChartMultiLineType(List<String> techCodeList) {
     final provider = context.watch<AnalysisDataProvider>();
+    final globalKey = GlobalKey();
     return LayoutBuilder(builder: (context, constraints) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,11 +86,15 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey),
             ),
-            child: SingleChartWidget(
-              techListType: provider.selectedTechListType,
-              techCode: techCodeList[0],
-              selectedCodes: techCodeList,
-              chartType: ChartType.multiline,
+            child: RepaintBoundary(
+              key: globalKey,
+              child: SingleChartWidget(
+                techListType: provider.selectedTechListType,
+                techCode: techCodeList[0],
+                selectedCodes: techCodeList,
+                chartType: ChartType.multiline,
+                globalKey: globalKey,
+              ),
             ),
           ),
         ],
@@ -99,6 +104,7 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
 
   Widget _buildChartBarType(String techCode) {
     final provider = context.watch<AnalysisDataProvider>();
+    final globalKey = GlobalKey();
     return LayoutBuilder(builder: (context, constraints) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,28 +134,7 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
                           fontSize: constraints.maxHeight * 0.035,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
-                          shadows: const [
-                            Shadow(
-                              offset: Offset(-1, -1),
-                              color: Colors.black,
-                              blurRadius: 0,
-                            ),
-                            Shadow(
-                              offset: Offset(1, -1),
-                              color: Colors.black,
-                              blurRadius: 0,
-                            ),
-                            Shadow(
-                              offset: Offset(-1, 1),
-                              color: Colors.black,
-                              blurRadius: 0,
-                            ),
-                            Shadow(
-                              offset: Offset(1, 1),
-                              color: Colors.black,
-                              blurRadius: 0,
-                            ),
-                          ],
+                          shadows: CommonUtils.instance.getTextBorderShadow(),
                         ),
                       ),
                     ),
@@ -166,7 +151,11 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
                       color: const Color.fromARGB(255, 109, 207, 245),
                     ),
                   ),
-                  child: CommonUtils.instance.saveMenuPopup(constraints: constraints),
+                  child: CommonUtils.instance.saveMenuPopup(
+                    constraints: constraints,
+                    globalKey: globalKey,
+                    dataProvider: provider,
+                  ),
                 ),
               ],
             ),
@@ -183,12 +172,13 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
                 border: Border.all(color: Colors.grey),
               ),
               child: RepaintBoundary(
-                key: CommonUtils.chartKey,
+                key: globalKey,
                 child: SingleChartWidget(
                   techListType: provider.selectedTechListType,
                   techCode: techCode,
                   chartColor: provider.getColorForCode(techCode),
                   chartType: ChartType.barWithTrendLine,
+                  globalKey: globalKey,
                 ),
               ),
             ),

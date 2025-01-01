@@ -94,6 +94,20 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
       default:
         break;
     }
+    Set<String> selectedItems = {};
+    switch (dataProvider.selectedCategory) {
+      case AnalysisCategory.countryTech:
+        selectedItems = dataProvider.selectedCountries;
+        break;
+      case AnalysisCategory.companyTech:
+        selectedItems = dataProvider.selectedCompanies;
+        break;
+      case AnalysisCategory.academicTech:
+        selectedItems = dataProvider.selectedAcademics;
+        break;
+      default:
+        break;
+    }
     return LayoutBuilder(
       builder: (context, constraints) {
         return Column(
@@ -148,6 +162,8 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
                 ),
                 child: ListView(
                   children: availableItems.map((item) {
+                    bool isSelected = selectedItems.contains(item);
+
                     return CheckboxListTile(
                       title: Row(
                         children: [
@@ -170,12 +186,7 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
                           ),
                         ],
                       ),
-                      value: switch (dataProvider.selectedCategory) {
-                        AnalysisCategory.countryTech => dataProvider.selectedCountries.contains(item),
-                        AnalysisCategory.companyTech => dataProvider.selectedCompanies.contains(item),
-                        AnalysisCategory.academicTech => dataProvider.selectedAcademics.contains(item),
-                        _ => false,
-                      },
+                      value: isSelected,
                       onChanged: (bool? value) {
                         if (value != null) {
                           if (dataProvider.selectedCategory == AnalysisCategory.countryTech) {
@@ -203,6 +214,21 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
   Widget _buildAnalysisTargetWithTechCompetition(
     AnalysisDataProvider dataProvider,
   ) {
+    Set<String> selectedItems = {};
+    switch (dataProvider.selectedSubCategory) {
+      case AnalysisSubCategory.countryDetail:
+        selectedItems = dataProvider.selectedCountries;
+        break;
+      case AnalysisSubCategory.companyDetail:
+        selectedItems = dataProvider.selectedCompanies;
+        break;
+      case AnalysisSubCategory.academicDetail:
+        selectedItems = dataProvider.selectedAcademics;
+        break;
+      default:
+        break;
+    }
+
     final availableOptions = _getAvailableSubCategories(dataProvider.selectedDataType);
     return Column(
       children: [
@@ -263,7 +289,7 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
                         ),
                       ],
                     ),
-                    value: dataProvider.selectedCountries.contains(country),
+                    value: selectedItems.contains(country),
                     onChanged: (bool? value) {
                       if (value != null) {
                         dataProvider.toggleCountrySelection(
@@ -308,7 +334,7 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
                         ),
                       ],
                     ),
-                    value: dataProvider.selectedCompanies.contains(company),
+                    value: selectedItems.contains(company),
                     onChanged: (bool? value) {
                       if (value != null) {
                         dataProvider.toggleCompanySelection(
@@ -353,7 +379,7 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
                         ),
                       ],
                     ),
-                    value: dataProvider.selectedAcademics.contains(academic),
+                    value: selectedItems.contains(academic),
                     onChanged: (bool? value) {
                       if (value != null) {
                         dataProvider.toggleAcademicSelection(

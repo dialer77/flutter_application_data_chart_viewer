@@ -59,90 +59,141 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
         codes = provider.getAvailableAcademicsFromTechCompetition(provider.selectedTechCode).take(10).toList();
       }
     }
-    return LayoutBuilder(builder: (context, constraints) {
-      final globalKey = GlobalKey();
-      return SizedBox(
-        width: constraints.maxWidth,
-        height: constraints.maxHeight,
-        child: Column(
-          children: [
-            Row(
-              children: [
-                // Expanded(
-                //   child: Center(
-                //     child: _buildLegend(codes),
-                //   ),
-                // ),
-                Container(
-                  width: constraints.maxHeight * 0.12,
-                  height: constraints.maxHeight * 0.08,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: const Color.fromARGB(255, 109, 207, 245),
-                    ),
-                  ),
-                  child: CommonUtils.instance.saveMenuPopup(
-                    constraints: constraints,
-                    globalKey: globalKey,
-                    dataProvider: provider,
-                  ),
-                ),
-              ],
-            ),
-            Expanded(
-              child: RepaintBoundary(
-                key: globalKey,
-                child: _buildChartBarType(codes),
-              ),
-            ),
-            InkWell(
-              onTap: () {
-                setState(() {
-                  _isTableVisible = !_isTableVisible;
-                });
-              },
-              child: Container(
+    final globalKey = GlobalKey();
+    return RepaintBoundary(
+      key: globalKey,
+      child: LayoutBuilder(builder: (context, constraints) {
+        return SizedBox(
+          width: constraints.maxWidth,
+          height: constraints.maxHeight,
+          child: Column(
+            children: [
+              Container(
                 width: constraints.maxWidth,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue),
+                height: constraints.maxHeight * 0.1,
+                padding: EdgeInsets.symmetric(
+                  horizontal: constraints.maxWidth * 0.035,
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center, // 왼쪽 정렬 유지
                   children: [
-                    Icon(
-                      _isTableVisible ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
-                      size: 28,
-                      color: Colors.blue[700],
-                    ),
-                    Text(
-                      _isTableVisible ? '테이블 닫기' : '테이블 보기',
-                      style: TextStyle(
-                        color: Colors.blue[700],
-                        fontWeight: FontWeight.bold,
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      width: constraints.maxWidth * 0.175,
+                      height: constraints.maxHeight * 0.1,
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 109, 207, 245),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Center(
+                          child: Text(
+                            " ${provider.selectedSubCategory} 기술경쟁력 ",
+                            style: TextStyle(
+                              fontSize: constraints.maxHeight * 0.035,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              shadows: CommonUtils.instance.getTextBorderShadow(),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: constraints.maxWidth * 0.2025),
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      width: constraints.maxWidth * 0.175,
+                      height: constraints.maxHeight * 0.1,
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 109, 207, 245),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Center(
+                          child: Text(
+                            " ${provider.selectedTechCode} ",
+                            style: TextStyle(
+                              fontSize: constraints.maxHeight * 0.035,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              shadows: CommonUtils.instance.getTextBorderShadow(),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const Spacer(), // 중간 공간을 채움
+                    Container(
+                      width: constraints.maxWidth * 0.06,
+                      height: constraints.maxHeight * 0.08,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color.fromARGB(255, 109, 207, 245),
+                        ),
+                      ),
+                      child: CommonUtils.instance.saveMenuPopup(
+                        constraints: constraints,
+                        globalKey: globalKey,
+                        dataProvider: provider,
+                        techCodes: [provider.selectedTechCode ?? ''],
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              height: _isTableVisible ? 300 : 0, // 테이블의 최대 높이를 300으로 설정
-              child: const SingleChildScrollView(
-                child: SizedBox(
-                  height: 300,
-                  child: TableChartData(),
+              Expanded(
+                child: _buildChartBarType(codes),
+              ),
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    _isTableVisible = !_isTableVisible;
+                  });
+                },
+                child: Container(
+                  width: constraints.maxWidth,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center, // 왼쪽 정렬 유지
+                    children: [
+                      Icon(
+                        _isTableVisible ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                        size: 28,
+                        color: Colors.blue[700],
+                      ),
+                      Text(
+                        _isTableVisible ? '테이블 닫기' : '테이블 보기',
+                        style: TextStyle(
+                          color: Colors.blue[700],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      );
-    });
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                height: _isTableVisible ? 300 : 0, // 테이블의 최대 높이를 300으로 설정
+                child: const SingleChildScrollView(
+                  child: SizedBox(
+                    height: 300,
+                    child: TableChartData(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
+    );
   }
 
   Widget _buildLegend(List<String> codes) {

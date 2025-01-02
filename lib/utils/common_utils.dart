@@ -5,6 +5,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
 import 'package:image/image.dart' as img;
 import 'package:file_picker/file_picker.dart';
@@ -93,7 +94,12 @@ class CommonUtils {
     ];
   }
 
-  Widget saveMenuPopup({required BoxConstraints constraints, required GlobalKey globalKey, required AnalysisDataProvider dataProvider}) {
+  Widget saveMenuPopup({
+    required BoxConstraints constraints,
+    required GlobalKey globalKey,
+    required AnalysisDataProvider dataProvider,
+    required List<String> techCodes,
+  }) {
     return PopupMenuButton<String>(
       offset: Offset(constraints.maxHeight * 0, constraints.maxHeight * 0.02),
       position: PopupMenuPosition.under,
@@ -104,7 +110,7 @@ class CommonUtils {
             _handleImageExport(format: value, globalKey: globalKey);
             break;
           case 'CSV':
-            _handleCsvExport(globalKey, dataProvider);
+            _handleCsvExport(globalKey, dataProvider, techCodes);
             break;
         }
       },
@@ -268,39 +274,51 @@ class CommonUtils {
     }
   }
 
-  Future<void> _handleCsvExport(GlobalKey globalKey, AnalysisDataProvider dataProvider) async {
+  Future<void> _handleCsvExport(
+    GlobalKey globalKey,
+    AnalysisDataProvider dataProvider,
+    List<String> techCodes,
+  ) async {
     try {
       // CSV 헤더와 데이터 생성
       final StringBuffer csvContent = StringBuffer();
 
-      String techCode = dataProvider.selectedTechCode ?? '';
       // 헤더 추가 (순위, 국가명, 연도별 데이터)
-      csvContent.writeln('${dataProvider.selectedCategory},${dataProvider.selectedSubCategory},${dataProvider.selectedDataType},${dataProvider.selectedTechListType},$techCode');
+      csvContent.writeln('${dataProvider.selectedCategory},${dataProvider.selectedSubCategory},${dataProvider.selectedDataType},${dataProvider.selectedTechListType}');
 
-      var chartData = dataProvider.getChartData(
-        techListType: dataProvider.selectedTechListType,
-        techCode: techCode,
-      );
+      bool isFirst = true;
+      AnalysisCategory category = dataProvider.selectedCategory;
+      AnalysisSubCategory subCategory = dataProvider.selectedSubCategory;
+      for (var techCode in techCodes) {
+        final chartData = dataProvider.getChartData(
+          techListType: dataProvider.selectedTechListType,
+          techCode: techCode,
+          country: category == AnalysisCategory.countryTech ||
+                  (category == AnalysisCategory.techGap && subCategory == AnalysisSubCategory.countryDetail) ||
+                  (category == AnalysisCategory.techAssessment && subCategory == AnalysisSubCategory.countryDetail)
+              ? techCode
+              : null,
+          targetName: category == AnalysisCategory.companyTech ||
+                  category == AnalysisCategory.academicTech ||
+                  (category == AnalysisCategory.techAssessment && subCategory != AnalysisSubCategory.countryDetail) ||
+                  (category == AnalysisCategory.techGap && (subCategory == AnalysisSubCategory.companyDetail || subCategory == AnalysisSubCategory.academicDetail))
+              ? techCode
+              : null,
+        );
+        if (isFirst) {
+          String dataCode = dataProvider.getDataCode() ?? '';
+          if (dataCode != '') {
+            String yearData = chartData.keys.map((key) => '${dataCode}_$key').join(',');
+            csvContent.writeln(",$yearData");
+          } else {
+            String yearData = chartData.keys.join(',');
+            csvContent.writeln(",$yearData");
+          }
+          isFirst = false;
+        }
 
-      String dataCode = dataProvider.getDataCode() ?? '';
-      if (dataCode != '') {
-        String yearData = chartData.keys.map((key) => '${dataCode}_$key').join(',');
-        csvContent.writeln(yearData);
-      } else {
-        String yearData = chartData.keys.join(',');
-        csvContent.writeln(yearData);
+        csvContent.writeln("$techCode,${chartData.values.join(',')}");
       }
-
-      csvContent.writeln(chartData.values.join(','));
-      // 데이터 행 추가
-      // for (var data in chartData) {
-
-      //   csvContent.write('${data.rank},${data.name}');
-      //   for (var year in [2018, 2019, 2020, 2021, 2022]) {
-      //     csvContent.write(',${data.yearDatas[year]}');
-      //   }
-      //   csvContent.writeln();
-      // }
 
       // 파일 저장 위치 선택
       String? outputFile = await FilePicker.platform.saveFile(

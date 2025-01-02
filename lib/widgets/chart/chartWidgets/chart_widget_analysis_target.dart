@@ -175,26 +175,31 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
 
   Widget _buildChartMultiLineType(List<String> targetNameList) {
     final provider = context.watch<AnalysisDataProvider>();
-    return LayoutBuilder(builder: (context, constraints) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: constraints.maxWidth,
-            height: constraints.maxHeight,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
+    final globalKey = GlobalKey();
+    return RepaintBoundary(
+      key: globalKey,
+      child: LayoutBuilder(builder: (context, constraints) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: constraints.maxWidth,
+              height: constraints.maxHeight,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+              ),
+              child: SingleChartWidget(
+                globalKey: globalKey,
+                techListType: provider.selectedTechListType,
+                techCode: provider.selectedTechCode,
+                targetNames: targetNameList,
+                chartType: ChartType.multiline,
+              ),
             ),
-            child: SingleChartWidget(
-              techListType: provider.selectedTechListType,
-              techCode: provider.selectedTechCode,
-              targetNames: targetNameList,
-              chartType: ChartType.multiline,
-            ),
-          ),
-        ],
-      );
-    });
+          ],
+        );
+      }),
+    );
   }
 
   Widget _buildChartBarType(String targetCode) {
@@ -202,101 +207,102 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
     final category = provider.selectedCategory;
     final globalKey = GlobalKey();
 
-    return LayoutBuilder(builder: (context, constraints) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.only(
-              left: constraints.maxWidth * 0.035,
-            ),
-            // Title
-            child: Container(
-              alignment: Alignment.centerLeft,
-              width: constraints.maxWidth,
-              height: constraints.maxHeight * 0.1,
+    return RepaintBoundary(
+      key: globalKey,
+      child: LayoutBuilder(builder: (context, constraints) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
               padding: EdgeInsets.only(
-                right: constraints.maxWidth * 0.035,
+                left: constraints.maxWidth * 0.035,
               ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: category == AnalysisCategory.countryTech ? constraints.maxWidth * 0.035 : 8,
-                      vertical: 4.0,
-                    ),
-                    width: category == AnalysisCategory.countryTech ? constraints.maxWidth * 0.175 : constraints.maxWidth * 0.5,
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 109, 207, 245),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Center(
-                      child: Row(
-                        mainAxisAlignment: category == AnalysisCategory.countryTech ? MainAxisAlignment.spaceAround : MainAxisAlignment.center,
-                        children: [
-                          (() {
-                            if (category == AnalysisCategory.countryTech) {
-                              return CountryFlag.fromCountryCode(
-                                CommonUtils.instance.replaceCountryCode(targetCode),
-                                height: 16,
-                                width: 24,
-                              );
-                            } else {
-                              return const SizedBox.shrink();
-                            }
-                          }()),
-                          Expanded(
-                            child: Text(
-                              CommonUtils.instance.replaceCountryCode(targetCode),
-                              style: TextStyle(
-                                fontSize: constraints.maxHeight * 0.035,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontFamily: 'Times New Roman',
-                                shadows: CommonUtils.instance.getTextBorderShadow(),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ],
+              // Title
+              child: Container(
+                alignment: Alignment.centerLeft,
+                width: constraints.maxWidth,
+                height: constraints.maxHeight * 0.1,
+                padding: EdgeInsets.only(
+                  right: constraints.maxWidth * 0.035,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: category == AnalysisCategory.countryTech ? constraints.maxWidth * 0.035 : 8,
+                        vertical: 4.0,
                       ),
-                    ),
-                  ),
-                  const Spacer(), // 중간 공간을 채움
-                  Container(
-                    width: constraints.maxHeight * 0.12,
-                    height: constraints.maxHeight * 0.08,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
+                      width: category == AnalysisCategory.countryTech ? constraints.maxWidth * 0.175 : constraints.maxWidth * 0.5,
+                      decoration: BoxDecoration(
                         color: const Color.fromARGB(255, 109, 207, 245),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: category == AnalysisCategory.countryTech ? MainAxisAlignment.spaceAround : MainAxisAlignment.center,
+                          children: [
+                            (() {
+                              if (category == AnalysisCategory.countryTech) {
+                                return CountryFlag.fromCountryCode(
+                                  CommonUtils.instance.replaceCountryCode(targetCode),
+                                  height: 16,
+                                  width: 24,
+                                );
+                              } else {
+                                return const SizedBox.shrink();
+                              }
+                            }()),
+                            Expanded(
+                              child: Text(
+                                CommonUtils.instance.replaceCountryCode(targetCode),
+                                style: TextStyle(
+                                  fontSize: constraints.maxHeight * 0.035,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  fontFamily: 'Times New Roman',
+                                  shadows: CommonUtils.instance.getTextBorderShadow(),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    child: CommonUtils.instance.saveMenuPopup(
-                      constraints: constraints,
-                      globalKey: globalKey,
-                      dataProvider: provider,
+                    const Spacer(), // 중간 공간을 채움
+                    Container(
+                      width: constraints.maxHeight * 0.12,
+                      height: constraints.maxHeight * 0.08,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color.fromARGB(255, 109, 207, 245),
+                        ),
+                      ),
+                      child: CommonUtils.instance.saveMenuPopup(
+                        constraints: constraints,
+                        globalKey: globalKey,
+                        dataProvider: provider,
+                        techCodes: [provider.selectedTechCode ?? ''],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(
-              top: constraints.maxHeight * 0.025,
-            ),
-            child: Container(
-              width: constraints.maxWidth,
-              height: constraints.maxHeight * 0.875,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.grey),
+            Padding(
+              padding: EdgeInsets.only(
+                top: constraints.maxHeight * 0.025,
               ),
-              child: RepaintBoundary(
-                key: globalKey,
+              child: Container(
+                width: constraints.maxWidth,
+                height: constraints.maxHeight * 0.875,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.grey),
+                ),
                 child: SingleChartWidget(
                   techListType: provider.selectedTechListType,
                   techCode: provider.selectedTechCode,
@@ -312,9 +318,9 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                 ),
               ),
             ),
-          ),
-        ],
-      );
-    });
+          ],
+        );
+      }),
+    );
   }
 }

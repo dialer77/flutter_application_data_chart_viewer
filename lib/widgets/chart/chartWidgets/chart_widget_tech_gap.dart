@@ -1,6 +1,8 @@
+import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
+import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/single_chart_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/table_tech_gap_data_widget.dart';
 import 'package:provider/provider.dart';
@@ -80,27 +82,88 @@ class _ChartWidgetTechGapState extends State<ChartWidgetTechGap> {
 
   Widget _buildChartMultiLineType(List<String> targetNames, AnalysisDataProvider dataProvider) {
     final techCode = dataProvider.selectedTechCode;
-
     var countries = dataProvider.selectedCountries.isEmpty ? dataProvider.getAvailableCountriesFromTechGap(techCode).take(10).toList() : dataProvider.selectedCountries.toList();
-    return LayoutBuilder(builder: (context, constraints) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: constraints.maxWidth,
-            height: constraints.maxHeight,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-            ),
-            child: SingleChartWidget(
-              techListType: dataProvider.selectedTechListType,
-              techCode: techCode,
-              countries: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? countries.toList() : null,
-              targetNames: dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail ? targetNames : null,
-            ),
-          ),
-        ],
-      );
-    });
+
+    final codes = dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? countries.toList() : targetNames;
+    final globalKey = GlobalKey();
+    return RepaintBoundary(
+      key: globalKey,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Stack(
+            children: [
+              Container(
+                margin: EdgeInsets.only(
+                  top: constraints.maxHeight * 0.05,
+                  left: constraints.maxWidth * 0.2,
+                  bottom: constraints.maxHeight * 0.3,
+                ),
+                width: constraints.maxWidth,
+                height: constraints.maxHeight,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: codes.asMap().entries.map((entry) {
+                      final color = dataProvider.getColorForCode(codes[entry.key]);
+
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 2,
+                              color: color,
+                            ),
+                            const SizedBox(width: 4),
+                            (() {
+                              String countryCode = '';
+                              if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
+                                countryCode = CommonUtils.instance.replaceCountryCode(codes[entry.key]);
+                              } else {
+                                countryCode = CommonUtils.instance.replaceCountryCode(dataProvider.searchCountryCode(codes[entry.key]));
+                              }
+
+                              return CountryFlag.fromCountryCode(
+                                countryCode,
+                                height: 16,
+                                width: 16,
+                              );
+                            }()),
+                            const SizedBox(width: 4),
+                            Text(
+                              CommonUtils.instance.replaceCountryCode(codes[entry.key]),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: color,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              Container(
+                width: constraints.maxWidth,
+                height: constraints.maxHeight,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                ),
+                child: SingleChartWidget(
+                  techListType: dataProvider.selectedTechListType,
+                  techCode: techCode,
+                  countries: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? countries.toList() : null,
+                  targetNames: dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail ? targetNames : null,
+                  globalKey: globalKey,
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 }

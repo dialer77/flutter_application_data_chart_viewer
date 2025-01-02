@@ -36,143 +36,147 @@ class _ChartWidgetTechAssessmentState extends State<ChartWidgetTechAssessment> {
         break;
     }
     final globalKey = GlobalKey();
-    return LayoutBuilder(builder: (context, constraints) {
-      return LayoutGrid(
-        columnSizes: [1.fr, 1.fr],
-        rowSizes: [1.fr, 4.5.fr, 4.5.fr],
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Center(
-                  child: ScrollConfiguration(
-                    behavior: ScrollConfiguration.of(context).copyWith(
-                      dragDevices: {
-                        PointerDeviceKind.touch,
-                        PointerDeviceKind.mouse,
-                      },
-                    ),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SizedBox(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: items.map((item) {
-                            final isSelected = item == selectedItem;
-                            late String countryCode;
-                            if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
-                              countryCode = CommonUtils.instance.replaceCountryCode(item);
-                            } else {
-                              countryCode = CommonUtils.instance.replaceCountryCode(dataProvider.searchCountryCode(item));
-                            }
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    selectedItem = item;
-                                    if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
-                                      dataProvider.setSelectedCountry(item);
-                                    } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail) {
-                                      dataProvider.setSelectedCompany(item);
-                                    } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
-                                      dataProvider.setSelectedAcademic(item);
-                                    }
-                                  });
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                  decoration: BoxDecoration(
-                                    color: isSelected ? Colors.blue : Colors.white,
-                                    border: Border.all(color: Colors.blue),
-                                    borderRadius: BorderRadius.circular(4.0),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      (() {
-                                        return CountryFlag.fromCountryCode(countryCode, height: 20, width: 20);
-                                      })(),
-                                      Text(
-                                        item,
-                                        style: TextStyle(
-                                          color: isSelected ? Colors.white : Colors.blue,
+    return RepaintBoundary(
+      key: globalKey,
+      child: LayoutBuilder(builder: (context, constraints) {
+        return LayoutGrid(
+          columnSizes: [1.fr, 1.fr],
+          rowSizes: [1.fr, 4.5.fr, 4.5.fr],
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Center(
+                    child: ScrollConfiguration(
+                      behavior: ScrollConfiguration.of(context).copyWith(
+                        dragDevices: {
+                          PointerDeviceKind.touch,
+                          PointerDeviceKind.mouse,
+                        },
+                      ),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: SizedBox(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: items.map((item) {
+                              final isSelected = item == selectedItem;
+                              late String countryCode;
+                              if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
+                                countryCode = CommonUtils.instance.replaceCountryCode(item);
+                              } else {
+                                countryCode = CommonUtils.instance.replaceCountryCode(dataProvider.searchCountryCode(item));
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      selectedItem = item;
+                                      if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
+                                        dataProvider.setSelectedCountry(item);
+                                      } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail) {
+                                        dataProvider.setSelectedCompany(item);
+                                      } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
+                                        dataProvider.setSelectedAcademic(item);
+                                      }
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? Colors.blue : Colors.white,
+                                      border: Border.all(color: Colors.blue),
+                                      borderRadius: BorderRadius.circular(4.0),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        (() {
+                                          return CountryFlag.fromCountryCode(countryCode, height: 20, width: 20);
+                                        })(),
+                                        Text(
+                                          item,
+                                          style: TextStyle(
+                                            color: isSelected ? Colors.white : Colors.blue,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          }).toList(),
+                              );
+                            }).toList(),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Container(
-                width: constraints.maxHeight * 0.12,
-                height: constraints.maxHeight * 0.08,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: const Color.fromARGB(255, 109, 207, 245),
+                Container(
+                  width: constraints.maxHeight * 0.12,
+                  height: constraints.maxHeight * 0.08,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: const Color.fromARGB(255, 109, 207, 245),
+                    ),
+                  ),
+                  child: CommonUtils.instance.saveMenuPopup(
+                    constraints: constraints,
+                    globalKey: globalKey,
+                    dataProvider: dataProvider,
+                    techCodes: [dataProvider.selectedTechCode ?? ''],
                   ),
                 ),
-                child: CommonUtils.instance.saveMenuPopup(
-                  constraints: constraints,
-                  globalKey: globalKey,
-                  dataProvider: dataProvider,
-                ),
-              ),
-            ],
-          ).withGridPlacement(
-            columnStart: 0,
-            columnSpan: 2,
-            rowStart: 0,
-            rowSpan: 1,
-          ),
-          SingleChartWidget(
-            techListType: dataProvider.selectedTechListType,
-            techCode: dataProvider.selectedTechCode,
-            countries: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? [dataProvider.selectedCountry ?? ''] : null,
-            targetNames: (() {
-              List<String> targetNames = [];
-              if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail) {
-                targetNames.add(dataProvider.selectedCompany ?? '');
-              } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
-                targetNames.add(dataProvider.selectedAcademic ?? '');
-              }
-              return targetNames;
-            })(),
-          ).withGridPlacement(
-            columnStart: 0,
-            columnSpan: 1,
-            rowStart: 1,
-            rowSpan: 1,
-          ),
-          ChartCircleWidget(
-            techListType: AnalysisTechListType.mc,
-            techCodes: dataProvider.selectedMcTechCodes.toList(),
-          ).withGridPlacement(
-            columnStart: 1,
-            columnSpan: 1,
-            rowStart: 1,
-            rowSpan: 1,
-          ),
-          ChartCircleWidget(
-            techListType: AnalysisTechListType.sc,
-            techCodes: dataProvider.selectedScTechCodes.toList(),
-          ).withGridPlacement(
-            columnStart: 0,
-            columnSpan: 2,
-            rowStart: 2,
-            rowSpan: 1,
-          ),
-        ],
-      );
-    });
+              ],
+            ).withGridPlacement(
+              columnStart: 0,
+              columnSpan: 2,
+              rowStart: 0,
+              rowSpan: 1,
+            ),
+            SingleChartWidget(
+              techListType: dataProvider.selectedTechListType,
+              techCode: dataProvider.selectedTechCode,
+              countries: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? [dataProvider.selectedCountry ?? ''] : null,
+              targetNames: (() {
+                List<String> targetNames = [];
+                if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail) {
+                  targetNames.add(dataProvider.selectedCompany ?? '');
+                } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
+                  targetNames.add(dataProvider.selectedAcademic ?? '');
+                }
+                return targetNames;
+              })(),
+            ).withGridPlacement(
+              columnStart: 0,
+              columnSpan: 1,
+              rowStart: 1,
+              rowSpan: 1,
+            ),
+            ChartCircleWidget(
+              techListType: AnalysisTechListType.mc,
+              techCodes: dataProvider.selectedMcTechCodes.toList(),
+            ).withGridPlacement(
+              columnStart: 1,
+              columnSpan: 1,
+              rowStart: 1,
+              rowSpan: 1,
+            ),
+            ChartCircleWidget(
+              techListType: AnalysisTechListType.sc,
+              techCodes: dataProvider.selectedScTechCodes.toList(),
+            ).withGridPlacement(
+              columnStart: 0,
+              columnSpan: 2,
+              rowStart: 2,
+              rowSpan: 1,
+            ),
+          ],
+        );
+      }),
+    );
   }
 
   List<String> getItemsBySubCategory(AnalysisDataProvider dataProvider) {

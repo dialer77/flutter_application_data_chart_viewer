@@ -1506,7 +1506,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         _academicColorCodeMap[code] = _defaultColors[colorIndex];
       }
       return _academicColorCodeMap[code]!;
-    } else if (_selectedCategory == AnalysisCategory.techCompetition) {
+    } else if (_selectedCategory == AnalysisCategory.techCompetition || _selectedCategory == AnalysisCategory.techGap) {
       if (selectedSubCategory == AnalysisSubCategory.countryDetail) {
         if (!_countryColorCodeMap.containsKey(code)) {
           final colorIndex = _countryColorCodeMap.length % _defaultColors.length;

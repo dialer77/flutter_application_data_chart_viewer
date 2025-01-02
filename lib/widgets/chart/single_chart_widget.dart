@@ -1,7 +1,6 @@
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
 import 'package:flutter_application_data_chart_viewer/utils/dash_circle_dot_painter.dart';
 import 'package:provider/provider.dart';
@@ -146,14 +145,6 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
     double minValue = double.infinity;
     final allTrendLines = <LineChartBarData>[];
     List<int> years = [];
-    final colors = [
-      Colors.blue,
-      Colors.red,
-      Colors.green,
-      Colors.orange,
-      Colors.purple,
-      Colors.teal,
-    ];
 
     // 첫 번째 유효한 데이터에서 years 가져오기
     for (final code in chartLoopCodes) {
@@ -207,6 +198,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
             : null,
         targetName: _category == AnalysisCategory.companyTech ||
                 _category == AnalysisCategory.academicTech ||
+                (_category == AnalysisCategory.techAssessment && _selectedSubCategory != AnalysisSubCategory.countryDetail) ||
                 (_category == AnalysisCategory.techGap && (_selectedSubCategory == AnalysisSubCategory.companyDetail || _selectedSubCategory == AnalysisSubCategory.academicDetail))
             ? code
             : null,
@@ -240,7 +232,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
           LineChartBarData(
             spots: solidLineSpots,
             isCurved: true,
-            color: colors[i % colors.length],
+            color: dataProvider.getColorForCode(code),
             barWidth: 1,
             dotData: const FlDotData(show: false),
             isStrokeCapRound: true,
@@ -254,7 +246,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
           LineChartBarData(
             spots: dashedLineSpots,
             isCurved: true,
-            color: colors[i % colors.length],
+            color: dataProvider.getColorForCode(code),
             barWidth: 1,
             dashArray: [5, 5], // 점선 처리
             dotData: FlDotData(
@@ -265,7 +257,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
               getDotPainter: (spot, percent, barData, index) {
                 return DashedCircleDotPainter(
                   radius: 6,
-                  strokeColor: colors[i % colors.length],
+                  strokeColor: dataProvider.getColorForCode(code),
                   fillColor: Colors.white,
                   strokeWidth: 1.5,
                 );
@@ -281,7 +273,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
           LineChartBarData(
             spots: trendLineSpots,
             isCurved: true,
-            color: colors[i % colors.length],
+            color: dataProvider.getColorForCode(code),
             barWidth: 1,
             dotData: FlDotData(
               show: true,
@@ -291,7 +283,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
               getDotPainter: (spot, percent, barData, index) {
                 return DashedCircleDotPainter(
                   radius: 6,
-                  strokeColor: colors[i % colors.length],
+                  strokeColor: dataProvider.getColorForCode(code),
                   fillColor: Colors.white,
                   strokeWidth: 1.5,
                 );
@@ -355,292 +347,293 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
               });
             },
             child: LayoutBuilder(
-              builder: (context, constraints) => Container(
-                decoration: const BoxDecoration(color: Colors.white),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    (() {
-                      if (dataProvider.selectedCategory != AnalysisCategory.techAssessment) {
-                        return Container(
-                          width: constraints.maxWidth,
-                          padding: EdgeInsets.symmetric(horizontal: constraints.maxWidth * 0.02),
-                          child: Row(
-                            children: [
-                              Expanded(child: Center(child: _buildLegend(chartLoopCodes, colors))),
-                              Container(
-                                width: constraints.maxHeight * 0.12,
-                                height: constraints.maxHeight * 0.08,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: const Color.fromARGB(255, 109, 207, 245),
-                                  ),
-                                ),
-                                child: CommonUtils.instance.saveMenuPopup(
-                                  constraints: constraints,
-                                  globalKey: widget.globalKey ?? GlobalKey(),
-                                  dataProvider: dataProvider,
+              builder: (context, constraints) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  (() {
+                    if (dataProvider.selectedCategory != AnalysisCategory.techAssessment) {
+                      return Container(
+                        width: constraints.maxWidth,
+                        padding: EdgeInsets.symmetric(horizontal: constraints.maxWidth * 0.02),
+                        child: Row(
+                          children: [
+                            const Spacer(),
+                            Container(
+                              width: constraints.maxWidth * 0.06,
+                              height: constraints.maxHeight * 0.08,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: const Color.fromARGB(255, 109, 207, 245),
                                 ),
                               ),
-                            ],
-                          ),
-                        );
-                      } else {
-                        return const SizedBox.shrink();
-                      }
-                    })(),
-                    Expanded(
-                      child: LayoutBuilder(
-                        builder: (context, constraints) => Stack(
-                          children: [
-                            LineChart(
-                              LineChartData(
-                                gridData: const FlGridData(show: false),
-                                titlesData: _buildTitlesData(
-                                  years: years,
-                                  interval: interval,
-                                  constraints: constraints,
-                                ),
-                                lineTouchData: LineTouchData(
-                                  enabled: true,
-                                  touchCallback: dataProvider.selectedCategory == AnalysisCategory.techAssessment
-                                      ? null
-                                      : (FlTouchEvent event, LineTouchResponse? response) {
-                                          if (response == null || response.lineBarSpots == null) {
-                                            setState(() {
-                                              _touchPosition = null;
-                                            });
-                                            return;
-                                          }
-
-                                          if (event is FlPointerHoverEvent) {
-                                            // 가장 가까운 포인트 찾기
-                                            var minDistance = double.infinity;
-                                            var offsetY = 0.0;
-                                            final chartContainerPixelHeight = constraints.maxHeight * 0.92 - 2;
-                                            var maxY = maxYValue / _scaleY;
-                                            for (var spot in response.lineBarSpots!) {
-                                              // spot의 실제 픽셀 위치 얻기
-                                              final pixelPointY = chartContainerPixelHeight * (maxY - spot.y) / maxY;
-                                              // 절대값
-                                              final distance = event.localPosition.dy - pixelPointY;
-                                              if (distance.abs() < minDistance) {
-                                                minDistance = distance.abs();
-                                                _nearSpotIndex = spot.barIndex;
-                                                offsetY = pixelPointY;
-                                              }
-                                            }
-
-                                            if (minDistance > 10) {
-                                              _nearSpotIndex = -1;
-                                            }
-
-                                            setState(() {
-                                              _touchPosition = Offset(event.localPosition.dx, offsetY);
-                                            });
-                                          }
-                                        },
-                                  touchTooltipData: LineTouchTooltipData(
-                                    tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
-                                    tooltipRoundedRadius: 8,
-                                    tooltipPadding: const EdgeInsets.all(8),
-                                    tooltipMargin: 20,
-                                    getTooltipItems: (List<LineBarSpot> touchedSpots) {
-                                      return touchedSpots.map((LineBarSpot spot) {
-                                        if (cagrDatas.isEmpty) {
-                                          return null;
-                                        }
-
-                                        if (touchedSpots.length > chartLoopCodes.length && spot.barIndex % 2 == 1) {
-                                          return null;
-                                        }
-
-                                        if (dataProvider.selectedCategory == AnalysisCategory.techAssessment) {
-                                          return LineTooltipItem(
-                                            '${years[spot.x.toInt()]}\n${spot.y.toStringAsFixed(4)}',
-                                            const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                            children: [
-                                              TextSpan(
-                                                text: '\n${CommonUtils.instance.replaceCountryCode(chartLoopCodes[spot.barIndex])}',
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.normal,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                            ],
-                                          );
-                                        }
-                                        return null;
-                                      }).toList();
-                                    },
-                                  ),
-                                  touchSpotThreshold: 100,
-                                  getTouchLineStart: (data, index) => 0,
-                                  getTouchLineEnd: (data, index) => 0,
-                                  getTouchedSpotIndicator: (LineChartBarData barData, List<int> spotIndexes) {
-                                    return spotIndexes.map((spotIndex) {
-                                      return const TouchedSpotIndicatorData(
-                                        FlLine(color: Colors.transparent),
-                                        FlDotData(show: false),
-                                      );
-                                    }).toList();
-                                  },
-                                  handleBuiltInTouches: true,
-                                ),
-                                borderData: FlBorderData(
-                                  show: true,
-                                  border: const Border(
-                                    left: BorderSide(color: Colors.grey),
-                                    right: BorderSide(color: Colors.transparent),
-                                    top: BorderSide(color: Colors.transparent),
-                                    bottom: BorderSide(color: Colors.grey),
-                                  ),
-                                ),
-                                lineBarsData: allTrendLines.map((lineData) {
-                                  final spots = lineData.spots;
-                                  final isSecondLine = lineData.dashArray != null; // 점선 여부 확인
-
-                                  // 애니메이션 진행률 계산
-                                  // 실선은 0~0.5 구간에서, 점선은 0.5~1.0 구간에서 애니메이션
-                                  final progress = isSecondLine
-                                      ? (_controller.value <= 0.5 ? 0.0 : (_controller.value - 0.5) * 2) // 점선
-                                      : (_controller.value >= 0.5 ? 1.0 : _controller.value * 2); // 실선
-
-                                  final currentSpots = spots
-                                      .asMap()
-                                      .entries
-                                      .where((entry) {
-                                        return entry.key <= (spots.length - 1) * progress;
-                                      })
-                                      .map((e) => e.value)
-                                      .toList();
-
-                                  return lineData.copyWith(
-                                    spots: currentSpots,
-                                    dotData: FlDotData(
-                                      show: isSecondLine, // 점선인 경우만 점 표시
-                                      checkToShowDot: (spot, barData) {
-                                        return spot.x == currentSpots.last.x;
-                                      },
-                                      getDotPainter: (spot, percent, barData, index) {
-                                        return DashedCircleDotPainter(
-                                          radius: 6,
-                                          strokeColor: lineData.color ?? Colors.blue,
-                                          fillColor: Colors.white,
-                                          strokeWidth: 1.5,
-                                          rotationDegree: _rotationController.value * 360,
-                                        );
-                                      },
-                                    ),
-                                  );
-                                }).toList(),
-                                minY: 0,
-                                maxY: maxYValue / _scaleY,
-                                minX: (-0.5 - _offsetX) / _scaleX,
-                                maxX: ((years.length - 0.5) - _offsetX) / _scaleX,
-                                clipData: const FlClipData.all(),
+                              child: CommonUtils.instance.saveMenuPopup(
+                                constraints: constraints,
+                                globalKey: widget.globalKey ?? GlobalKey(),
+                                dataProvider: dataProvider,
+                                techCodes: chartLoopCodes,
                               ),
                             ),
+                          ],
+                        ),
+                      );
+                    } else {
+                      return const SizedBox.shrink();
+                    }
+                  })(),
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) => Stack(
+                        children: [
+                          LineChart(
+                            LineChartData(
+                              gridData: const FlGridData(show: false),
+                              titlesData: _buildTitlesData(
+                                years: years,
+                                interval: interval,
+                                constraints: constraints,
+                              ),
+                              lineTouchData: LineTouchData(
+                                enabled: true,
+                                touchCallback: dataProvider.selectedCategory == AnalysisCategory.techAssessment
+                                    ? null
+                                    : (FlTouchEvent event, LineTouchResponse? response) {
+                                        if (response == null || response.lineBarSpots == null) {
+                                          return;
+                                        }
 
-                            // 팝업 위젯 추가
-                            (() {
-                              if (dataProvider.selectedCategory == AnalysisCategory.techAssessment) {
-                                return const SizedBox.shrink();
-                              }
+                                        if (event is FlPointerHoverEvent) {
+                                          // 가장 가까운 포인트 찾기
+                                          var minDistance = double.infinity;
+                                          var offsetY = 0.0;
+                                          final chartContainerPixelHeight = constraints.maxHeight * 0.92 - 2;
+                                          var maxY = maxYValue / _scaleY;
+                                          for (var spot in response.lineBarSpots!) {
+                                            // spot의 실제 픽셀 위치 얻기
+                                            final pixelPointY = chartContainerPixelHeight * (maxY - spot.y) / maxY;
+                                            // 절대값
+                                            final distance = event.localPosition.dy - pixelPointY;
+                                            if (distance.abs() < minDistance) {
+                                              minDistance = distance.abs();
+                                              _nearSpotIndex = spot.barIndex;
+                                              offsetY = pixelPointY;
+                                            }
+                                          }
 
-                              if (_touchPosition != null && _nearSpotIndex != -1) {
-                                int spotIndex = _nearSpotIndex;
-                                if (dataProvider.selectedCategory == AnalysisCategory.techGap) {
-                                  spotIndex = _nearSpotIndex ~/ 2;
-                                }
+                                          if (minDistance > 10) {
+                                            _nearSpotIndex = -1;
+                                          }
 
-                                var chartCode = chartLoopCodes[spotIndex];
-                                final popupWidth = constraints.maxWidth * 0.15;
-                                final popupHeight = constraints.maxHeight * 0.12;
-                                return Positioned(
-                                  left: _touchPosition!.dx + popupWidth / 2,
-                                  top: _touchPosition!.dy - popupHeight,
-                                  child: Container(
-                                    width: popupWidth,
-                                    height: popupHeight,
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.blueGrey.withOpacity(0.8),
-                                      borderRadius: BorderRadius.circular(8),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.1),
-                                          blurRadius: 4,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          'CAGR: ${cagrDatas[spotIndex].toStringAsFixed(1)}%',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
+                                          setState(() {
+                                            _touchPosition = Offset(event.localPosition.dx, offsetY);
+                                          });
+                                        }
+                                      },
+                                touchTooltipData: LineTouchTooltipData(
+                                  tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+                                  tooltipRoundedRadius: 8,
+                                  tooltipPadding: const EdgeInsets.all(8),
+                                  tooltipMargin: 20,
+                                  getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                                    return touchedSpots.map((LineBarSpot spot) {
+                                      if (cagrDatas.isEmpty) {
+                                        return null;
+                                      }
+
+                                      if (touchedSpots.length > chartLoopCodes.length && spot.barIndex % 2 == 1) {
+                                        return null;
+                                      }
+
+                                      if (dataProvider.selectedCategory == AnalysisCategory.techAssessment) {
+                                        return LineTooltipItem(
+                                          '${years[spot.x.toInt()]}\n${spot.y.toStringAsFixed(4)}',
+                                          const TextStyle(
                                             color: Colors.white,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
-                                            ...(() {
-                                              switch (dataProvider.selectedCategory) {
-                                                case AnalysisCategory.countryTech:
-                                                  chartCode = CommonUtils.instance.replaceCountryCode(chartCode);
-                                                  break;
-                                                case AnalysisCategory.techGap:
-                                                  if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
-                                                    chartCode = CommonUtils.instance.replaceCountryCode(chartCode);
-                                                  }
-                                                  break;
-                                                default:
-                                                  return [];
-                                              }
-
-                                              return [
-                                                CountryFlag.fromCountryCode(chartCode, width: 20, height: 20),
-                                                const SizedBox(width: 4),
-                                              ];
-                                            })(),
-                                            Expanded(
-                                              child: Text(
-                                                chartCode,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
-                                                ),
-                                                textAlign: TextAlign.center,
-                                                overflow: TextOverflow.ellipsis,
+                                            TextSpan(
+                                              text: '\n${CommonUtils.instance.replaceCountryCode(chartLoopCodes[spot.barIndex])}',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.normal,
+                                                fontSize: 12,
                                               ),
                                             ),
                                           ],
-                                        ),
-                                      ],
-                                    ),
+                                        );
+                                      }
+                                      return null;
+                                    }).toList();
+                                  },
+                                ),
+                                touchSpotThreshold: 100,
+                                getTouchLineStart: (data, index) => 0,
+                                getTouchLineEnd: (data, index) => 0,
+                                getTouchedSpotIndicator: (LineChartBarData barData, List<int> spotIndexes) {
+                                  return spotIndexes.map((spotIndex) {
+                                    return const TouchedSpotIndicatorData(
+                                      FlLine(color: Colors.transparent),
+                                      FlDotData(show: false),
+                                    );
+                                  }).toList();
+                                },
+                                handleBuiltInTouches: true,
+                              ),
+                              borderData: FlBorderData(
+                                show: true,
+                                border: const Border(
+                                  left: BorderSide(color: Colors.grey),
+                                  right: BorderSide(color: Colors.transparent),
+                                  top: BorderSide(color: Colors.transparent),
+                                  bottom: BorderSide(color: Colors.grey),
+                                ),
+                              ),
+                              lineBarsData: allTrendLines.map((lineData) {
+                                final spots = lineData.spots;
+                                final isSecondLine = lineData.dashArray != null; // 점선 여부 확인
+
+                                // 애니메이션 진행률 계산
+                                // 실선은 0~0.5 구간에서, 점선은 0.5~1.0 구간에서 애니메이션
+                                final progress = isSecondLine
+                                    ? (_controller.value <= 0.5 ? 0.0 : (_controller.value - 0.5) * 2) // 점선
+                                    : (_controller.value >= 0.5 ? 1.0 : _controller.value * 2); // 실선
+
+                                final currentSpots = spots
+                                    .asMap()
+                                    .entries
+                                    .where((entry) {
+                                      return entry.key <= (spots.length - 1) * progress;
+                                    })
+                                    .map((e) => e.value)
+                                    .toList();
+
+                                return lineData.copyWith(
+                                  spots: currentSpots,
+                                  isCurved: dataProvider.selectedCategory != AnalysisCategory.techAssessment,
+                                  dotData: FlDotData(
+                                    show: dataProvider.selectedCategory == AnalysisCategory.techGap ? isSecondLine : true, // 점선인 경우만 점 표시
+                                    checkToShowDot: (spot, barData) {
+                                      return spot.x == currentSpots.last.x;
+                                    },
+                                    getDotPainter: (spot, percent, barData, index) {
+                                      return DashedCircleDotPainter(
+                                        radius: 6,
+                                        strokeColor: lineData.color ?? Colors.blue,
+                                        fillColor: Colors.white,
+                                        strokeWidth: 1.5,
+                                        rotationDegree: _rotationController.value * 360,
+                                      );
+                                    },
                                   ),
                                 );
-                              }
+                              }).toList(),
+                              minY: 0,
+                              maxY: maxYValue / _scaleY,
+                              minX: (-0.5 - _offsetX) / _scaleX,
+                              maxX: ((years.length - 0.5) - _offsetX) / _scaleX,
+                              clipData: const FlClipData.all(),
+                            ),
+                          ),
+
+                          // 팝업 위젯 추가
+                          (() {
+                            if (dataProvider.selectedCategory == AnalysisCategory.techAssessment) {
                               return const SizedBox.shrink();
-                            })(),
-                          ],
-                        ),
+                            }
+
+                            if (_touchPosition != null && _nearSpotIndex != -1) {
+                              int spotIndex = _nearSpotIndex;
+                              if (dataProvider.selectedCategory == AnalysisCategory.techGap) {
+                                spotIndex = _nearSpotIndex ~/ 2;
+                              }
+
+                              var chartCode = chartLoopCodes[spotIndex];
+                              final popupWidth = constraints.maxWidth * 0.15;
+                              final popupHeight = constraints.maxHeight * 0.12;
+                              return Positioned(
+                                left: _touchPosition!.dx + popupWidth / 2,
+                                top: _touchPosition!.dy - popupHeight,
+                                child: Container(
+                                  width: popupWidth,
+                                  height: popupHeight,
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blueGrey.withOpacity(0.8),
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'CAGR: ${(cagrDatas[spotIndex] * 100).toStringAsFixed(1)}%',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          ...(() {
+                                            String countryCode = '';
+                                            switch (dataProvider.selectedCategory) {
+                                              case AnalysisCategory.countryTech:
+                                                chartCode = CommonUtils.instance.replaceCountryCode(chartCode);
+                                                countryCode = chartCode;
+                                                break;
+                                              case AnalysisCategory.techGap:
+                                                if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
+                                                  chartCode = CommonUtils.instance.replaceCountryCode(chartCode);
+                                                  countryCode = chartCode;
+                                                } else {
+                                                  countryCode = CommonUtils.instance.replaceCountryCode(dataProvider.searchCountryCode(chartCode));
+                                                }
+                                                break;
+                                              default:
+                                                return [];
+                                            }
+
+                                            return [
+                                              CountryFlag.fromCountryCode(countryCode, width: 20, height: 20),
+                                              const SizedBox(width: 4),
+                                            ];
+                                          })(),
+                                          Expanded(
+                                            child: Text(
+                                              chartCode,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          })(),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -718,59 +711,6 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
       },
     );
   }
-
-  // /// CAGR과 추세선 데이터를 계산
-  // (double, List<FlSpot>) _calculateCagrAndTrendLine(
-  //   BuildContext context,
-  //   AnalysisDataProvider dataProvider,
-  //   Map<int, double> chartData,
-  // ) {
-  //   final fullData = dataProvider.getChartData(
-  //     techListType: widget.techListType!,
-  //     techCode: widget.techCode ?? widget.selectedCodes![0],
-  //     country: widget.country,
-  //     targetName: widget.targetName,
-  //   );
-  //   final allYears = fullData.keys.toList()..sort();
-
-  //   switch (widget.cagrMode) {
-  //     case CagrCalculationMode.selectedPeriod:
-  //       // 선택된 기간의 데이터만 사용
-  //       final years = chartData.keys.toList()..sort();
-  //       final cagr = _calculateCAGR(chartData, years);
-
-  //       // 선택된 기간의 추세선 데이터 계산
-  //       // final trendLineData = Map.fromEntries(
-  //       //   years.map((year) {
-  //       //     final yearDiff = year - years.first;
-  //       //     double firstData = chartData[years.first] ?? 1;
-  //       //     firstData = firstData == 0 ? 1 : firstData;
-  //       //     final expectedValue = firstData * pow(1 + cagr, yearDiff);
-  //       //     return MapEntry(year, expectedValue);
-  //       //   }),
-  //       // );
-
-  //       final trendLineData = _calculateTrendLine(chartData, years);
-
-  //       return (cagr, trendLineData);
-
-  //     case CagrCalculationMode.fullPeriod:
-  //       // 전체 기간의 데이터 사용
-  //       final fullDataCagr = _calculateCAGR(fullData, allYears);
-
-  //       // 전체 기간의 추세선 데이터 계산
-  //       final startValue = fullData[allYears.first] ?? 0;
-  //       final trendLineData = Map.fromEntries(
-  //         allYears.map((year) {
-  //           final yearDiff = year - allYears.first;
-  //           final expectedValue = startValue * pow(1 + fullDataCagr, yearDiff);
-  //           return MapEntry(year, expectedValue);
-  //         }),
-  //       );
-
-  //       return (fullDataCagr, trendLineData);
-  //   }
-  // }
 
   /// 시각화의 막대 차트 컴포넌트를 생성
   Widget _buildBarChart({
@@ -942,8 +882,12 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
     // x축을 0부터 시작하는 인덱스로 변환하고 로그 변환된 y값 사용
     for (int i = 0; i < n; i++) {
       double x = i.toDouble();
-      double? y = data[years[i]];
-      if (y != null && y > 0) {
+      // 소수점 아래 16번째 자리의 1
+      // 이거 다른 방법 표시하는방법 있나?
+      // 비트 연산
+      double? y = max(data[years[i]] ?? (1e-16), 1e-16);
+
+      if (y > 0) {
         double lnY = log(y);
         sumX += x;
         sumLnY += lnY;
@@ -989,7 +933,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
   }
 
   /// 다중 선 차트를 위한 범례를 생성
-  Widget _buildLegend(List<String> codes, List<Color> colors) {
+  Widget _buildLegend(List<String> codes) {
     final dataProvider = context.read<AnalysisDataProvider>();
 
     final scrollController = ScrollController();
@@ -1028,7 +972,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: codes.asMap().entries.map((entry) {
-                  final color = colors[entry.key % colors.length];
+                  final color = dataProvider.getColorForCode(entry.value);
 
                   // 각 코드별 CAGR 계산
                   final chartData = _getFilteredChartData(
@@ -1095,7 +1039,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                             ],
                             const SizedBox(width: 4),
                             Text(
-                              entry.value,
+                              CommonUtils.instance.replaceCountryCode(entry.value),
                               style: const TextStyle(
                                 fontSize: 10,
                               ),
@@ -1163,7 +1107,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
             }
             return const SizedBox.shrink();
           },
-          reservedSize: constraints.maxHeight * 0.08,
+          reservedSize: constraints.maxWidth * 0.04,
         ),
       ),
       // 좌측 타이틀 (값)
@@ -1208,7 +1152,13 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
   }
 
   /// 선택된 매개변수에 따라 차트 데이터를 검색하고 필터링
-  Map<int, double> _getFilteredChartData({required BuildContext context, required AnalysisTechListType techListType, required String techCode, String? country, String? targetName}) {
+  Map<int, double> _getFilteredChartData({
+    required BuildContext context,
+    required AnalysisTechListType techListType,
+    required String techCode,
+    String? country,
+    String? targetName,
+  }) {
     // 차트 데이터를 연도 범위로 필터링
     Map<int, double> filterChartData(Map<int, double> data) {
       final provider = context.read<AnalysisDataProvider>();

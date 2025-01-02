@@ -105,74 +105,75 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
   Widget _buildChartBarType(String techCode) {
     final provider = context.watch<AnalysisDataProvider>();
     final globalKey = GlobalKey();
-    return LayoutBuilder(builder: (context, constraints) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: constraints.maxWidth,
-            height: constraints.maxHeight * 0.1,
-            padding: EdgeInsets.symmetric(
-              horizontal: constraints.maxWidth * 0.035,
-            ),
-            child: Row(
-              children: [
-                Container(
-                  alignment: Alignment.centerLeft,
-                  width: constraints.maxWidth * 0.175,
-                  height: constraints.maxHeight * 0.1,
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 109, 207, 245),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: Text(
-                        " $techCode ",
-                        style: TextStyle(
-                          fontSize: constraints.maxHeight * 0.035,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          shadows: CommonUtils.instance.getTextBorderShadow(),
+    return RepaintBoundary(
+      key: globalKey,
+      child: LayoutBuilder(builder: (context, constraints) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: constraints.maxWidth,
+              height: constraints.maxHeight * 0.1,
+              padding: EdgeInsets.symmetric(
+                horizontal: constraints.maxWidth * 0.035,
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    width: constraints.maxWidth * 0.175,
+                    height: constraints.maxHeight * 0.1,
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 109, 207, 245),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Center(
+                        child: Text(
+                          " $techCode ",
+                          style: TextStyle(
+                            fontSize: constraints.maxHeight * 0.035,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            shadows: CommonUtils.instance.getTextBorderShadow(),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                const Spacer(), // 중간 공간을 채움
-                Container(
-                  width: constraints.maxHeight * 0.12,
-                  height: constraints.maxHeight * 0.08,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: const Color.fromARGB(255, 109, 207, 245),
+                  const Spacer(), // 중간 공간을 채움
+                  Container(
+                    width: constraints.maxHeight * 0.12,
+                    height: constraints.maxHeight * 0.08,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: const Color.fromARGB(255, 109, 207, 245),
+                      ),
+                    ),
+                    child: CommonUtils.instance.saveMenuPopup(
+                      constraints: constraints,
+                      globalKey: globalKey,
+                      dataProvider: provider,
+                      techCodes: [techCode],
                     ),
                   ),
-                  child: CommonUtils.instance.saveMenuPopup(
-                    constraints: constraints,
-                    globalKey: globalKey,
-                    dataProvider: provider,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(
-              top: constraints.maxHeight * 0.025,
-            ),
-            child: Container(
-              width: constraints.maxWidth,
-              height: constraints.maxHeight * 0.875,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.grey),
+                ],
               ),
-              child: RepaintBoundary(
-                key: globalKey,
+            ),
+            Padding(
+              padding: EdgeInsets.only(
+                top: constraints.maxHeight * 0.025,
+              ),
+              child: Container(
+                width: constraints.maxWidth,
+                height: constraints.maxHeight * 0.875,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.grey),
+                ),
                 child: SingleChartWidget(
                   techListType: provider.selectedTechListType,
                   techCode: techCode,
@@ -182,9 +183,9 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
                 ),
               ),
             ),
-          ),
-        ],
-      );
-    });
+          ],
+        );
+      }),
+    );
   }
 }

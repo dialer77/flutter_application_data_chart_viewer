@@ -46,7 +46,8 @@ class SingleChartWidget extends StatefulWidget {
   State<SingleChartWidget> createState() => _SingleChartWidgetState();
 }
 
-class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProviderStateMixin {
+class _SingleChartWidgetState extends State<SingleChartWidget>
+    with TickerProviderStateMixin {
   AnalysisCategory? _category;
   AnalysisSubCategory? _selectedSubCategory;
 
@@ -133,14 +134,17 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
       return _buildBarChartWithTrendLine(context, dataProvider);
     }
 
-    if ((isIndexType && chartLoopCodes.isNotEmpty) || dataProvider.selectedCategory == AnalysisCategory.techGap || dataProvider.selectedCategory == AnalysisCategory.techAssessment) {
+    if ((isIndexType && chartLoopCodes.isNotEmpty) ||
+        dataProvider.selectedCategory == AnalysisCategory.techGap ||
+        dataProvider.selectedCategory == AnalysisCategory.techAssessment) {
       return _buildMultiLineChart(context, dataProvider, chartLoopCodes);
     }
     return _buildBarChartWithTrendLine(context, dataProvider);
   }
 
   /// 여러 데이터셋을 비교하기 위한 다중 선 차트를 생성
-  Widget _buildMultiLineChart(BuildContext context, AnalysisDataProvider dataProvider, List<String> chartLoopCodes) {
+  Widget _buildMultiLineChart(BuildContext context,
+      AnalysisDataProvider dataProvider, List<String> chartLoopCodes) {
     double maxValue = 0;
     double minValue = double.infinity;
     final allTrendLines = <LineChartBarData>[];
@@ -156,9 +160,11 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
       }
 
       String? targetName;
-      if (_category == AnalysisCategory.companyTech || _category == AnalysisCategory.academicTech) {
+      if (_category == AnalysisCategory.companyTech ||
+          _category == AnalysisCategory.academicTech) {
         targetName = code;
-      } else if (_selectedSubCategory == AnalysisSubCategory.companyDetail || _selectedSubCategory == AnalysisSubCategory.academicDetail) {
+      } else if (_selectedSubCategory == AnalysisSubCategory.companyDetail ||
+          _selectedSubCategory == AnalysisSubCategory.academicDetail) {
         targetName = code;
       }
 
@@ -192,14 +198,23 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
             ? widget.techCode ?? widget.selectedCodes![0]
             : code,
         country: _category == AnalysisCategory.countryTech ||
-                (_category == AnalysisCategory.techGap && _selectedSubCategory == AnalysisSubCategory.countryDetail) ||
-                (_category == AnalysisCategory.techAssessment && _selectedSubCategory == AnalysisSubCategory.countryDetail)
+                (_category == AnalysisCategory.techGap &&
+                    _selectedSubCategory ==
+                        AnalysisSubCategory.countryDetail) ||
+                (_category == AnalysisCategory.techAssessment &&
+                    _selectedSubCategory == AnalysisSubCategory.countryDetail)
             ? code
             : null,
         targetName: _category == AnalysisCategory.companyTech ||
                 _category == AnalysisCategory.academicTech ||
-                (_category == AnalysisCategory.techAssessment && _selectedSubCategory != AnalysisSubCategory.countryDetail) ||
-                (_category == AnalysisCategory.techGap && (_selectedSubCategory == AnalysisSubCategory.companyDetail || _selectedSubCategory == AnalysisSubCategory.academicDetail))
+                (_category == AnalysisCategory.techAssessment &&
+                    _selectedSubCategory !=
+                        AnalysisSubCategory.countryDetail) ||
+                (_category == AnalysisCategory.techGap &&
+                    (_selectedSubCategory ==
+                            AnalysisSubCategory.companyDetail ||
+                        _selectedSubCategory ==
+                            AnalysisSubCategory.academicDetail))
             ? code
             : null,
       );
@@ -314,8 +329,10 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
             if (event is PointerScrollEvent) {
               setState(() {
                 if (event.kind == PointerDeviceKind.mouse) {
-                  _scaleY = (_scaleY * (event.scrollDelta.dy > 0 ? 0.95 : 1.05)).clamp(1, 5.0);
-                  _scaleX = (_scaleX * (event.scrollDelta.dy > 0 ? 0.95 : 1.05)).clamp(1, 5.0);
+                  _scaleY = (_scaleY * (event.scrollDelta.dy > 0 ? 0.95 : 1.05))
+                      .clamp(1, 5.0);
+                  _scaleX = (_scaleX * (event.scrollDelta.dy > 0 ? 0.95 : 1.05))
+                      .clamp(1, 5.0);
                 }
               });
             }
@@ -351,13 +368,23 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   (() {
-                    if (dataProvider.selectedCategory != AnalysisCategory.techAssessment) {
+                    if (dataProvider.selectedCategory !=
+                        AnalysisCategory.techAssessment) {
                       return Container(
                         width: constraints.maxWidth,
-                        padding: EdgeInsets.symmetric(horizontal: constraints.maxWidth * 0.02),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: constraints.maxWidth * 0.02),
                         child: Row(
                           children: [
-                            const Spacer(),
+                            (() {
+                              if (dataProvider.selectedCategory ==
+                                  AnalysisCategory.techGap) {
+                                return const Spacer();
+                              }
+                              return Expanded(
+                                  child: Center(
+                                      child: _buildLegend(chartLoopCodes)));
+                            })(),
                             Container(
                               width: constraints.maxWidth * 0.06,
                               height: constraints.maxHeight * 0.08,
@@ -365,14 +392,18 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: const Color.fromARGB(255, 109, 207, 245),
+                                  color:
+                                      const Color.fromARGB(255, 109, 207, 245),
                                 ),
                               ),
                               child: CommonUtils.instance.saveMenuPopup(
                                 constraints: constraints,
                                 globalKey: widget.globalKey ?? GlobalKey(),
                                 dataProvider: dataProvider,
-                                techCodes: chartLoopCodes,
+                                techCodes: [
+                                  dataProvider.selectedTechCode ?? ''
+                                ],
+                                chartCodes: chartLoopCodes,
                               ),
                             ),
                           ],
@@ -396,10 +427,13 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                               ),
                               lineTouchData: LineTouchData(
                                 enabled: true,
-                                touchCallback: dataProvider.selectedCategory == AnalysisCategory.techAssessment
+                                touchCallback: dataProvider.selectedCategory ==
+                                        AnalysisCategory.techAssessment
                                     ? null
-                                    : (FlTouchEvent event, LineTouchResponse? response) {
-                                        if (response == null || response.lineBarSpots == null) {
+                                    : (FlTouchEvent event,
+                                        LineTouchResponse? response) {
+                                        if (response == null ||
+                                            response.lineBarSpots == null) {
                                           return;
                                         }
 
@@ -407,13 +441,20 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                                           // 가장 가까운 포인트 찾기
                                           var minDistance = double.infinity;
                                           var offsetY = 0.0;
-                                          final chartContainerPixelHeight = constraints.maxHeight * 0.92 - 2;
+                                          final chartContainerPixelHeight =
+                                              constraints.maxHeight * 0.92 - 2;
                                           var maxY = maxYValue / _scaleY;
-                                          for (var spot in response.lineBarSpots!) {
+                                          for (var spot
+                                              in response.lineBarSpots!) {
                                             // spot의 실제 픽셀 위치 얻기
-                                            final pixelPointY = chartContainerPixelHeight * (maxY - spot.y) / maxY;
+                                            final pixelPointY =
+                                                chartContainerPixelHeight *
+                                                    (maxY - spot.y) /
+                                                    maxY;
                                             // 절대값
-                                            final distance = event.localPosition.dy - pixelPointY;
+                                            final distance =
+                                                event.localPosition.dy -
+                                                    pixelPointY;
                                             if (distance.abs() < minDistance) {
                                               minDistance = distance.abs();
                                               _nearSpotIndex = spot.barIndex;
@@ -426,26 +467,33 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                                           }
 
                                           setState(() {
-                                            _touchPosition = Offset(event.localPosition.dx, offsetY);
+                                            _touchPosition = Offset(
+                                                event.localPosition.dx,
+                                                offsetY);
                                           });
                                         }
                                       },
                                 touchTooltipData: LineTouchTooltipData(
-                                  tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+                                  tooltipBgColor:
+                                      Colors.blueGrey.withOpacity(0.8),
                                   tooltipRoundedRadius: 8,
                                   tooltipPadding: const EdgeInsets.all(8),
                                   tooltipMargin: 20,
-                                  getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                                  getTooltipItems:
+                                      (List<LineBarSpot> touchedSpots) {
                                     return touchedSpots.map((LineBarSpot spot) {
                                       if (cagrDatas.isEmpty) {
                                         return null;
                                       }
 
-                                      if (touchedSpots.length > chartLoopCodes.length && spot.barIndex % 2 == 1) {
+                                      if (touchedSpots.length >
+                                              chartLoopCodes.length &&
+                                          spot.barIndex % 2 == 1) {
                                         return null;
                                       }
 
-                                      if (dataProvider.selectedCategory == AnalysisCategory.techAssessment) {
+                                      if (dataProvider.selectedCategory ==
+                                          AnalysisCategory.techAssessment) {
                                         return LineTooltipItem(
                                           '${years[spot.x.toInt()]}\n${spot.y.toStringAsFixed(4)}',
                                           const TextStyle(
@@ -454,7 +502,8 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                                           ),
                                           children: [
                                             TextSpan(
-                                              text: '\n${CommonUtils.instance.replaceCountryCode(chartLoopCodes[spot.barIndex])}',
+                                              text:
+                                                  '\n${CommonUtils.instance.replaceCountryCode(chartLoopCodes[spot.barIndex])}',
                                               style: const TextStyle(
                                                 color: Colors.white,
                                                 fontWeight: FontWeight.normal,
@@ -471,7 +520,9 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                                 touchSpotThreshold: 100,
                                 getTouchLineStart: (data, index) => 0,
                                 getTouchLineEnd: (data, index) => 0,
-                                getTouchedSpotIndicator: (LineChartBarData barData, List<int> spotIndexes) {
+                                getTouchedSpotIndicator:
+                                    (LineChartBarData barData,
+                                        List<int> spotIndexes) {
                                   return spotIndexes.map((spotIndex) {
                                     return const TouchedSpotIndicatorData(
                                       FlLine(color: Colors.transparent),
@@ -492,38 +543,51 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                               ),
                               lineBarsData: allTrendLines.map((lineData) {
                                 final spots = lineData.spots;
-                                final isSecondLine = lineData.dashArray != null; // 점선 여부 확인
+                                final isSecondLine =
+                                    lineData.dashArray != null; // 점선 여부 확인
 
                                 // 애니메이션 진행률 계산
                                 // 실선은 0~0.5 구간에서, 점선은 0.5~1.0 구간에서 애니메이션
                                 final progress = isSecondLine
-                                    ? (_controller.value <= 0.5 ? 0.0 : (_controller.value - 0.5) * 2) // 점선
-                                    : (_controller.value >= 0.5 ? 1.0 : _controller.value * 2); // 실선
+                                    ? (_controller.value <= 0.5
+                                        ? 0.0
+                                        : (_controller.value - 0.5) * 2) // 점선
+                                    : (_controller.value >= 0.5
+                                        ? 1.0
+                                        : _controller.value * 2); // 실선
 
                                 final currentSpots = spots
                                     .asMap()
                                     .entries
                                     .where((entry) {
-                                      return entry.key <= (spots.length - 1) * progress;
+                                      return entry.key <=
+                                          (spots.length - 1) * progress;
                                     })
                                     .map((e) => e.value)
                                     .toList();
 
                                 return lineData.copyWith(
                                   spots: currentSpots,
-                                  isCurved: dataProvider.selectedCategory != AnalysisCategory.techAssessment,
+                                  isCurved: dataProvider.selectedCategory !=
+                                      AnalysisCategory.techAssessment,
                                   dotData: FlDotData(
-                                    show: dataProvider.selectedCategory == AnalysisCategory.techGap ? isSecondLine : true, // 점선인 경우만 점 표시
+                                    show: dataProvider.selectedCategory ==
+                                            AnalysisCategory.techGap
+                                        ? isSecondLine
+                                        : true, // 점선인 경우만 점 표시
                                     checkToShowDot: (spot, barData) {
                                       return spot.x == currentSpots.last.x;
                                     },
-                                    getDotPainter: (spot, percent, barData, index) {
+                                    getDotPainter:
+                                        (spot, percent, barData, index) {
                                       return DashedCircleDotPainter(
                                         radius: 6,
-                                        strokeColor: lineData.color ?? Colors.blue,
+                                        strokeColor:
+                                            lineData.color ?? Colors.blue,
                                         fillColor: Colors.white,
                                         strokeWidth: 1.5,
-                                        rotationDegree: _rotationController.value * 360,
+                                        rotationDegree:
+                                            _rotationController.value * 360,
                                       );
                                     },
                                   ),
@@ -539,13 +603,16 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
 
                           // 팝업 위젯 추가
                           (() {
-                            if (dataProvider.selectedCategory == AnalysisCategory.techAssessment) {
+                            if (dataProvider.selectedCategory ==
+                                AnalysisCategory.techAssessment) {
                               return const SizedBox.shrink();
                             }
 
-                            if (_touchPosition != null && _nearSpotIndex != -1) {
+                            if (_touchPosition != null &&
+                                _nearSpotIndex != -1) {
                               int spotIndex = _nearSpotIndex;
-                              if (dataProvider.selectedCategory == AnalysisCategory.techGap) {
+                              if (dataProvider.selectedCategory ==
+                                  AnalysisCategory.techGap) {
                                 spotIndex = _nearSpotIndex ~/ 2;
                               }
 
@@ -571,7 +638,8 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                                     ],
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       Text(
                                         'CAGR: ${(cagrDatas[spotIndex] * 100).toStringAsFixed(1)}%',
@@ -583,21 +651,36 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                                       ),
                                       const SizedBox(height: 4),
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           ...(() {
                                             String countryCode = '';
-                                            switch (dataProvider.selectedCategory) {
+                                            switch (
+                                                dataProvider.selectedCategory) {
                                               case AnalysisCategory.countryTech:
-                                                chartCode = CommonUtils.instance.replaceCountryCode(chartCode);
+                                                chartCode = CommonUtils.instance
+                                                    .replaceCountryCode(
+                                                        chartCode);
                                                 countryCode = chartCode;
                                                 break;
                                               case AnalysisCategory.techGap:
-                                                if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
-                                                  chartCode = CommonUtils.instance.replaceCountryCode(chartCode);
+                                                if (dataProvider
+                                                        .selectedSubCategory ==
+                                                    AnalysisSubCategory
+                                                        .countryDetail) {
+                                                  chartCode = CommonUtils
+                                                      .instance
+                                                      .replaceCountryCode(
+                                                          chartCode);
                                                   countryCode = chartCode;
                                                 } else {
-                                                  countryCode = CommonUtils.instance.replaceCountryCode(dataProvider.searchCountryCode(chartCode));
+                                                  countryCode = CommonUtils
+                                                      .instance
+                                                      .replaceCountryCode(
+                                                          dataProvider
+                                                              .searchCountryCode(
+                                                                  chartCode));
                                                 }
                                                 break;
                                               default:
@@ -605,7 +688,10 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                                             }
 
                                             return [
-                                              CountryFlag.fromCountryCode(countryCode, width: 20, height: 20),
+                                              CountryFlag.fromCountryCode(
+                                                  countryCode,
+                                                  width: 20,
+                                                  height: 20),
                                               const SizedBox(width: 4),
                                             ];
                                           })(),
@@ -643,7 +729,8 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
   }
 
   /// 막대 차트와 추세선을 함께 표시하는 차트를 생성
-  Widget _buildBarChartWithTrendLine(BuildContext context, AnalysisDataProvider dataProvider) {
+  Widget _buildBarChartWithTrendLine(
+      BuildContext context, AnalysisDataProvider dataProvider) {
     final chartData = _getFilteredChartData(
       context: context,
       techListType: widget.techListType!,
@@ -810,7 +897,9 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
               // 애니메이션이 완료되면 모든 포인트 표시, 아니면 한 칸 뒤에서 시작
               return _controller.value == 1
                   ? true // 애니메이션 완료 시 모든 포인트 표시
-                  : entry.key < (years.length - 1) * _controller.value; // 진행 중에는 한 칸 뒤에서 따라가기
+                  : entry.key <
+                      (years.length - 1) *
+                          _controller.value; // 진행 중에는 한 칸 뒤에서 따라가기
             }).map((entry) {
               return FlSpot(
                 entry.key.toDouble(),
@@ -822,7 +911,8 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
             dotData: FlDotData(
               show: true,
               checkToShowDot: (spot, barData) {
-                final currentLastIndex = ((years.length - 1) * _controller.value - 1).floor();
+                final currentLastIndex =
+                    ((years.length - 1) * _controller.value - 1).floor();
                 return _controller.value == 1
                     ? spot.x == years.length - 1 // 애니메이션 완료 시 마지막 점
                     : spot.x == currentLastIndex; // 진행 중에는 현재 위치
@@ -850,7 +940,8 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
   }
 
   /// CAGR 값을 보여주는 오버레이 위젯을 생성
-  Widget _buildCagrOverlay({required double cagr, required BoxConstraints constraints}) {
+  Widget _buildCagrOverlay(
+      {required double cagr, required BoxConstraints constraints}) {
     return Positioned(
       top: constraints.maxHeight * 0.1, // 차트 높이의 15% 위치에 배치
       left: constraints.maxWidth * 0.1,
@@ -898,11 +989,13 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
     }
 
     if (validPoints < 2) {
-      return List.generate(n, (i) => FlSpot(i.toDouble(), 0)); // 유효한 데이터 포인트가 2개 미만이면 0으로 채운 리스트 반환
+      return List.generate(n,
+          (i) => FlSpot(i.toDouble(), 0)); // 유효한 데이터 포인트가 2개 미만이면 0으로 채운 리스트 반환
     }
 
     // 지수 회귀 계수 계산
-    double b = (validPoints * sumXLnY - sumX * sumLnY) / (validPoints * sumX2 - sumX * sumX);
+    double b = (validPoints * sumXLnY - sumX * sumLnY) /
+        (validPoints * sumX2 - sumX * sumX);
     double a = exp((sumLnY - b * sumX) / validPoints);
 
     // 추세선 포인트 생성
@@ -985,12 +1078,19 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                             _category == AnalysisCategory.techAssessment
                         ? widget.techCode ?? widget.selectedCodes![0]
                         : entry.value,
-                    country: _category == AnalysisCategory.countryTech || (_category == AnalysisCategory.techGap && dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail)
+                    country: _category == AnalysisCategory.countryTech ||
+                            (_category == AnalysisCategory.techGap &&
+                                dataProvider.selectedSubCategory ==
+                                    AnalysisSubCategory.countryDetail)
                         ? entry.value
                         : null,
                     targetName: _category == AnalysisCategory.companyTech ||
                             _category == AnalysisCategory.academicTech ||
-                            (_category == AnalysisCategory.techGap && (_selectedSubCategory == AnalysisSubCategory.companyDetail || _selectedSubCategory == AnalysisSubCategory.academicDetail))
+                            (_category == AnalysisCategory.techGap &&
+                                (_selectedSubCategory ==
+                                        AnalysisSubCategory.companyDetail ||
+                                    _selectedSubCategory ==
+                                        AnalysisSubCategory.academicDetail))
                         ? entry.value
                         : null,
                   );
@@ -1006,22 +1106,28 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                   switch (_category) {
                     case AnalysisCategory.companyTech:
                     case AnalysisCategory.academicTech:
-                      countryCode = CommonUtils.instance.replaceCountryCode(dataProvider.searchCountryCode(entry.value));
+                      countryCode = CommonUtils.instance.replaceCountryCode(
+                          dataProvider.searchCountryCode(entry.value));
                       break;
                     case AnalysisCategory.techGap:
-                      if (_selectedSubCategory == AnalysisSubCategory.countryDetail) {
-                        countryCode = CommonUtils.instance.replaceCountryCode(entry.value);
+                      if (_selectedSubCategory ==
+                          AnalysisSubCategory.countryDetail) {
+                        countryCode = CommonUtils.instance
+                            .replaceCountryCode(entry.value);
                       } else {
-                        countryCode = CommonUtils.instance.replaceCountryCode(dataProvider.searchCountryCode(entry.value));
+                        countryCode = CommonUtils.instance.replaceCountryCode(
+                            dataProvider.searchCountryCode(entry.value));
                       }
                       break;
                     case AnalysisCategory.countryTech:
                     default:
-                      countryCode = CommonUtils.instance.replaceCountryCode(entry.value);
+                      countryCode =
+                          CommonUtils.instance.replaceCountryCode(entry.value);
                   }
 
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -1035,11 +1141,13 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                             ),
                             if (_category != AnalysisCategory.industryTech) ...[
                               const SizedBox(width: 4),
-                              CountryFlag.fromCountryCode(countryCode, height: 12, width: 12),
+                              CountryFlag.fromCountryCode(countryCode,
+                                  height: 12, width: 12),
                             ],
                             const SizedBox(width: 4),
                             Text(
-                              CommonUtils.instance.replaceCountryCode(entry.value),
+                              CommonUtils.instance
+                                  .replaceCountryCode(entry.value),
                               style: const TextStyle(
                                 fontSize: 10,
                               ),
@@ -1092,7 +1200,8 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
             final index = value.toInt();
             if (index >= 0 && index < years.length) {
               return Transform.translate(
-                offset: Offset(constraints.maxWidth * 0.005, constraints.maxHeight * 0.015),
+                offset: Offset(constraints.maxWidth * 0.005,
+                    constraints.maxHeight * 0.015),
                 child: Transform.rotate(
                   angle: -45 * pi / 180,
                   child: Text(
@@ -1119,8 +1228,10 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
               return const SizedBox.shrink();
             }
             // value를 Decimal로 변환하고 소수점 두 자리로 반올림
-            final Decimal roundedValue = Decimal.parse(value.toStringAsFixed(2)); // 소수점 두 자리로 반올림
-            final Decimal decimalInterval = Decimal.parse(interval.toString()); // interval을 Decimal로 변환
+            final Decimal roundedValue =
+                Decimal.parse(value.toStringAsFixed(2)); // 소수점 두 자리로 반올림
+            final Decimal decimalInterval =
+                Decimal.parse(interval.toString()); // interval을 Decimal로 변환
 
             if (roundedValue % decimalInterval != Decimal.zero) {
               return const SizedBox.shrink(); // 최댓값일 경우 빈 위젯 반환
@@ -1128,7 +1239,10 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
             return Padding(
               padding: const EdgeInsets.only(right: 5),
               child: Text(
-                (roundedValue >= Decimal.fromInt(10) || decimalInterval >= Decimal.fromInt(10)) ? roundedValue.toString() : roundedValue.toStringAsFixed(2), // 소수점 2자리까지 표시
+                (roundedValue >= Decimal.fromInt(10) ||
+                        decimalInterval >= Decimal.fromInt(10))
+                    ? roundedValue.toString()
+                    : roundedValue.toStringAsFixed(2), // 소수점 2자리까지 표시
                 textAlign: TextAlign.right,
                 style: TextStyle(
                   fontSize: constraints.maxWidth * 0.01,
@@ -1163,7 +1277,12 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
     Map<int, double> filterChartData(Map<int, double> data) {
       final provider = context.read<AnalysisDataProvider>();
       return Map.fromEntries(
-        data.entries.where((entry) => entry.key >= provider.startYear && entry.key <= provider.endYear).toList()..sort((a, b) => a.key.compareTo(b.key)),
+        data.entries
+            .where((entry) =>
+                entry.key >= provider.startYear &&
+                entry.key <= provider.endYear)
+            .toList()
+          ..sort((a, b) => a.key.compareTo(b.key)),
       );
     }
 

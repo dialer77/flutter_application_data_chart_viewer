@@ -11,10 +11,12 @@ class ChartWidgetAnalysisTarget extends StatefulWidget {
   const ChartWidgetAnalysisTarget({super.key});
 
   @override
-  State<ChartWidgetAnalysisTarget> createState() => _ChartWidgetAnalysisTargetState();
+  State<ChartWidgetAnalysisTarget> createState() =>
+      _ChartWidgetAnalysisTargetState();
 }
 
-class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> with SingleTickerProviderStateMixin {
+class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   bool _isTableVisible = false; // 추가
 
@@ -102,7 +104,9 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                       mainAxisAlignment: MainAxisAlignment.center, // 왼쪽 정렬 유지
                       children: [
                         Icon(
-                          _isTableVisible ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                          _isTableVisible
+                              ? Icons.keyboard_arrow_down
+                              : Icons.keyboard_arrow_up,
                           size: 28,
                           color: Colors.blue[700],
                         ),
@@ -128,7 +132,8 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                         title: (() {
                           switch (provider.selectedCategory) {
                             case AnalysisCategory.countryTech:
-                              if (provider.selectedSubCategory == AnalysisSubCategory.countryTrend) {
+                              if (provider.selectedSubCategory ==
+                                  AnalysisSubCategory.countryTrend) {
                                 return 'Citation Index';
                               } else {
                                 return 'Activity Index';
@@ -161,7 +166,8 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                               return [(TableDataType.country, '')];
                           }
                         }()),
-                        tableChartDataModels: provider.getTableChartDataModels(),
+                        tableChartDataModels:
+                            provider.getTableChartDataModels(),
                       ),
                     ),
                   ),
@@ -229,22 +235,30 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                   children: [
                     Container(
                       padding: EdgeInsets.symmetric(
-                        horizontal: category == AnalysisCategory.countryTech ? constraints.maxWidth * 0.035 : 8,
+                        horizontal: category == AnalysisCategory.countryTech
+                            ? constraints.maxWidth * 0.035
+                            : 8,
                         vertical: 4.0,
                       ),
-                      width: category == AnalysisCategory.countryTech ? constraints.maxWidth * 0.175 : constraints.maxWidth * 0.5,
+                      width: category == AnalysisCategory.countryTech
+                          ? constraints.maxWidth * 0.175
+                          : constraints.maxWidth * 0.5,
                       decoration: BoxDecoration(
                         color: const Color.fromARGB(255, 109, 207, 245),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Center(
                         child: Row(
-                          mainAxisAlignment: category == AnalysisCategory.countryTech ? MainAxisAlignment.spaceAround : MainAxisAlignment.center,
+                          mainAxisAlignment:
+                              category == AnalysisCategory.countryTech
+                                  ? MainAxisAlignment.spaceAround
+                                  : MainAxisAlignment.center,
                           children: [
                             (() {
                               if (category == AnalysisCategory.countryTech) {
                                 return CountryFlag.fromCountryCode(
-                                  CommonUtils.instance.replaceCountryCode(targetCode),
+                                  CommonUtils.instance
+                                      .replaceCountryCode(targetCode),
                                   height: 16,
                                   width: 24,
                                 );
@@ -254,13 +268,15 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                             }()),
                             Expanded(
                               child: Text(
-                                CommonUtils.instance.replaceCountryCode(targetCode),
+                                CommonUtils.instance
+                                    .replaceCountryCode(targetCode),
                                 style: TextStyle(
                                   fontSize: constraints.maxHeight * 0.035,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                   fontFamily: 'Times New Roman',
-                                  shadows: CommonUtils.instance.getTextBorderShadow(),
+                                  shadows: CommonUtils.instance
+                                      .getTextBorderShadow(),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 textAlign: TextAlign.center,
@@ -286,6 +302,7 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                         globalKey: globalKey,
                         dataProvider: provider,
                         techCodes: [provider.selectedTechCode ?? ''],
+                        chartCodes: [targetCode],
                       ),
                     ),
                   ],
@@ -306,9 +323,12 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                 child: SingleChartWidget(
                   techListType: provider.selectedTechListType,
                   techCode: provider.selectedTechCode,
-                  country: category == AnalysisCategory.countryTech ? targetCode : null,
+                  country: category == AnalysisCategory.countryTech
+                      ? targetCode
+                      : null,
                   targetName: (targetCode) {
-                    if (category == AnalysisCategory.companyTech || category == AnalysisCategory.academicTech) {
+                    if (category == AnalysisCategory.companyTech ||
+                        category == AnalysisCategory.academicTech) {
                       return targetCode;
                     } else {
                       return null;

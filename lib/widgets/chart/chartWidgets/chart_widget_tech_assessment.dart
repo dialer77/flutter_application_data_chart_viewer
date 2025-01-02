@@ -13,7 +13,8 @@ class ChartWidgetTechAssessment extends StatefulWidget {
   const ChartWidgetTechAssessment({super.key});
 
   @override
-  State<ChartWidgetTechAssessment> createState() => _ChartWidgetTechAssessmentState();
+  State<ChartWidgetTechAssessment> createState() =>
+      _ChartWidgetTechAssessmentState();
 }
 
 class _ChartWidgetTechAssessmentState extends State<ChartWidgetTechAssessment> {
@@ -62,42 +63,60 @@ class _ChartWidgetTechAssessmentState extends State<ChartWidgetTechAssessment> {
                             children: items.map((item) {
                               final isSelected = item == selectedItem;
                               late String countryCode;
-                              if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
-                                countryCode = CommonUtils.instance.replaceCountryCode(item);
+                              if (dataProvider.selectedSubCategory ==
+                                  AnalysisSubCategory.countryDetail) {
+                                countryCode = CommonUtils.instance
+                                    .replaceCountryCode(item);
                               } else {
-                                countryCode = CommonUtils.instance.replaceCountryCode(dataProvider.searchCountryCode(item));
+                                countryCode = CommonUtils.instance
+                                    .replaceCountryCode(
+                                        dataProvider.searchCountryCode(item));
                               }
                               return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
                                 child: InkWell(
                                   onTap: () {
                                     setState(() {
                                       selectedItem = item;
-                                      if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
+                                      if (dataProvider.selectedSubCategory ==
+                                          AnalysisSubCategory.countryDetail) {
                                         dataProvider.setSelectedCountry(item);
-                                      } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail) {
+                                      } else if (dataProvider
+                                              .selectedSubCategory ==
+                                          AnalysisSubCategory.companyDetail) {
                                         dataProvider.setSelectedCompany(item);
-                                      } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
+                                      } else if (dataProvider
+                                              .selectedSubCategory ==
+                                          AnalysisSubCategory.academicDetail) {
                                         dataProvider.setSelectedAcademic(item);
                                       }
                                     });
                                   },
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0, vertical: 8.0),
                                     decoration: BoxDecoration(
-                                      color: isSelected ? Colors.blue : Colors.white,
+                                      color: isSelected
+                                          ? Colors.blue
+                                          : Colors.white,
                                       border: Border.all(color: Colors.blue),
                                       borderRadius: BorderRadius.circular(4.0),
                                     ),
                                     child: Row(
                                       children: [
                                         (() {
-                                          return CountryFlag.fromCountryCode(countryCode, height: 20, width: 20);
+                                          return CountryFlag.fromCountryCode(
+                                              countryCode,
+                                              height: 20,
+                                              width: 20);
                                         })(),
                                         Text(
                                           item,
                                           style: TextStyle(
-                                            color: isSelected ? Colors.white : Colors.blue,
+                                            color: isSelected
+                                                ? Colors.white
+                                                : Colors.blue,
                                           ),
                                         ),
                                       ],
@@ -127,6 +146,20 @@ class _ChartWidgetTechAssessmentState extends State<ChartWidgetTechAssessment> {
                     globalKey: globalKey,
                     dataProvider: dataProvider,
                     techCodes: [dataProvider.selectedTechCode ?? ''],
+                    chartCodes: (() {
+                      List<String> chartCodes = [];
+                      if (dataProvider.selectedSubCategory ==
+                          AnalysisSubCategory.countryDetail) {
+                        chartCodes.add(dataProvider.selectedCountry ?? '');
+                      } else if (dataProvider.selectedSubCategory ==
+                          AnalysisSubCategory.companyDetail) {
+                        chartCodes.add(dataProvider.selectedCompany ?? '');
+                      } else if (dataProvider.selectedSubCategory ==
+                          AnalysisSubCategory.academicDetail) {
+                        chartCodes.add(dataProvider.selectedAcademic ?? '');
+                      }
+                      return chartCodes;
+                    })(),
                   ),
                 ),
               ],
@@ -139,12 +172,17 @@ class _ChartWidgetTechAssessmentState extends State<ChartWidgetTechAssessment> {
             SingleChartWidget(
               techListType: dataProvider.selectedTechListType,
               techCode: dataProvider.selectedTechCode,
-              countries: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? [dataProvider.selectedCountry ?? ''] : null,
+              countries: dataProvider.selectedSubCategory ==
+                      AnalysisSubCategory.countryDetail
+                  ? [dataProvider.selectedCountry ?? '']
+                  : null,
               targetNames: (() {
                 List<String> targetNames = [];
-                if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail) {
+                if (dataProvider.selectedSubCategory ==
+                    AnalysisSubCategory.companyDetail) {
                   targetNames.add(dataProvider.selectedCompany ?? '');
-                } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
+                } else if (dataProvider.selectedSubCategory ==
+                    AnalysisSubCategory.academicDetail) {
                   targetNames.add(dataProvider.selectedAcademic ?? '');
                 }
                 return targetNames;

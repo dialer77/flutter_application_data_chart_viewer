@@ -167,12 +167,19 @@ class _AnalysisTargetWidgetState extends State<AnalysisTargetWidget> {
                     return CheckboxListTile(
                       title: Row(
                         children: [
-                          if (dataProvider.selectedCategory == AnalysisCategory.countryTech)
-                            CountryFlag.fromCountryCode(
-                              CommonUtils.instance.replaceCountryCode(item),
+                          (() {
+                            String countryCode = '';
+                            if (dataProvider.selectedCategory == AnalysisCategory.countryTech) {
+                              countryCode = CommonUtils.instance.replaceCountryCode(item);
+                            } else {
+                              countryCode = CommonUtils.instance.replaceCountryCode(dataProvider.searchCountryCode(item));
+                            }
+                            return CountryFlag.fromCountryCode(
+                              countryCode,
                               height: flagSize,
                               width: flagSize,
-                            ),
+                            );
+                          })(),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(

@@ -57,7 +57,7 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
     } else {
       codes = techCodes.whereType<String>().toList();
     }
-
+    final tableKey = GlobalKey();
     return LayoutBuilder(builder: (context, constraints) {
       return (() {
         switch (provider.selectedSubCategory) {
@@ -84,7 +84,7 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
             return Column(
               children: [
                 Expanded(
-                  child: _buildChartMultiLineType(codes),
+                  child: _buildChartMultiLineType(codes, _isTableVisible ? tableKey : null),
                 ),
                 InkWell(
                   onTap: () {
@@ -124,44 +124,43 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                   child: SingleChildScrollView(
                     child: SizedBox(
                       height: 300,
-                      child: ChartTableWidget(
-                        title: (() {
-                          switch (provider.selectedCategory) {
-                            case AnalysisCategory.countryTech:
-                              if (provider.selectedSubCategory == AnalysisSubCategory.countryTrend) {
+                      child: RepaintBoundary(
+                        key: tableKey,
+                        child: ChartTableWidget(
+                          title: (() {
+                            switch (provider.selectedSubCategory) {
+                              case AnalysisSubCategory.techInnovationIndex:
                                 return 'Citation Index';
-                              } else {
-                                return 'Activity Index';
-                              }
-                            case AnalysisCategory.companyTech:
-                              return 'Market Index';
-                            case AnalysisCategory.academicTech:
-                              return 'Citation Index';
-                            default:
-                              return '';
-                          }
-                        }()),
-                        headerTitles: (() {
-                          switch (provider.selectedCategory) {
-                            case AnalysisCategory.countryTech:
-                              return const [
-                                (TableDataType.country, '국가 순위'),
-                              ];
-                            case AnalysisCategory.companyTech:
-                              return const [
-                                (TableDataType.country, '기업 순위'),
-                                (TableDataType.name, '기업'),
-                              ];
-                            case AnalysisCategory.academicTech:
-                              return const [
-                                (TableDataType.country, '대학 순위'),
-                                (TableDataType.name, '대학'),
-                              ];
-                            default:
-                              return [(TableDataType.country, '')];
-                          }
-                        }()),
-                        tableChartDataModels: provider.getTableChartDataModels(),
+                              case AnalysisSubCategory.marketExpansionIndex:
+                                return 'Market Index';
+                              case AnalysisSubCategory.rdInvestmentIndex:
+                                return 'Investment Index';
+                              default:
+                                return '';
+                            }
+                          }()),
+                          headerTitles: (() {
+                            switch (provider.selectedCategory) {
+                              case AnalysisCategory.countryTech:
+                                return const [
+                                  (TableDataType.country, '국가 순위'),
+                                ];
+                              case AnalysisCategory.companyTech:
+                                return const [
+                                  (TableDataType.country, '기업 순위'),
+                                  (TableDataType.name, '기업'),
+                                ];
+                              case AnalysisCategory.academicTech:
+                                return const [
+                                  (TableDataType.country, '대학 순위'),
+                                  (TableDataType.name, '대학'),
+                                ];
+                              default:
+                                return [(TableDataType.country, '')];
+                            }
+                          }()),
+                          tableChartDataModels: provider.getTableChartDataModels(),
+                        ),
                       ),
                     ),
                   ),
@@ -173,33 +172,29 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
     });
   }
 
-  Widget _buildChartMultiLineType(List<String> targetNameList) {
+  Widget _buildChartMultiLineType(List<String> targetNameList, GlobalKey? tableKey) {
     final provider = context.watch<AnalysisDataProvider>();
-    final globalKey = GlobalKey();
-    return RepaintBoundary(
-      key: globalKey,
-      child: LayoutBuilder(builder: (context, constraints) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: constraints.maxWidth,
-              height: constraints.maxHeight,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-              ),
-              child: SingleChartWidget(
-                globalKey: globalKey,
-                techListType: provider.selectedTechListType,
-                techCode: provider.selectedTechCode,
-                targetNames: targetNameList,
-                chartType: ChartType.multiline,
-              ),
+    return LayoutBuilder(builder: (context, constraints) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: constraints.maxWidth,
+            height: constraints.maxHeight,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
             ),
-          ],
-        );
-      }),
-    );
+            child: SingleChartWidget(
+              tableKey: tableKey,
+              techListType: provider.selectedTechListType,
+              techCode: provider.selectedTechCode,
+              targetNames: targetNameList,
+              chartType: ChartType.multiline,
+            ),
+          ),
+        ],
+      );
+    });
   }
 
   Widget _buildChartBarType(String targetCode) {
@@ -283,7 +278,8 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                       ),
                       child: CommonUtils.instance.saveMenuPopup(
                         constraints: constraints,
-                        globalKey: globalKey,
+                        chartKey: globalKey,
+                        tableKey: null,
                         dataProvider: provider,
                         techCodes: [provider.selectedTechCode ?? ''],
                         chartCodes: [targetCode],

@@ -17,12 +17,7 @@ class AnalysisDataProvider extends ChangeNotifier {
 
       final futures = AnalysisDataType.values.map((dataType) async {
         final rawData = await _repository.loadAnalysisData(dataType);
-        final result = MapEntry(
-            dataType,
-            rawData.entries
-                .expand((entry) => entry.value
-                    .map((item) => AnalysisDataModel.fromMap(entry.key, item)))
-                .toList());
+        final result = MapEntry(dataType, rawData.entries.expand((entry) => entry.value.map((item) => AnalysisDataModel.fromMap(entry.key, item))).toList());
         return result;
       });
 
@@ -66,8 +61,7 @@ class AnalysisDataProvider extends ChangeNotifier {
   AnalysisDataType get selectedDataType => _selectedDataType;
   AnalysisCategory get selectedCategory => _selectedCategory;
   AnalysisSubCategory get selectedSubCategory => _selectedSubCategory;
-  AnalysisTechListType get selectedTechListType =>
-      _selectedAnalysisTechListType;
+  AnalysisTechListType get selectedTechListType => _selectedAnalysisTechListType;
   String? get selectedLcTechCode => _selectedLcTechCode;
   Set<String> get selectedMcTechCodes => _selectedMcTechCodes;
   Set<String> get selectedScTechCodes => _selectedScTechCodes;
@@ -79,13 +73,9 @@ class AnalysisDataProvider extends ChangeNotifier {
     if (_selectedAnalysisTechListType == AnalysisTechListType.lc) {
       return _selectedLcTechCode ?? '';
     } else if (_selectedAnalysisTechListType == AnalysisTechListType.mc) {
-      return _selectedMcTechCodes.isNotEmpty
-          ? _selectedMcTechCodes.first
-          : getDataCodeNames(_selectedAnalysisTechListType).first;
+      return _selectedMcTechCodes.isNotEmpty ? _selectedMcTechCodes.first : getDataCodeNames(_selectedAnalysisTechListType).first;
     } else {
-      return _selectedScTechCodes.isNotEmpty
-          ? _selectedScTechCodes.first
-          : getDataCodeNames(_selectedAnalysisTechListType).first;
+      return _selectedScTechCodes.isNotEmpty ? _selectedScTechCodes.first : getDataCodeNames(_selectedAnalysisTechListType).first;
     }
   }
 
@@ -130,8 +120,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     if (_selectedCompanies.isEmpty) {
       return {};
     }
-    final sortedCompanies =
-        sortTargetNameFromValue(_selectedCompanies.toList());
+    final sortedCompanies = sortTargetNameFromValue(_selectedCompanies.toList());
     return sortedCompanies.toSet();
   }
 
@@ -139,8 +128,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     if (_selectedAcademics.isEmpty) {
       return {};
     }
-    final sortedAcademics =
-        sortTargetNameFromValue(_selectedAcademics.toList());
+    final sortedAcademics = sortTargetNameFromValue(_selectedAcademics.toList());
     return sortedAcademics.toSet();
   }
 
@@ -156,28 +144,21 @@ class AnalysisDataProvider extends ChangeNotifier {
 
   void setSelectedCategory(AnalysisCategory category) {
     if (category == AnalysisCategory.countryTech) {
-      if (_selectedSubCategory == AnalysisSubCategory.companyTrend ||
-          _selectedSubCategory == AnalysisSubCategory.academicTrend) {
+      if (_selectedSubCategory == AnalysisSubCategory.companyTrend || _selectedSubCategory == AnalysisSubCategory.academicTrend) {
         _selectedSubCategory = AnalysisSubCategory.countryTrend;
       }
     } else if (category == AnalysisCategory.companyTech) {
       _selectedDataType = AnalysisDataType.patent;
-      if (_selectedSubCategory == AnalysisSubCategory.countryTrend ||
-          _selectedSubCategory == AnalysisSubCategory.academicTrend) {
+      if (_selectedSubCategory == AnalysisSubCategory.countryTrend || _selectedSubCategory == AnalysisSubCategory.academicTrend) {
         _selectedSubCategory = AnalysisSubCategory.companyTrend;
       }
     } else if (category == AnalysisCategory.academicTech) {
       _selectedDataType = AnalysisDataType.paper;
-      if (_selectedSubCategory == AnalysisSubCategory.companyTrend ||
-          _selectedSubCategory == AnalysisSubCategory.countryTrend) {
+      if (_selectedSubCategory == AnalysisSubCategory.companyTrend || _selectedSubCategory == AnalysisSubCategory.countryTrend) {
         _selectedSubCategory = AnalysisSubCategory.academicTrend;
       }
-    } else if (category == AnalysisCategory.techCompetition ||
-        category == AnalysisCategory.techAssessment ||
-        category == AnalysisCategory.techGap) {
-      if (_selectedSubCategory != AnalysisSubCategory.countryDetail &&
-          _selectedSubCategory != AnalysisSubCategory.companyDetail &&
-          _selectedSubCategory != AnalysisSubCategory.academicDetail) {
+    } else if (category == AnalysisCategory.techCompetition || category == AnalysisCategory.techAssessment || category == AnalysisCategory.techGap) {
+      if (_selectedSubCategory != AnalysisSubCategory.countryDetail && _selectedSubCategory != AnalysisSubCategory.companyDetail && _selectedSubCategory != AnalysisSubCategory.academicDetail) {
         _selectedSubCategory = AnalysisSubCategory.countryDetail;
       }
 
@@ -216,11 +197,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         return [AnalysisDataType.paper];
       case AnalysisCategory.techCompetition:
         if (_selectedSubCategory == AnalysisSubCategory.countryDetail) {
-          return [
-            AnalysisDataType.patent,
-            AnalysisDataType.paper,
-            AnalysisDataType.patentAndPaper
-          ];
+          return [AnalysisDataType.patent, AnalysisDataType.paper, AnalysisDataType.patentAndPaper];
         } else if (_selectedSubCategory == AnalysisSubCategory.companyDetail) {
           return [AnalysisDataType.patent];
         } else if (_selectedSubCategory == AnalysisSubCategory.academicDetail) {
@@ -230,11 +207,7 @@ class AnalysisDataProvider extends ChangeNotifier {
       case AnalysisCategory.techAssessment:
       case AnalysisCategory.techGap:
         if (_selectedSubCategory == AnalysisSubCategory.countryDetail) {
-          return [
-            AnalysisDataType.patent,
-            AnalysisDataType.paper,
-            AnalysisDataType.patentAndPaper
-          ];
+          return [AnalysisDataType.patent, AnalysisDataType.paper, AnalysisDataType.patentAndPaper];
         } else if (_selectedSubCategory == AnalysisSubCategory.companyDetail) {
           return [AnalysisDataType.patent];
         } else if (_selectedSubCategory == AnalysisSubCategory.academicDetail) {
@@ -244,19 +217,13 @@ class AnalysisDataProvider extends ChangeNotifier {
     }
   }
 
-  List<AnalysisTechListType> getAvailableTechListTypes(
-      AnalysisCategory category) {
+  List<AnalysisTechListType> getAvailableTechListTypes(AnalysisCategory category) {
     switch (category) {
       case AnalysisCategory.industryTech:
-        if (_selectedSubCategory == AnalysisSubCategory.marketExpansionIndex ||
-            _selectedSubCategory == AnalysisSubCategory.rdInvestmentIndex) {
+        if (_selectedSubCategory == AnalysisSubCategory.marketExpansionIndex || _selectedSubCategory == AnalysisSubCategory.rdInvestmentIndex) {
           return [AnalysisTechListType.mc, AnalysisTechListType.sc];
         } else {
-          return [
-            AnalysisTechListType.lc,
-            AnalysisTechListType.mc,
-            AnalysisTechListType.sc
-          ];
+          return [AnalysisTechListType.lc, AnalysisTechListType.mc, AnalysisTechListType.sc];
         }
       case AnalysisCategory.countryTech:
       case AnalysisCategory.companyTech:
@@ -264,11 +231,7 @@ class AnalysisDataProvider extends ChangeNotifier {
       case AnalysisCategory.techCompetition:
       case AnalysisCategory.techAssessment:
       case AnalysisCategory.techGap:
-        return [
-          AnalysisTechListType.lc,
-          AnalysisTechListType.mc,
-          AnalysisTechListType.sc
-        ];
+        return [AnalysisTechListType.lc, AnalysisTechListType.mc, AnalysisTechListType.sc];
     }
   }
 
@@ -288,8 +251,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     _selectedSubCategory = subCategory;
     switch (selectedCategory) {
       case AnalysisCategory.industryTech:
-        if (subCategory == AnalysisSubCategory.rdInvestmentIndex &&
-            _selectedAnalysisTechListType == AnalysisTechListType.lc) {
+        if (subCategory == AnalysisSubCategory.rdInvestmentIndex && _selectedAnalysisTechListType == AnalysisTechListType.lc) {
           _selectedAnalysisTechListType = AnalysisTechListType.mc;
         } else if (subCategory == AnalysisSubCategory.marketExpansionIndex) {
           _selectedDataType = AnalysisDataType.patent;
@@ -484,10 +446,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     String techCode = selectedTechCode ?? "";
 
     for (var data in currentData) {
-      if (data.codeInfo.sheetName == getCategorySheetNames(category) &&
-          data.codeInfo.techType == selectedTechListType &&
-          data.codeInfo.codeName == techCode &&
-          data.codeInfo.country == country) {
+      if (data.codeInfo.sheetName == getCategorySheetNames(category) && data.codeInfo.techType == selectedTechListType && data.codeInfo.codeName == techCode && data.codeInfo.country == country) {
         var dataCode = getDataCode() ?? "";
 
         var yearData = data.analysisDatas[dataCode];
@@ -509,8 +468,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     String techCode = selectedTechCode ?? "";
 
     var filteredData = currentData
-        .where((data) =>
-            data.codeInfo.sheetName == getCategorySheetNames(category))
+        .where((data) => data.codeInfo.sheetName == getCategorySheetNames(category))
         .where((data) => data.codeInfo.techType == selectedTechListType)
         .where((data) => data.codeInfo.codeName == techCode)
         .where((data) => targetNames.contains(data.codeInfo.name))
@@ -522,8 +480,7 @@ class AnalysisDataProvider extends ChangeNotifier {
 
     var dataCode = getDataCode() ?? "";
     List<AnalysisDataModel> sortedData = [...filteredData]..sort(
-        (a, b) => b.analysisDatas[dataCode]!.values.last
-            .compareTo(a.analysisDatas[dataCode]!.values.last),
+        (a, b) => b.analysisDatas[dataCode]!.values.last.compareTo(a.analysisDatas[dataCode]!.values.last),
       );
 
     final result = sortedData.map((data) => data.codeInfo.name).toList();
@@ -567,41 +524,24 @@ class AnalysisDataProvider extends ChangeNotifier {
   Map<String, Map<String, double>> getTechCompetitionData() {
     String techCode = selectedTechCode ?? "";
     if (selectedSubCategory == AnalysisSubCategory.countryDetail) {
-      var countries = selectedCountries.isEmpty
-          ? getAvailableCountriesFromTechCompetition(techCode).take(10).toList()
-          : selectedCountries;
+      var countries = selectedCountries.isEmpty ? getAvailableCountriesFromTechCompetition(techCode).take(10).toList() : selectedCountries;
       var dataCodes = getTechCompetitionDataCodes();
       Map<String, Map<String, double>> data = {};
 
       var filteredData = {};
       if (selectedDataType == AnalysisDataType.patentAndPaper) {
-        filteredData[AnalysisDataType.patent] =
-            _dataMap[AnalysisDataType.patent] ?? [];
-        filteredData[AnalysisDataType.paper] =
-            _dataMap[AnalysisDataType.paper] ?? [];
-        filteredData[AnalysisDataType.patentAndPaper] =
-            _dataMap[AnalysisDataType.patentAndPaper] ?? [];
+        filteredData[AnalysisDataType.patent] = _dataMap[AnalysisDataType.patent] ?? [];
+        filteredData[AnalysisDataType.paper] = _dataMap[AnalysisDataType.paper] ?? [];
+        filteredData[AnalysisDataType.patentAndPaper] = _dataMap[AnalysisDataType.patentAndPaper] ?? [];
 
         filteredData[AnalysisDataType.patent] =
-            filteredData[AnalysisDataType.patent]
-                .where((data) => data.codeInfo.techType == selectedTechListType)
-                .where((data) => data.codeInfo.codeName == techCode)
-                .toList();
+            filteredData[AnalysisDataType.patent].where((data) => data.codeInfo.techType == selectedTechListType).where((data) => data.codeInfo.codeName == techCode).toList();
         filteredData[AnalysisDataType.paper] =
-            filteredData[AnalysisDataType.paper]
-                .where((data) => data.codeInfo.techType == selectedTechListType)
-                .where((data) => data.codeInfo.codeName == techCode)
-                .toList();
+            filteredData[AnalysisDataType.paper].where((data) => data.codeInfo.techType == selectedTechListType).where((data) => data.codeInfo.codeName == techCode).toList();
         filteredData[AnalysisDataType.patentAndPaper] =
-            filteredData[AnalysisDataType.patentAndPaper]
-                .where((data) => data.codeInfo.techType == selectedTechListType)
-                .where((data) => data.codeInfo.codeName == techCode)
-                .toList();
+            filteredData[AnalysisDataType.patentAndPaper].where((data) => data.codeInfo.techType == selectedTechListType).where((data) => data.codeInfo.codeName == techCode).toList();
       } else {
-        filteredData[selectedDataType] = currentData
-            .where((data) => data.codeInfo.techType == selectedTechListType)
-            .where((data) => data.codeInfo.codeName == techCode)
-            .toList();
+        filteredData[selectedDataType] = currentData.where((data) => data.codeInfo.techType == selectedTechListType).where((data) => data.codeInfo.codeName == techCode).toList();
       }
 
       for (var dataCode in dataCodes) {
@@ -632,9 +572,7 @@ class AnalysisDataProvider extends ChangeNotifier {
             }
           }
         }
-        var dataFiltered = dataModels
-            ?.where((data) => data.codeInfo.sheetName == sheetName)
-            .toList();
+        var dataFiltered = dataModels?.where((data) => data.codeInfo.sheetName == sheetName).toList();
 
         dataCode = dataCode == "TC" ? "" : dataCode;
 
@@ -642,49 +580,30 @@ class AnalysisDataProvider extends ChangeNotifier {
           if (data[country] == null) {
             data[country] = {};
           }
-          final datas = dataFiltered
-              ?.where((data) => data.codeInfo.country == country)
-              .toList();
-          data[country]?[dataCode] =
-              datas?.first.analysisDatas[dataCode].values.last ?? 0.0;
+          final datas = dataFiltered?.where((data) => data.codeInfo.country == country).toList();
+          data[country]?[dataCode] = datas?.first.analysisDatas[dataCode].values.last ?? 0.0;
         }
       }
       return data;
     } else if (selectedSubCategory == AnalysisSubCategory.companyDetail) {
-      var companies = selectedCompanies.isEmpty
-          ? getAvailableCompaniesFromTechCompetition(techCode).take(10).toList()
-          : selectedCompanies;
+      var companies = selectedCompanies.isEmpty ? getAvailableCompaniesFromTechCompetition(techCode).take(10).toList() : selectedCompanies;
       var dataCodes = getTechCompetitionDataCodes();
       Map<String, Map<String, double>> data = {};
       for (var company in companies) {
         data[company] = {};
         for (var dataCode in dataCodes) {
-          data[company]?[dataCode] = getChartData(
-                  techListType: selectedTechListType,
-                  techCode: techCode,
-                  targetName: company,
-                  dataCode: dataCode)
-              .values
-              .last;
+          data[company]?[dataCode] = getChartData(techListType: selectedTechListType, techCode: techCode, targetName: company, dataCode: dataCode).values.last;
         }
       }
       return data;
     } else if (selectedSubCategory == AnalysisSubCategory.academicDetail) {
-      var academics = selectedAcademics.isEmpty
-          ? getAvailableAcademicsFromTechCompetition(techCode).take(10).toList()
-          : selectedAcademics;
+      var academics = selectedAcademics.isEmpty ? getAvailableAcademicsFromTechCompetition(techCode).take(10).toList() : selectedAcademics;
       var dataCodes = getTechCompetitionDataCodes();
       Map<String, Map<String, double>> data = {};
       for (var academic in academics) {
         data[academic] = {};
         for (var dataCode in dataCodes) {
-          data[academic]?[dataCode] = getChartData(
-                  techListType: selectedTechListType,
-                  techCode: techCode,
-                  targetName: academic,
-                  dataCode: dataCode)
-              .values
-              .last;
+          data[academic]?[dataCode] = getChartData(techListType: selectedTechListType, techCode: techCode, targetName: academic, dataCode: dataCode).values.last;
         }
       }
       return data;
@@ -699,19 +618,7 @@ class AnalysisDataProvider extends ChangeNotifier {
       } else if (selectedDataType == AnalysisDataType.paper) {
         return ['TPN', 'TCN', 'TPI', 'TCI', 'TC'];
       } else {
-        return [
-          'PAN',
-          'PFN',
-          'PCN',
-          'PAI',
-          'PFI',
-          'PCI',
-          'TPN',
-          'TCN',
-          'TPI',
-          'TCI',
-          'TC'
-        ];
+        return ['PAN', 'PFN', 'PCN', 'PAI', 'PFI', 'PCI', 'TPN', 'TCN', 'TPI', 'TCI', 'TC'];
       }
     } else if (selectedSubCategory == AnalysisSubCategory.companyDetail) {
       if (selectedDataType == AnalysisDataType.patent) {
@@ -734,48 +641,28 @@ class AnalysisDataProvider extends ChangeNotifier {
     String? dataCode,
   }) {
     if (selectedCategory == AnalysisCategory.techCompetition) {
-      return getTechCompetitionChartData(
-          techCode: techCode,
-          country: country,
-          targetName: targetName,
-          dataCode: dataCode);
+      return getTechCompetitionChartData(techCode: techCode, country: country, targetName: targetName, dataCode: dataCode);
     } else if (selectedCategory == AnalysisCategory.techAssessment) {
-      return _getTechAssessmentChartData(
-          techListType: techListType,
-          techCode: techCode,
-          country: country,
-          targetName: targetName,
-          dataCode: dataCode);
+      return _getTechAssessmentChartData(techListType: techListType, techCode: techCode, country: country, targetName: targetName, dataCode: dataCode);
     } else if (selectedCategory == AnalysisCategory.techGap) {
       return _getTechGapChartData(country: country, targetName: targetName);
     }
 
     // currentData 에서 국가 데이터만 반환
-    var filterData = currentData
-        .where((data) =>
-            data.codeInfo.sheetName == getCategorySheetNames(selectedCategory))
-        .toList();
+    var filterData = currentData.where((data) => data.codeInfo.sheetName == getCategorySheetNames(selectedCategory)).toList();
 
     // filterData 에서 techListType 과 techCode 에 해당하는 데이터만 반환
     techCode = techCode ?? selectedTechCode;
-    filterData = filterData
-        .where((data) =>
-            data.codeInfo.techType == selectedTechListType &&
-            data.codeInfo.codeName == techCode)
-        .toList();
+    filterData = filterData.where((data) => data.codeInfo.techType == selectedTechListType && data.codeInfo.codeName == techCode).toList();
 
     switch (_selectedCategory) {
       case AnalysisCategory.countryTech:
       case AnalysisCategory.techCompetition:
-        filterData = filterData
-            .where((data) => data.codeInfo.country == country)
-            .toList();
+        filterData = filterData.where((data) => data.codeInfo.country == country).toList();
         break;
       case AnalysisCategory.companyTech:
       case AnalysisCategory.academicTech:
-        filterData = filterData
-            .where((data) => data.codeInfo.name == targetName)
-            .toList();
+        filterData = filterData.where((data) => data.codeInfo.name == targetName).toList();
         break;
       default:
         break;
@@ -784,9 +671,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     if (finalDataCode == null) return {};
 
     // filterData 의 내용중 analysisDatas 의 key값이 dataCode 인 데이터만 반환
-    filterData = filterData
-        .where((data) => data.analysisDatas.containsKey(finalDataCode))
-        .toList();
+    filterData = filterData.where((data) => data.analysisDatas.containsKey(finalDataCode)).toList();
     if (filterData.isEmpty) return {};
     return filterData.first.analysisDatas[finalDataCode] ?? {};
   }
@@ -825,37 +710,26 @@ class AnalysisDataProvider extends ChangeNotifier {
     }
 
     String techCode = selectedTechCode ?? "";
-    var filteredData = dataModels
-        .where((data) => data.codeInfo.sheetName == sheetName)
-        .where((data) => data.codeInfo.techType == selectedTechListType)
-        .where((data) => data.codeInfo.codeName == techCode)
-        .toList();
+    var filteredData =
+        dataModels.where((data) => data.codeInfo.sheetName == sheetName).where((data) => data.codeInfo.techType == selectedTechListType).where((data) => data.codeInfo.codeName == techCode).toList();
 
     if (country != null) {
-      filteredData = filteredData
-          .where((data) => data.codeInfo.country == country)
-          .toList();
+      filteredData = filteredData.where((data) => data.codeInfo.country == country).toList();
     }
 
     if (targetName != null) {
-      filteredData = filteredData
-          .where((data) => data.codeInfo.name == targetName)
-          .toList();
+      filteredData = filteredData.where((data) => data.codeInfo.name == targetName).toList();
     }
 
     if (dataCode != null) {
-      filteredData = filteredData
-          .where((data) =>
-              data.analysisDatas.containsKey(dataCode == "TC" ? "" : dataCode))
-          .toList();
+      filteredData = filteredData.where((data) => data.analysisDatas.containsKey(dataCode == "TC" ? "" : dataCode)).toList();
     }
 
     if (filteredData.isEmpty) {
       return {};
     }
 
-    return filteredData.first.analysisDatas[dataCode == "TC" ? "" : dataCode] ??
-        {};
+    return filteredData.first.analysisDatas[dataCode == "TC" ? "" : dataCode] ?? {};
   }
 
   Map<int, double> _getTechAssessmentChartData({
@@ -867,23 +741,15 @@ class AnalysisDataProvider extends ChangeNotifier {
   }) {
     techCode = techCode ?? selectedTechCode;
     var filteredData = currentData
-        .where((data) =>
-            data.codeInfo.sheetName ==
-                getCategorySheetNames(AnalysisCategory.techAssessment) &&
-            data.codeInfo.techType == techListType &&
-            data.codeInfo.codeName == techCode)
+        .where((data) => data.codeInfo.sheetName == getCategorySheetNames(AnalysisCategory.techAssessment) && data.codeInfo.techType == techListType && data.codeInfo.codeName == techCode)
         .toList();
 
     if (country != null) {
-      filteredData = filteredData
-          .where((data) => data.codeInfo.country == country)
-          .toList();
+      filteredData = filteredData.where((data) => data.codeInfo.country == country).toList();
     }
 
     if (targetName != null) {
-      filteredData = filteredData
-          .where((data) => data.codeInfo.name == targetName)
-          .toList();
+      filteredData = filteredData.where((data) => data.codeInfo.name == targetName).toList();
     }
 
     if (filteredData.isEmpty) {
@@ -898,22 +764,17 @@ class AnalysisDataProvider extends ChangeNotifier {
     String techCode = selectedTechCode ?? "";
     var filteredData = currentData
         .where((data) =>
-            data.codeInfo.sheetName ==
-                getCategorySheetNames(AnalysisCategory.techCompetition) &&
+            data.codeInfo.sheetName == getCategorySheetNames(AnalysisCategory.techCompetition) &&
             data.codeInfo.techType == selectedTechListType &&
             data.codeInfo.codeName == techCode &&
             data.analysisDatas.containsKey(""))
         .toList();
     if (country != null) {
-      filteredData = filteredData
-          .where((data) => data.codeInfo.country == country)
-          .toList();
+      filteredData = filteredData.where((data) => data.codeInfo.country == country).toList();
     }
 
     if (targetName != null) {
-      filteredData = filteredData
-          .where((data) => data.codeInfo.name == targetName)
-          .toList();
+      filteredData = filteredData.where((data) => data.codeInfo.name == targetName).toList();
     }
 
     if (filteredData.isEmpty) {
@@ -924,79 +785,56 @@ class AnalysisDataProvider extends ChangeNotifier {
 
     filteredData = currentData
         .where((data) =>
-            data.codeInfo.sheetName ==
-                getCategorySheetNames(AnalysisCategory.techGap) &&
+            data.codeInfo.sheetName == getCategorySheetNames(AnalysisCategory.techGap) &&
             data.codeInfo.techType == selectedTechListType &&
             data.codeInfo.codeName == techCode &&
             data.analysisDatas.containsKey(""))
         .toList();
 
     if (country != null) {
-      filteredData = filteredData
-          .where((data) => data.codeInfo.country == country)
-          .toList();
+      filteredData = filteredData.where((data) => data.codeInfo.country == country).toList();
     }
 
     if (targetName != null) {
-      filteredData = filteredData
-          .where((data) => data.codeInfo.name == targetName)
-          .toList();
+      filteredData = filteredData.where((data) => data.codeInfo.name == targetName).toList();
     }
     final afterData = filteredData.first.analysisDatas[""] ?? {};
 
     return {...beforeData, ...afterData};
   }
 
-  Map<String, double> getRaderChartData(
-      AnalysisTechListType techListType, int year) {
+  Map<String, double> getRaderChartData(AnalysisTechListType techListType, int year) {
     Map<String, double> chartData = {};
 
     Set<String> techCodes = {};
     if (techListType == AnalysisTechListType.mc) {
-      techCodes = _selectedMcTechCodes.isNotEmpty
-          ? _selectedMcTechCodes
-          : getDataCodeNames(techListType);
+      techCodes = _selectedMcTechCodes.isNotEmpty ? _selectedMcTechCodes : getDataCodeNames(techListType);
     } else if (techListType == AnalysisTechListType.sc) {
-      techCodes = _selectedScTechCodes.isNotEmpty
-          ? _selectedScTechCodes
-          : getDataCodeNames(techListType);
+      techCodes = _selectedScTechCodes.isNotEmpty ? _selectedScTechCodes : getDataCodeNames(techListType);
     }
 
     for (var techCode in techCodes) {
       var filteredData = currentData
-          .where((data) =>
-              data.codeInfo.sheetName ==
-                  getCategorySheetNames(AnalysisCategory.techCompetition) &&
-              data.codeInfo.techType == techListType &&
-              data.codeInfo.codeName == techCode)
+          .where((data) => data.codeInfo.sheetName == getCategorySheetNames(AnalysisCategory.techCompetition) && data.codeInfo.techType == techListType && data.codeInfo.codeName == techCode)
           .toList();
 
       if (selectedSubCategory == AnalysisSubCategory.countryDetail) {
-        filteredData = filteredData
-            .where((data) => data.codeInfo.country == selectedCountry)
-            .toList();
+        filteredData = filteredData.where((data) => data.codeInfo.country == selectedCountry).toList();
       }
 
       if (selectedSubCategory == AnalysisSubCategory.companyDetail) {
-        filteredData = filteredData
-            .where((data) => data.codeInfo.name == selectedCompany)
-            .toList();
+        filteredData = filteredData.where((data) => data.codeInfo.name == selectedCompany).toList();
       }
 
       if (selectedSubCategory == AnalysisSubCategory.academicDetail) {
-        filteredData = filteredData
-            .where((data) => data.codeInfo.name == selectedAcademic)
-            .toList();
+        filteredData = filteredData.where((data) => data.codeInfo.name == selectedAcademic).toList();
       }
 
-      filteredData = filteredData
-          .where((data) => data.analysisDatas.containsKey(""))
-          .toList();
+      filteredData = filteredData.where((data) => data.analysisDatas.containsKey("")).toList();
       if (filteredData.isEmpty) {
         chartData[techCode] = 0.0;
       } else {
-        chartData[techCode] =
-            filteredData.first.analysisDatas[""]?[year] ?? 0.0;
+        chartData[techCode] = filteredData.first.analysisDatas[""]?[year] ?? 0.0;
       }
     }
 
@@ -1006,28 +844,21 @@ class AnalysisDataProvider extends ChangeNotifier {
   List<TableChartDataModel> getTableChartDataModels() {
     String techCode = selectedTechCode ?? "";
     var filteredData = currentData
-        .where((data) =>
-            data.codeInfo.sheetName == getCategorySheetNames(selectedCategory))
+        .where((data) => data.codeInfo.sheetName == getCategorySheetNames(selectedCategory))
         .where((data) => data.codeInfo.techType == selectedTechListType)
         .where((data) => data.codeInfo.codeName == techCode)
         .toList();
 
     final dataCode = getDataCode() ?? "";
-    filteredData = filteredData
-        .where((data) => data.analysisDatas.containsKey(dataCode))
-        .toList();
+    filteredData = filteredData.where((data) => data.analysisDatas.containsKey(dataCode)).toList();
 
     List<TableChartDataModel> tableChartDataModels = [];
     if (selectedCategory == AnalysisCategory.countryTech) {
-      var countryCodes = _selectedCountries.isNotEmpty
-          ? _selectedCountries
-          : getAvailableCountries(techCode).take(10).toList();
+      var countryCodes = _selectedCountries.isNotEmpty ? _selectedCountries : getAvailableCountries(techCode).take(10).toList();
 
       var rank = 1;
       for (var countryCode in countryCodes) {
-        var filteredDataByCountry = filteredData
-            .where((data) => data.codeInfo.country == countryCode)
-            .toList();
+        var filteredDataByCountry = filteredData.where((data) => data.codeInfo.country == countryCode).toList();
 
         TableChartDataModel tableChartDataModel = TableChartDataModel(
           yearDatas: filteredDataByCountry.first.analysisDatas[dataCode] ?? {},
@@ -1039,22 +870,15 @@ class AnalysisDataProvider extends ChangeNotifier {
         tableChartDataModels.add(tableChartDataModel);
       }
     } else if (selectedCategory == AnalysisCategory.companyTech) {
-      var companyCodes = _selectedCompanies.isNotEmpty
-          ? _selectedCompanies
-          : getAvailableCompanies().take(10).toList();
+      var companyCodes = _selectedCompanies.isNotEmpty ? _selectedCompanies : getAvailableCompanies().take(10).toList();
 
       var rank = 1;
       for (var companyCode in companyCodes) {
-        var filteredDataByCompany = filteredData
-            .where((data) => data.codeInfo.name == companyCode)
-            .toList();
+        var filteredDataByCompany = filteredData.where((data) => data.codeInfo.name == companyCode).toList();
 
         TableChartDataModel tableChartDataModel = TableChartDataModel(
           yearDatas: filteredDataByCompany.first.analysisDatas[dataCode] ?? {},
-          dataInfo: {
-            TableDataType.country: filteredDataByCompany.first.codeInfo.country,
-            TableDataType.name: companyCode
-          },
+          dataInfo: {TableDataType.country: filteredDataByCompany.first.codeInfo.country, TableDataType.name: companyCode},
           name: filteredDataByCompany.first.codeInfo.name,
           rank: rank,
         );
@@ -1062,23 +886,15 @@ class AnalysisDataProvider extends ChangeNotifier {
         tableChartDataModels.add(tableChartDataModel);
       }
     } else if (selectedCategory == AnalysisCategory.academicTech) {
-      var academicCodes = _selectedAcademics.isNotEmpty
-          ? _selectedAcademics
-          : getAvailableAcademics().take(10).toList();
+      var academicCodes = _selectedAcademics.isNotEmpty ? _selectedAcademics : getAvailableAcademics().take(10).toList();
 
       var rank = 1;
       for (var academicCode in academicCodes) {
-        var filteredDataByAcademic = filteredData
-            .where((data) => data.codeInfo.name == academicCode)
-            .toList();
+        var filteredDataByAcademic = filteredData.where((data) => data.codeInfo.name == academicCode).toList();
 
         TableChartDataModel tableChartDataModel = TableChartDataModel(
           yearDatas: filteredDataByAcademic.first.analysisDatas[dataCode] ?? {},
-          dataInfo: {
-            TableDataType.country:
-                filteredDataByAcademic.first.codeInfo.country,
-            TableDataType.name: academicCode
-          },
+          dataInfo: {TableDataType.country: filteredDataByAcademic.first.codeInfo.country, TableDataType.name: academicCode},
           name: filteredDataByAcademic.first.codeInfo.name,
           rank: rank,
         );
@@ -1141,16 +957,11 @@ class AnalysisDataProvider extends ChangeNotifier {
   Set<String> getDataCodeNames(AnalysisTechListType techListType) {
     final sheetName = getCategorySheetNames(_selectedCategory);
 
-    var filteredData = currentData
-        .where((data) => data.codeInfo.sheetName == sheetName)
-        .toList();
+    var filteredData = currentData.where((data) => data.codeInfo.sheetName == sheetName).toList();
 
-    filteredData = filteredData
-        .where((data) => data.codeInfo.techType == techListType)
-        .toList();
+    filteredData = filteredData.where((data) => data.codeInfo.techType == techListType).toList();
 
-    return SplayTreeSet<String>.from(
-        filteredData.map((data) => data.codeInfo.codeName));
+    return SplayTreeSet<String>.from(filteredData.map((data) => data.codeInfo.codeName));
   }
 
   // Year Range
@@ -1158,12 +969,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     int minYear = 9999;
     int maxYear = 0;
 
-    var filteredData = currentData
-        .where((data) =>
-            data.codeInfo.sheetName ==
-                getCategorySheetNames(selectedCategory) &&
-            data.codeInfo.techType == selectedTechListType)
-        .toList();
+    var filteredData = currentData.where((data) => data.codeInfo.sheetName == getCategorySheetNames(selectedCategory) && data.codeInfo.techType == selectedTechListType).toList();
 
     for (var data in filteredData) {
       for (var yearData in data.analysisDatas.values) {
@@ -1177,18 +983,12 @@ class AnalysisDataProvider extends ChangeNotifier {
     if (selectedCategory == AnalysisCategory.techGap) {
       String techCode = selectedTechCode ?? "";
       filteredData = currentData
-          .where((data) =>
-              data.codeInfo.sheetName ==
-                  getCategorySheetNames(AnalysisCategory.techCompetition) &&
-              data.codeInfo.techType == selectedTechListType &&
-              data.codeInfo.codeName == techCode)
+          .where((data) => data.codeInfo.sheetName == getCategorySheetNames(AnalysisCategory.techCompetition) && data.codeInfo.techType == selectedTechListType && data.codeInfo.codeName == techCode)
           .toList();
 
       var dataCode = getDataCode() ?? "";
       // dataCode와 key가 일치하는 데이터에서 연도 정보를 찾아 최소/최대 연도를 구한다
-      filteredData = filteredData
-          .where((data) => data.analysisDatas.keys.contains(dataCode))
-          .toList();
+      filteredData = filteredData.where((data) => data.analysisDatas.keys.contains(dataCode)).toList();
 
       for (var data in filteredData) {
         for (var yearData in data.analysisDatas.values) {
@@ -1298,8 +1098,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     return null;
   }
 
-  List<AnalysisSubCategory> getAvailableSubCategories(
-      AnalysisCategory category) {
+  List<AnalysisSubCategory> getAvailableSubCategories(AnalysisCategory category) {
     switch (category) {
       case AnalysisCategory.industryTech:
         return [
@@ -1344,10 +1143,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     final Map<String, double> countries = {};
     techCode = techCode ?? selectedTechCode;
     for (var data in currentData) {
-      if (data.codeInfo.sheetName ==
-              getCategorySheetNames(AnalysisCategory.techCompetition) &&
-          data.codeInfo.techType == selectedTechListType &&
-          data.codeInfo.codeName == techCode) {
+      if (data.codeInfo.sheetName == getCategorySheetNames(AnalysisCategory.techCompetition) && data.codeInfo.techType == selectedTechListType && data.codeInfo.codeName == techCode) {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
@@ -1371,10 +1167,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     techCode = techCode ?? selectedTechCode;
     final Map<String, double> companies = {};
     for (var data in currentData) {
-      if (data.codeInfo.sheetName ==
-              getCategorySheetNames(AnalysisCategory.techCompetition) &&
-          data.codeInfo.techType == selectedTechListType &&
-          data.codeInfo.codeName == techCode) {
+      if (data.codeInfo.sheetName == getCategorySheetNames(AnalysisCategory.techCompetition) && data.codeInfo.techType == selectedTechListType && data.codeInfo.codeName == techCode) {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
@@ -1398,10 +1191,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     techCode = techCode ?? selectedTechCode;
     final Map<String, double> academics = {};
     for (var data in currentData) {
-      if (data.codeInfo.sheetName ==
-              getCategorySheetNames(AnalysisCategory.techCompetition) &&
-          data.codeInfo.techType == selectedTechListType &&
-          data.codeInfo.codeName == techCode) {
+      if (data.codeInfo.sheetName == getCategorySheetNames(AnalysisCategory.techCompetition) && data.codeInfo.techType == selectedTechListType && data.codeInfo.codeName == techCode) {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
@@ -1426,10 +1216,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     String techCode = selectedTechCode ?? "";
     final Map<String, double> countries = {};
     for (var data in currentData) {
-      if (data.codeInfo.sheetName ==
-              getCategorySheetNames(AnalysisCategory.techAssessment) &&
-          data.codeInfo.techType == selectedTechListType &&
-          data.codeInfo.codeName == techCode) {
+      if (data.codeInfo.sheetName == getCategorySheetNames(AnalysisCategory.techAssessment) && data.codeInfo.techType == selectedTechListType && data.codeInfo.codeName == techCode) {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
@@ -1454,9 +1241,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     final Map<String, double> companies = {};
 
     var filteredData = currentData
-        .where((data) =>
-            data.codeInfo.sheetName ==
-            getCategorySheetNames(AnalysisCategory.techAssessment))
+        .where((data) => data.codeInfo.sheetName == getCategorySheetNames(AnalysisCategory.techAssessment))
         .where((data) => data.codeInfo.techType == selectedTechListType)
         .where((data) => data.codeInfo.codeName == techCode)
         .toList();
@@ -1484,10 +1269,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     String techCode = selectedTechCode ?? "";
     final Map<String, double> academics = {};
     for (var data in currentData) {
-      if (data.codeInfo.sheetName ==
-              getCategorySheetNames(AnalysisCategory.techAssessment) &&
-          data.codeInfo.techType == selectedTechListType &&
-          data.codeInfo.codeName == techCode) {
+      if (data.codeInfo.sheetName == getCategorySheetNames(AnalysisCategory.techAssessment) && data.codeInfo.techType == selectedTechListType && data.codeInfo.codeName == techCode) {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
@@ -1510,10 +1292,7 @@ class AnalysisDataProvider extends ChangeNotifier {
   Set<String> getAvailableAcademicsFromTechGap(String? techCode) {
     final Map<String, double> companies = {};
     for (var data in currentData) {
-      if (data.codeInfo.sheetName ==
-              getCategorySheetNames(AnalysisCategory.techGap) &&
-          data.codeInfo.techType == selectedTechListType &&
-          data.codeInfo.codeName == (techCode ?? selectedTechCode)) {
+      if (data.codeInfo.sheetName == getCategorySheetNames(AnalysisCategory.techGap) && data.codeInfo.techType == selectedTechListType && data.codeInfo.codeName == (techCode ?? selectedTechCode)) {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
@@ -1537,10 +1316,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     techCode = techCode ?? selectedTechCode;
     final Map<String, double> companies = {};
     for (var data in currentData) {
-      if (data.codeInfo.sheetName ==
-              getCategorySheetNames(AnalysisCategory.techGap) &&
-          data.codeInfo.techType == selectedTechListType &&
-          data.codeInfo.codeName == techCode) {
+      if (data.codeInfo.sheetName == getCategorySheetNames(AnalysisCategory.techGap) && data.codeInfo.techType == selectedTechListType && data.codeInfo.codeName == techCode) {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
@@ -1563,10 +1339,7 @@ class AnalysisDataProvider extends ChangeNotifier {
   Set<String> getAvailableCountriesFromTechGap(String? techCode) {
     final Map<String, double> countries = {};
     for (var data in currentData) {
-      if (data.codeInfo.sheetName ==
-              getCategorySheetNames(AnalysisCategory.techGap) &&
-          data.codeInfo.techType == selectedTechListType &&
-          data.codeInfo.codeName == (techCode ?? selectedTechCode)) {
+      if (data.codeInfo.sheetName == getCategorySheetNames(AnalysisCategory.techGap) && data.codeInfo.techType == selectedTechListType && data.codeInfo.codeName == (techCode ?? selectedTechCode)) {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
@@ -1590,8 +1363,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     // currentData 에서 카테고리가  countryTech이고, techListType과 techCode가 일치하는 데이터를 찾는다
     final Map<String, double> countries = {};
     for (var data in currentData) {
-      if (data.codeInfo.sheetName ==
-              getCategorySheetNames(AnalysisCategory.countryTech) &&
+      if (data.codeInfo.sheetName == getCategorySheetNames(AnalysisCategory.countryTech) &&
           data.codeInfo.techType == selectedTechListType &&
           data.codeInfo.codeName == (techCode ?? selectedTechCode)) {
         var dataCode = getDataCode();
@@ -1621,10 +1393,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     final Map<String, double> companies = {};
     String techCode = selectedTechCode ?? "";
     for (var data in currentData) {
-      if (data.codeInfo.sheetName ==
-              getCategorySheetNames(AnalysisCategory.companyTech) &&
-          data.codeInfo.techType == selectedTechListType &&
-          data.codeInfo.codeName == techCode) {
+      if (data.codeInfo.sheetName == getCategorySheetNames(AnalysisCategory.companyTech) && data.codeInfo.techType == selectedTechListType && data.codeInfo.codeName == techCode) {
         var dataCode = getDataCode();
         if (dataCode == null) continue;
 
@@ -1652,10 +1421,7 @@ class AnalysisDataProvider extends ChangeNotifier {
     final Map<String, double> academicNames = {};
     String techCode = selectedTechCode ?? "";
     for (var data in currentData) {
-      if (data.codeInfo.sheetName ==
-              getCategorySheetNames(AnalysisCategory.academicTech) &&
-          data.codeInfo.techType == selectedTechListType &&
-          data.codeInfo.codeName == techCode) {
+      if (data.codeInfo.sheetName == getCategorySheetNames(AnalysisCategory.academicTech) && data.codeInfo.techType == selectedTechListType && data.codeInfo.codeName == techCode) {
         var dataCode = getDataCode();
         if (dataCode == null) continue;
 
@@ -1680,9 +1446,7 @@ class AnalysisDataProvider extends ChangeNotifier {
 
   String searchCountryCode(String searchCode) {
     if (_countryCodeMap.containsKey(searchCode) == false) {
-      var filteredData = currentData
-          .where((data) => data.codeInfo.name == searchCode)
-          .toList();
+      var filteredData = currentData.where((data) => data.codeInfo.name == searchCode).toList();
       _countryCodeMap[searchCode] = filteredData.first.codeInfo.country;
     }
     return _countryCodeMap[searchCode]!;
@@ -1742,26 +1506,22 @@ class AnalysisDataProvider extends ChangeNotifier {
         _academicColorCodeMap[code] = _defaultColors[colorIndex];
       }
       return _academicColorCodeMap[code]!;
-    } else if (_selectedCategory == AnalysisCategory.techCompetition ||
-        _selectedCategory == AnalysisCategory.techGap) {
+    } else if (_selectedCategory == AnalysisCategory.techCompetition || _selectedCategory == AnalysisCategory.techGap) {
       if (selectedSubCategory == AnalysisSubCategory.countryDetail) {
         if (!_countryColorCodeMap.containsKey(code)) {
-          final colorIndex =
-              _countryColorCodeMap.length % _defaultColors.length;
+          final colorIndex = _countryColorCodeMap.length % _defaultColors.length;
           _countryColorCodeMap[code] = _defaultColors[colorIndex];
         }
         return _countryColorCodeMap[code]!;
       } else if (selectedSubCategory == AnalysisSubCategory.companyDetail) {
         if (!_companyColorCodeMap.containsKey(code)) {
-          final colorIndex =
-              _companyColorCodeMap.length % _defaultColors.length;
+          final colorIndex = _companyColorCodeMap.length % _defaultColors.length;
           _companyColorCodeMap[code] = _defaultColors[colorIndex];
         }
         return _companyColorCodeMap[code]!;
       } else if (selectedSubCategory == AnalysisSubCategory.academicDetail) {
         if (!_academicColorCodeMap.containsKey(code)) {
-          final colorIndex =
-              _academicColorCodeMap.length % _defaultColors.length;
+          final colorIndex = _academicColorCodeMap.length % _defaultColors.length;
           _academicColorCodeMap[code] = _defaultColors[colorIndex];
         }
         return _academicColorCodeMap[code]!;

@@ -75,7 +75,7 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
 
   Widget _buildChartMultiLineType(List<String> techCodeList) {
     final provider = context.watch<AnalysisDataProvider>();
-    final globalKey = GlobalKey();
+    final chartKey = GlobalKey();
     return LayoutBuilder(builder: (context, constraints) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,13 +87,13 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
               border: Border.all(color: Colors.grey),
             ),
             child: RepaintBoundary(
-              key: globalKey,
+              key: chartKey,
               child: SingleChartWidget(
                 techListType: provider.selectedTechListType,
                 techCode: techCodeList[0],
                 selectedCodes: techCodeList,
                 chartType: ChartType.multiline,
-                globalKey: globalKey,
+                chartKey: chartKey,
               ),
             ),
           ),
@@ -104,9 +104,9 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
 
   Widget _buildChartBarType(String techCode) {
     final provider = context.watch<AnalysisDataProvider>();
-    final globalKey = GlobalKey();
+    final chartKey = GlobalKey();
     return RepaintBoundary(
-      key: globalKey,
+      key: chartKey,
       child: LayoutBuilder(builder: (context, constraints) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,7 +155,8 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
                     ),
                     child: CommonUtils.instance.saveMenuPopup(
                       constraints: constraints,
-                      globalKey: globalKey,
+                      chartKey: chartKey,
+                      tableKey: null,
                       dataProvider: provider,
                       techCodes: [techCode],
                     ),
@@ -179,7 +180,7 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
                   techCode: techCode,
                   chartColor: provider.getColorForCode(techCode),
                   chartType: ChartType.barWithTrendLine,
-                  globalKey: globalKey,
+                  chartKey: chartKey,
                 ),
               ),
             ),

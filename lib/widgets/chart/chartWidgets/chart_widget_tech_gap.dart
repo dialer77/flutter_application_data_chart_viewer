@@ -27,11 +27,16 @@ class _ChartWidgetTechGapState extends State<ChartWidgetTechGap> {
     } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
       targetNames = dataProvider.selectedAcademics.isEmpty ? dataProvider.getAvailableAcademicsFromTechGap(techCode).take(10).toList() : dataProvider.selectedAcademics.toList();
     }
-
+    final tableKey = GlobalKey();
     return LayoutBuilder(builder: (context, constraints) {
       return Column(
         children: [
-          Expanded(child: _buildChartMultiLineType(targetNames, dataProvider)),
+          Expanded(
+              child: _buildChartMultiLineType(
+            targetNames,
+            dataProvider,
+            tableKey,
+          )),
           InkWell(
             onTap: () {
               setState(() {
@@ -67,11 +72,14 @@ class _ChartWidgetTechGapState extends State<ChartWidgetTechGap> {
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             height: _isTableVisible ? 300 : 0, // 테이블의 최대 높이를 300으로 설정
-            child: const SingleChildScrollView(
+            child: SingleChildScrollView(
               child: SizedBox(
                 width: double.infinity,
                 height: 300,
-                child: TableTechGapDataWidget(),
+                child: RepaintBoundary(
+                  key: tableKey,
+                  child: const TableTechGapDataWidget(),
+                ),
               ),
             ),
           ),
@@ -80,14 +88,14 @@ class _ChartWidgetTechGapState extends State<ChartWidgetTechGap> {
     });
   }
 
-  Widget _buildChartMultiLineType(List<String> targetNames, AnalysisDataProvider dataProvider) {
+  Widget _buildChartMultiLineType(List<String> targetNames, AnalysisDataProvider dataProvider, GlobalKey? tableKey) {
     final techCode = dataProvider.selectedTechCode;
     var countries = dataProvider.selectedCountries.isEmpty ? dataProvider.getAvailableCountriesFromTechGap(techCode).take(10).toList() : dataProvider.selectedCountries.toList();
 
     final codes = dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? countries.toList() : targetNames;
-    final globalKey = GlobalKey();
+    final chartKey = GlobalKey();
     return RepaintBoundary(
-      key: globalKey,
+      key: chartKey,
       child: LayoutBuilder(
         builder: (context, constraints) {
           return Stack(
@@ -157,7 +165,8 @@ class _ChartWidgetTechGapState extends State<ChartWidgetTechGap> {
                   techCode: techCode,
                   countries: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? countries.toList() : null,
                   targetNames: dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail ? targetNames : null,
-                  globalKey: globalKey,
+                  chartKey: chartKey,
+                  tableKey: _isTableVisible ? tableKey : null,
                 ),
               ),
             ],

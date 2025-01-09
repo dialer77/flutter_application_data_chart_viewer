@@ -23,7 +23,8 @@ class SingleChartWidget extends StatefulWidget {
   final Color? chartColor;
   final ChartType chartType;
   final CagrCalculationMode cagrMode;
-  final GlobalKey? globalKey;
+  final GlobalKey? chartKey;
+  final GlobalKey? tableKey;
 
   const SingleChartWidget({
     super.key,
@@ -39,7 +40,8 @@ class SingleChartWidget extends StatefulWidget {
     this.chartColor,
     this.chartType = ChartType.none,
     this.cagrMode = CagrCalculationMode.selectedPeriod,
-    this.globalKey,
+    this.chartKey,
+    this.tableKey,
   });
 
   @override
@@ -375,7 +377,8 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                               ),
                               child: CommonUtils.instance.saveMenuPopup(
                                 constraints: constraints,
-                                globalKey: widget.globalKey ?? GlobalKey(),
+                                chartKey: widget.chartKey ?? GlobalKey(),
+                                tableKey: widget.tableKey,
                                 dataProvider: dataProvider,
                                 techCodes: [dataProvider.selectedTechCode ?? ''],
                                 chartCodes: chartLoopCodes,

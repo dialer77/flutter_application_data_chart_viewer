@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 import 'package:flutter_application_data_chart_viewer/providers/analysis_data_provider.dart';
-import 'package:flutter_application_data_chart_viewer/utils/common_utils.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/analysis_menu/analysis_menulist_widget.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_analysis_target.dart';
 import 'package:flutter_application_data_chart_viewer/widgets/chart/chartWidgets/chart_widget_industry_tech.dart';
@@ -56,7 +55,8 @@ class ChartPage extends StatefulWidget {
   State<ChartPage> createState() => _ChartPageState();
 }
 
-class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMixin {
+class _ChartPageState extends State<ChartPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   AnalysisSubCategory? _selectedSubCategory;
@@ -107,7 +107,6 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
                         color: Colors.white,
                         fontSize: constraints.maxHeight * fontSizeRatio,
                         fontWeight: FontWeight.bold,
-                        shadows: CommonUtils.instance.getTextBorderShadow(),
                       ),
                     ),
                   ),
@@ -139,10 +138,12 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
   Widget _buildSubCategoryButtons({double fontSizeRatio = 0.2}) {
     final dataProvider = context.watch<AnalysisDataProvider>();
     _selectedSubCategory = dataProvider.selectedSubCategory;
-    final subCategories = dataProvider.getAvailableSubCategories(widget.category);
+    final subCategories =
+        dataProvider.getAvailableSubCategories(widget.category);
 
     // 첫 번째 서브카테고리를 기본값으로 설정
-    if (_selectedSubCategory == null || subCategories.contains(_selectedSubCategory) == false) {
+    if (_selectedSubCategory == null ||
+        subCategories.contains(_selectedSubCategory) == false) {
       dataProvider.setSelectedSubCategory(subCategories.first);
     }
 
@@ -165,13 +166,15 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
               return Flexible(
                 child: LayoutBuilder(builder: (context, constraints) {
                   return Padding(
-                    padding: EdgeInsets.symmetric(horizontal: constraints.maxWidth * 0.15),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: constraints.maxWidth * 0.15),
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isSelected
-                              ? const Color.fromARGB(255, 97, 203, 244) // 선택된 항목의 배경색
+                              ? const Color.fromARGB(
+                                  255, 97, 203, 244) // 선택된 항목의 배경색
                               : const Color.fromARGB(255, 16, 72, 98), // 기본 배경색
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
@@ -181,7 +184,9 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
                         onPressed: () {
                           setState(() {
                             _selectedSubCategory = subCategory;
-                            context.read<AnalysisDataProvider>().setSelectedSubCategory(subCategory);
+                            context
+                                .read<AnalysisDataProvider>()
+                                .setSelectedSubCategory(subCategory);
                           });
                         },
                         child: SizedBox(
@@ -192,8 +197,9 @@ class _ChartPageState extends State<ChartPage> with SingleTickerProviderStateMix
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: constraints.maxHeight * fontSizeRatio,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, // 선택된 항목의 텍스트를 굵게
-                                shadows: isSelected ? CommonUtils.instance.getTextBorderShadow() : [],
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal, // 선택된 항목의 텍스트를 굵게
                               ),
                             ),
                           ),

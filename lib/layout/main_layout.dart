@@ -41,11 +41,11 @@ class MainLayout extends StatelessWidget {
                   color: const Color.fromARGB(255, 0, 32, 96),
                   child: const Center(
                     child: Text(
-                      '데이터 시각화 프로그램',
+                      'Data Visualization',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 40,
-                        fontFamily: 'Paperlogy-7', // 폰트 변경
+                        fontFamily: 'Times New Roman', // 폰트 변경
                       ),
                     ),
                   ),

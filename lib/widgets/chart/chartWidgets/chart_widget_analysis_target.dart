@@ -11,10 +11,12 @@ class ChartWidgetAnalysisTarget extends StatefulWidget {
   const ChartWidgetAnalysisTarget({super.key});
 
   @override
-  State<ChartWidgetAnalysisTarget> createState() => _ChartWidgetAnalysisTargetState();
+  State<ChartWidgetAnalysisTarget> createState() =>
+      _ChartWidgetAnalysisTargetState();
 }
 
-class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> with SingleTickerProviderStateMixin {
+class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   bool _isTableVisible = false; // 추가
 
@@ -84,7 +86,8 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
             return Column(
               children: [
                 Expanded(
-                  child: _buildChartMultiLineType(codes, _isTableVisible ? tableKey : null),
+                  child: _buildChartMultiLineType(
+                      codes, _isTableVisible ? tableKey : null),
                 ),
                 InkWell(
                   onTap: () {
@@ -102,7 +105,9 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                       mainAxisAlignment: MainAxisAlignment.center, // 왼쪽 정렬 유지
                       children: [
                         Icon(
-                          _isTableVisible ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                          _isTableVisible
+                              ? Icons.keyboard_arrow_down
+                              : Icons.keyboard_arrow_up,
                           size: 28,
                           color: Colors.blue[700],
                         ),
@@ -159,7 +164,8 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                                 return [(TableDataType.country, '')];
                             }
                           }()),
-                          tableChartDataModels: provider.getTableChartDataModels(),
+                          tableChartDataModels:
+                              provider.getTableChartDataModels(),
                         ),
                       ),
                     ),
@@ -172,7 +178,8 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
     });
   }
 
-  Widget _buildChartMultiLineType(List<String> targetNameList, GlobalKey? tableKey) {
+  Widget _buildChartMultiLineType(
+      List<String> targetNameList, GlobalKey? tableKey) {
     final provider = context.watch<AnalysisDataProvider>();
     return LayoutBuilder(builder: (context, constraints) {
       return Column(
@@ -224,22 +231,36 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                   children: [
                     Container(
                       padding: EdgeInsets.symmetric(
-                        horizontal: category == AnalysisCategory.countryTech ? constraints.maxWidth * 0.035 : 8,
+                        horizontal: category == AnalysisCategory.countryTech
+                            ? constraints.maxWidth * 0.035
+                            : 8,
                         vertical: 4.0,
                       ),
-                      width: category == AnalysisCategory.countryTech ? constraints.maxWidth * 0.175 : constraints.maxWidth * 0.5,
+                      width: category == AnalysisCategory.countryTech
+                          ? constraints.maxWidth * 0.175
+                          : constraints.maxWidth * 0.5,
                       decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 109, 207, 245),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color.fromARGB(255, 109, 207, 245),
+                          width: 1,
+                        ),
                       ),
                       child: Center(
                         child: Row(
-                          mainAxisAlignment: category == AnalysisCategory.countryTech ? MainAxisAlignment.spaceAround : MainAxisAlignment.center,
+                          mainAxisAlignment:
+                              category == AnalysisCategory.countryTech
+                                  ? MainAxisAlignment.spaceAround
+                                  : MainAxisAlignment.center,
                           children: [
                             (() {
-                              String countryCode = CommonUtils.instance.replaceCountryCode(targetCode);
+                              String countryCode = CommonUtils.instance
+                                  .replaceCountryCode(targetCode);
                               if (category != AnalysisCategory.countryTech) {
-                                countryCode = CommonUtils.instance.replaceCountryCode(provider.searchCountryCode(targetCode));
+                                countryCode = CommonUtils.instance
+                                    .replaceCountryCode(
+                                        provider.searchCountryCode(targetCode));
                               }
                               return CountryFlag.fromCountryCode(
                                 countryCode,
@@ -249,13 +270,13 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                             }()),
                             Expanded(
                               child: Text(
-                                CommonUtils.instance.replaceCountryCode(targetCode),
+                                CommonUtils.instance
+                                    .replaceCountryCode(targetCode),
                                 style: TextStyle(
                                   fontSize: constraints.maxHeight * 0.035,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: Colors.brown,
                                   fontFamily: 'Times New Roman',
-                                  shadows: CommonUtils.instance.getTextBorderShadow(),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 textAlign: TextAlign.center,
@@ -303,9 +324,12 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                 child: SingleChartWidget(
                   techListType: provider.selectedTechListType,
                   techCode: provider.selectedTechCode,
-                  country: category == AnalysisCategory.countryTech ? targetCode : null,
+                  country: category == AnalysisCategory.countryTech
+                      ? targetCode
+                      : null,
                   targetName: (targetCode) {
-                    if (category == AnalysisCategory.companyTech || category == AnalysisCategory.academicTech) {
+                    if (category == AnalysisCategory.companyTech ||
+                        category == AnalysisCategory.academicTech) {
                       return targetCode;
                     } else {
                       return null;

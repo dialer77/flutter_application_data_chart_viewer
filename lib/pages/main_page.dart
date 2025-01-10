@@ -11,7 +11,8 @@ import 'package:flutter_application_data_chart_viewer/models/enum_defines.dart';
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
 
-  void _handleCategorySelected(BuildContext context, AnalysisCategory category) {
+  void _handleCategorySelected(
+      BuildContext context, AnalysisCategory category) {
     final dataProvider = context.read<AnalysisDataProvider>();
     dataProvider.setSelectedCategory(category);
     dataProvider.initializeWithCategory(category);
@@ -22,7 +23,11 @@ class MainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) => Container(
-        padding: EdgeInsets.only(left: constraints.maxWidth * 0.05, right: constraints.maxWidth * 0.05, top: constraints.maxWidth * 0.04, bottom: constraints.maxWidth * 0.05),
+        padding: EdgeInsets.only(
+            left: constraints.maxWidth * 0.05,
+            right: constraints.maxWidth * 0.05,
+            top: constraints.maxWidth * 0.04,
+            bottom: constraints.maxWidth * 0.05),
         height: constraints.maxHeight,
         child: LayoutGrid(
           columnSizes: [1.fr],
@@ -47,7 +52,9 @@ class MainPage extends StatelessWidget {
                                 child: MenuListWidget(
                                   analysisCategory: category,
                                   constraints: constraints,
-                                  onSubCategorySelected: (category) => _handleCategorySelected(context, category),
+                                  onSubCategorySelected: (category) =>
+                                      _handleCategorySelected(
+                                          context, category),
                                 ),
                               );
                             },
@@ -120,7 +127,9 @@ class MainPage extends StatelessWidget {
             ],
           ),
         ),
-        Container(padding: EdgeInsets.only(bottom: constraints.maxWidth * 0.02), child: Image.asset('assets/images/image1.jpg')),
+        Container(
+            padding: EdgeInsets.only(bottom: constraints.maxWidth * 0.02),
+            child: Image.asset('assets/images/image1.jpg')),
       ],
     );
   }
@@ -136,7 +145,8 @@ class MainPage extends StatelessWidget {
         children: AnalysisCategory.values
             .map((category) => Flexible(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 5.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30.0, vertical: 5.0),
                     child: LayoutBuilder(builder: (context, constraints) {
                       return Container(
                         alignment: Alignment.center,

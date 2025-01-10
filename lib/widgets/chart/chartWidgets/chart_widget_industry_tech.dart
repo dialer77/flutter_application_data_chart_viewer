@@ -9,10 +9,12 @@ class ChartWidgetIndustryTech extends StatefulWidget {
   const ChartWidgetIndustryTech({super.key});
 
   @override
-  State<ChartWidgetIndustryTech> createState() => _ChartWidgetIndustryTechState();
+  State<ChartWidgetIndustryTech> createState() =>
+      _ChartWidgetIndustryTechState();
 }
 
-class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with SingleTickerProviderStateMixin {
+class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   AnalysisCategory get _category => AnalysisCategory.industryTech;
@@ -124,8 +126,12 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
                     width: constraints.maxWidth * 0.175,
                     height: constraints.maxHeight * 0.1,
                     decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 109, 207, 245),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: const Color.fromARGB(255, 109, 207, 245),
+                        width: 1,
+                      ),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -135,8 +141,7 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with 
                           style: TextStyle(
                             fontSize: constraints.maxHeight * 0.035,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            shadows: CommonUtils.instance.getTextBorderShadow(),
+                            color: Colors.brown,
                           ),
                         ),
                       ),

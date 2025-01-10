@@ -73,22 +73,22 @@ class CommonUtils {
     return const [
       Shadow(
         offset: Offset(-1, -1),
-        color: Colors.black,
+        color: Colors.brown,
         blurRadius: 0,
       ),
       Shadow(
         offset: Offset(1, -1),
-        color: Colors.black,
+        color: Colors.brown,
         blurRadius: 0,
       ),
       Shadow(
         offset: Offset(-1, 1),
-        color: Colors.black,
+        color: Colors.brown,
         blurRadius: 0,
       ),
       Shadow(
         offset: Offset(1, 1),
-        color: Colors.black,
+        color: Colors.brown,
         blurRadius: 0,
       ),
     ];
@@ -109,7 +109,8 @@ class CommonUtils {
         switch (value) {
           case 'PNG':
           case 'JPG':
-            _handleImageExport(format: value, chartKey: chartKey, tableKey: tableKey);
+            _handleImageExport(
+                format: value, chartKey: chartKey, tableKey: tableKey);
             break;
           case 'CSV':
             _handleCsvExport(chartKey, dataProvider, techCodes, chartCodes);
@@ -153,10 +154,15 @@ class CommonUtils {
     );
   }
 
-  Future<void> _handleImageExport({required String format, required GlobalKey chartKey, GlobalKey? tableKey}) async {
+  Future<void> _handleImageExport(
+      {required String format,
+      required GlobalKey chartKey,
+      GlobalKey? tableKey}) async {
     try {
-      RenderRepaintBoundary? chartBoundary = chartKey.currentContext!.findRenderObject() as RenderRepaintBoundary?;
-      RenderRepaintBoundary? tableBoundary = tableKey?.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      RenderRepaintBoundary? chartBoundary =
+          chartKey.currentContext!.findRenderObject() as RenderRepaintBoundary?;
+      RenderRepaintBoundary? tableBoundary = tableKey?.currentContext
+          ?.findRenderObject() as RenderRepaintBoundary?;
 
       if (chartBoundary != null) {
         showDialog(
@@ -190,7 +196,8 @@ class CommonUtils {
               totalWidth = max(totalWidth, tableImage.width.toDouble());
             }
 
-            final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, totalWidth, totalHeight));
+            final canvas =
+                Canvas(recorder, Rect.fromLTWH(0, 0, totalWidth, totalHeight));
 
             // Draw white background
             canvas.drawColor(Colors.white, BlendMode.src);
@@ -200,12 +207,15 @@ class CommonUtils {
 
             // Draw table image below chart if exists
             if (tableImage != null) {
-              canvas.drawImage(tableImage, Offset(0, chartImage.height.toDouble()), Paint());
+              canvas.drawImage(
+                  tableImage, Offset(0, chartImage.height.toDouble()), Paint());
             }
 
             final picture = recorder.endRecording();
-            final imageWithBg = await picture.toImage(totalWidth.toInt(), totalHeight.toInt());
-            final byteData = await imageWithBg.toByteData(format: ImageByteFormat.png);
+            final imageWithBg =
+                await picture.toImage(totalWidth.toInt(), totalHeight.toInt());
+            final byteData =
+                await imageWithBg.toByteData(format: ImageByteFormat.png);
             bytes = byteData!.buffer.asUint8List();
             defaultFileName = 'chart.png';
             break;
@@ -224,7 +234,10 @@ class CommonUtils {
 
             // Create a combined image
             final recorder = PictureRecorder();
-            final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, totalWidth.toDouble(), totalHeight.toDouble()));
+            final canvas = Canvas(
+                recorder,
+                Rect.fromLTWH(
+                    0, 0, totalWidth.toDouble(), totalHeight.toDouble()));
 
             // Draw white background
             canvas.drawColor(Colors.white, BlendMode.src);
@@ -234,12 +247,15 @@ class CommonUtils {
 
             // Draw table image below chart if exists
             if (tableImage != null) {
-              canvas.drawImage(tableImage, Offset(0, chartImage.height.toDouble()), Paint());
+              canvas.drawImage(
+                  tableImage, Offset(0, chartImage.height.toDouble()), Paint());
             }
 
             final picture = recorder.endRecording();
-            final combinedImage = await picture.toImage(totalWidth.toInt(), totalHeight.toInt());
-            final byteData = await combinedImage.toByteData(format: ImageByteFormat.rawRgba);
+            final combinedImage =
+                await picture.toImage(totalWidth.toInt(), totalHeight.toInt());
+            final byteData =
+                await combinedImage.toByteData(format: ImageByteFormat.rawRgba);
             final rawBytes = byteData!.buffer.asUint8List();
 
             final imgData = img.Image.fromBytes(
@@ -337,7 +353,8 @@ class CommonUtils {
 
       // 헤더 추가 (순위, 국가명, 연도별 데이터)
       StringBuffer csvHeader = StringBuffer();
-      csvHeader.write('${dataProvider.selectedCategory},${dataProvider.selectedSubCategory},${dataProvider.selectedDataType},${dataProvider.selectedTechListType}');
+      csvHeader.write(
+          '${dataProvider.selectedCategory},${dataProvider.selectedSubCategory},${dataProvider.selectedDataType},${dataProvider.selectedTechListType}');
 
       bool isFirst = true;
       AnalysisCategory category = dataProvider.selectedCategory;
@@ -345,7 +362,9 @@ class CommonUtils {
       Map<int, double> chartData = {};
 
       for (var techCode in techCodes) {
-        if (chartCodes != null && chartCodes.isNotEmpty && dataProvider.selectedCategory != AnalysisCategory.industryTech) {
+        if (chartCodes != null &&
+            chartCodes.isNotEmpty &&
+            dataProvider.selectedCategory != AnalysisCategory.industryTech) {
           for (var chartCode in chartCodes) {
             if (category == AnalysisCategory.techCompetition) {
               final dataCodes = dataProvider.getTechCompetitionDataCodes();
@@ -353,8 +372,12 @@ class CommonUtils {
                 chartData = dataProvider.getChartData(
                   techListType: dataProvider.selectedTechListType,
                   techCode: techCode,
-                  country: subCategory == AnalysisSubCategory.countryDetail ? chartCode : null,
-                  targetName: subCategory != AnalysisSubCategory.countryDetail ? chartCode : null,
+                  country: subCategory == AnalysisSubCategory.countryDetail
+                      ? chartCode
+                      : null,
+                  targetName: subCategory != AnalysisSubCategory.countryDetail
+                      ? chartCode
+                      : null,
                   dataCode: dataCode,
                 );
 
@@ -365,16 +388,22 @@ class CommonUtils {
                   isFirst = false;
                 }
 
-                csvContent.writeln("$chartCode,$dataCode, ${chartData.values.join(',')}");
+                csvContent.writeln(
+                    "$chartCode,$dataCode, ${chartData.values.join(',')}");
               }
             } else if (category == AnalysisCategory.techAssessment) {
               csvHeader = StringBuffer();
-              csvHeader.write('${dataProvider.selectedCategory},${dataProvider.selectedSubCategory},${dataProvider.selectedDataType},$chartCode');
+              csvHeader.write(
+                  '${dataProvider.selectedCategory},${dataProvider.selectedSubCategory},${dataProvider.selectedDataType},$chartCode');
               chartData = dataProvider.getChartData(
                 techListType: AnalysisTechListType.lc,
                 techCode: dataProvider.selectedLcTechCode,
-                country: subCategory == AnalysisSubCategory.countryDetail ? chartCode : null,
-                targetName: subCategory != AnalysisSubCategory.countryDetail ? chartCode : null,
+                country: subCategory == AnalysisSubCategory.countryDetail
+                    ? chartCode
+                    : null,
+                targetName: subCategory != AnalysisSubCategory.countryDetail
+                    ? chartCode
+                    : null,
               );
               if (isFirst) {
                 csvHeader.writeln('');
@@ -385,51 +414,72 @@ class CommonUtils {
               csvContent.writeln('LC,$techCode,${chartData.values.join(',')}');
               Set<String> mcTechCodes = dataProvider.selectedMcTechCodes;
               if (mcTechCodes.isEmpty) {
-                mcTechCodes = dataProvider.getDataCodeNames(AnalysisTechListType.mc);
+                mcTechCodes =
+                    dataProvider.getDataCodeNames(AnalysisTechListType.mc);
               }
               for (var mcTechCode in mcTechCodes) {
                 chartData = dataProvider.getChartData(
                   techListType: AnalysisTechListType.mc,
                   techCode: mcTechCode,
-                  country: subCategory == AnalysisSubCategory.countryDetail ? chartCode : null,
-                  targetName: subCategory != AnalysisSubCategory.countryDetail ? chartCode : null,
+                  country: subCategory == AnalysisSubCategory.countryDetail
+                      ? chartCode
+                      : null,
+                  targetName: subCategory != AnalysisSubCategory.countryDetail
+                      ? chartCode
+                      : null,
                 );
 
-                csvContent.writeln('MC,$mcTechCode,${chartData.values.join(',')}');
+                csvContent
+                    .writeln('MC,$mcTechCode,${chartData.values.join(',')}');
               }
               Set<String> scTechCodes = dataProvider.selectedScTechCodes;
               if (scTechCodes.isEmpty) {
-                scTechCodes = dataProvider.getDataCodeNames(AnalysisTechListType.sc);
+                scTechCodes =
+                    dataProvider.getDataCodeNames(AnalysisTechListType.sc);
               }
 
               for (var scTechCode in scTechCodes) {
                 chartData = dataProvider.getChartData(
                   techListType: AnalysisTechListType.sc,
                   techCode: scTechCode,
-                  country: subCategory == AnalysisSubCategory.countryDetail ? chartCode : null,
-                  targetName: subCategory != AnalysisSubCategory.countryDetail ? chartCode : null,
+                  country: subCategory == AnalysisSubCategory.countryDetail
+                      ? chartCode
+                      : null,
+                  targetName: subCategory != AnalysisSubCategory.countryDetail
+                      ? chartCode
+                      : null,
                 );
 
-                csvContent.writeln('SC,$scTechCode,${chartData.values.join(',')}');
+                csvContent
+                    .writeln('SC,$scTechCode,${chartData.values.join(',')}');
               }
             } else {
               chartData = dataProvider.getChartData(
                 techListType: dataProvider.selectedTechListType,
                 techCode: techCode,
                 country: category == AnalysisCategory.countryTech ||
-                        (category == AnalysisCategory.techGap && subCategory == AnalysisSubCategory.countryDetail) ||
-                        (category == AnalysisCategory.techAssessment && subCategory == AnalysisSubCategory.countryDetail) ||
-                        (category == AnalysisCategory.techCompetition && subCategory == AnalysisSubCategory.countryDetail)
+                        (category == AnalysisCategory.techGap &&
+                            subCategory == AnalysisSubCategory.countryDetail) ||
+                        (category == AnalysisCategory.techAssessment &&
+                            subCategory == AnalysisSubCategory.countryDetail) ||
+                        (category == AnalysisCategory.techCompetition &&
+                            subCategory == AnalysisSubCategory.countryDetail)
                     ? chartCode
                     : null,
                 targetName: category == AnalysisCategory.companyTech ||
                         category == AnalysisCategory.academicTech ||
-                        (category == AnalysisCategory.techAssessment && subCategory != AnalysisSubCategory.countryDetail) ||
-                        (category == AnalysisCategory.techGap && (subCategory == AnalysisSubCategory.companyDetail || subCategory == AnalysisSubCategory.academicDetail)) ||
-                        (category == AnalysisCategory.techCompetition && subCategory != AnalysisSubCategory.countryDetail)
+                        (category == AnalysisCategory.techAssessment &&
+                            subCategory != AnalysisSubCategory.countryDetail) ||
+                        (category == AnalysisCategory.techGap &&
+                            (subCategory == AnalysisSubCategory.companyDetail ||
+                                subCategory ==
+                                    AnalysisSubCategory.academicDetail)) ||
+                        (category == AnalysisCategory.techCompetition &&
+                            subCategory != AnalysisSubCategory.countryDetail)
                     ? chartCode
                     : null,
-                dataCode: category == AnalysisCategory.techCompetition ? "TC" : null,
+                dataCode:
+                    category == AnalysisCategory.techCompetition ? "TC" : null,
               );
 
               if (isFirst) {
@@ -437,7 +487,8 @@ class CommonUtils {
 
                 String dataCode = dataProvider.getDataCode() ?? '';
                 if (dataCode != '') {
-                  String yearData = chartData.keys.map((key) => '${dataCode}_$key').join(',');
+                  String yearData =
+                      chartData.keys.map((key) => '${dataCode}_$key').join(',');
                   csvContent.writeln(",$yearData");
                 } else {
                   String yearData = chartData.keys.join(',');
@@ -461,7 +512,8 @@ class CommonUtils {
             csvHeader.writeln('');
             String dataCode = dataProvider.getDataCode() ?? '';
             if (dataCode != '') {
-              String yearData = chartData.keys.map((key) => '${dataCode}_$key').join(',');
+              String yearData =
+                  chartData.keys.map((key) => '${dataCode}_$key').join(',');
               csvContent.writeln(",$yearData");
             } else {
               String yearData = chartData.keys.join(',');
@@ -492,7 +544,11 @@ class CommonUtils {
         final file = File(outputFile);
         // UTF-8 with BOM을 위한 바이트 배열
         final List<int> bom = [0xEF, 0xBB, 0xBF];
-        final List<int> content = [...bom, ...utf8.encode(csvHeader.toString()), ...utf8.encode(csvContent.toString())];
+        final List<int> content = [
+          ...bom,
+          ...utf8.encode(csvHeader.toString()),
+          ...utf8.encode(csvContent.toString())
+        ];
         await file.writeAsBytes(content);
 
         // 저장 완료 다이얼로그 표시

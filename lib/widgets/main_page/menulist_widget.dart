@@ -19,7 +19,8 @@ class MenuListWidget extends StatefulWidget {
   State<MenuListWidget> createState() => _MenuListWidgetState();
 }
 
-class _MenuListWidgetState extends State<MenuListWidget> with SingleTickerProviderStateMixin {
+class _MenuListWidgetState extends State<MenuListWidget>
+    with SingleTickerProviderStateMixin {
   bool _isAnimating = false; // 애니메이션 상태를 제어하는 플래그
   final GlobalKey _categoryKey = GlobalKey(); // 카테고리 위치를 찾기 위한 키
   double? _targetY; // 카테고리의 Y축 위치를 저장
@@ -41,7 +42,8 @@ class _MenuListWidgetState extends State<MenuListWidget> with SingleTickerProvid
   }
 
   void _handleTap() {
-    final RenderBox? renderBox = _categoryKey.currentContext?.findRenderObject() as RenderBox?;
+    final RenderBox? renderBox =
+        _categoryKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox != null) {
       final position = renderBox.localToGlobal(Offset.zero);
       _targetY = position.dy;
@@ -62,7 +64,11 @@ class _MenuListWidgetState extends State<MenuListWidget> with SingleTickerProvid
     final dataProvider = context.watch<AnalysisDataProvider>();
 
     const int maxSubCategories = 4; // 최대 서브카테고리 개수
-    final int emptySpaceCount = maxSubCategories - context.watch<AnalysisDataProvider>().getAvailableSubCategories(widget.analysisCategory).length;
+    final int emptySpaceCount = maxSubCategories -
+        context
+            .watch<AnalysisDataProvider>()
+            .getAvailableSubCategories(widget.analysisCategory)
+            .length;
 
     return Stack(
       children: [
@@ -77,18 +83,24 @@ class _MenuListWidgetState extends State<MenuListWidget> with SingleTickerProvid
     );
   }
 
-  Widget _buildSubCategoryList(AnalysisDataProvider dataProvider, int emptySpaceCount) {
+  Widget _buildSubCategoryList(
+      AnalysisDataProvider dataProvider, int emptySpaceCount) {
     return Flexible(
       flex: 5,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          ...dataProvider.getAvailableSubCategories(widget.analysisCategory).asMap().entries.map((entry) {
+          ...dataProvider
+              .getAvailableSubCategories(widget.analysisCategory)
+              .asMap()
+              .entries
+              .map((entry) {
             final int index = entry.key;
             final subCategory = entry.value;
             return Flexible(
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: widget.constraints.maxWidth * 0.09),
+                padding: EdgeInsets.symmetric(
+                    vertical: widget.constraints.maxWidth * 0.09),
                 child: AnimatedOpacity(
                   duration: Duration(milliseconds: 400 + (index * 100)),
                   opacity: _isAnimating ? 0.0 : 1.0,
@@ -97,22 +109,25 @@ class _MenuListWidgetState extends State<MenuListWidget> with SingleTickerProvid
                     transform: Matrix4.identity()
                       ..translate(
                         0.0,
-                        _isAnimating ? (_targetY ?? 0) - (250 + (index * 50)) : 0.0,
+                        _isAnimating
+                            ? (_targetY ?? 0) - (250 + (index * 50))
+                            : 0.0,
                       ),
                     child: Container(
                       height: double.infinity,
-                      decoration: const BoxDecoration(
-                        color: Color.fromARGB(255, 97, 203, 244),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
                         borderRadius: BorderRadius.all(Radius.circular(10)),
+                        border: Border.all(
+                            color: Color.fromARGB(255, 97, 203, 244), width: 1),
                       ),
                       child: Center(
                         child: Text(
                           subCategory.toString(),
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Colors.brown,
                             fontSize: widget.constraints.maxWidth * 0.1,
                             fontFamily: 'Paperlogy-4',
-                            shadows: CommonUtils.instance.getTextBorderShadow(),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -123,7 +138,8 @@ class _MenuListWidgetState extends State<MenuListWidget> with SingleTickerProvid
               ),
             );
           }),
-          ...List.generate(emptySpaceCount, (_) => const Flexible(child: SizedBox(height: double.infinity))),
+          ...List.generate(emptySpaceCount,
+              (_) => const Flexible(child: SizedBox(height: double.infinity))),
         ],
       ),
     );
@@ -133,7 +149,8 @@ class _MenuListWidgetState extends State<MenuListWidget> with SingleTickerProvid
     return Flexible(
       flex: 1,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: widget.constraints.maxWidth * 0.05),
+        padding:
+            EdgeInsets.symmetric(vertical: widget.constraints.maxWidth * 0.05),
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 800),
           opacity: _isAnimating ? 0.0 : 1.0,

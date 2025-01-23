@@ -45,6 +45,7 @@ abstract class ChartWidgetBaseState<T extends ChartWidgetBase> extends State<T> 
   @protected
   Widget _buildChartMultiLineType(List<String> targetNameList) {
     final provider = context.watch<AnalysisDataProvider>();
+    final chartKey = GlobalKey();
     return LayoutBuilder(builder: (context, constraints) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,6 +57,7 @@ abstract class ChartWidgetBaseState<T extends ChartWidgetBase> extends State<T> 
               border: Border.all(color: Colors.grey),
             ),
             child: SingleChartWidget(
+              chartKey: chartKey,
               techListType: provider.selectedTechListType,
               techCode: provider.selectedTechCode,
               targetNames: targetNameList,
@@ -71,6 +73,7 @@ abstract class ChartWidgetBaseState<T extends ChartWidgetBase> extends State<T> 
   Widget _buildChartBarType(String targetCode) {
     final provider = context.watch<AnalysisDataProvider>();
     final category = provider.selectedCategory;
+    final chartKey = GlobalKey();
 
     return LayoutBuilder(builder: (context, constraints) {
       return Column(
@@ -136,6 +139,7 @@ abstract class ChartWidgetBaseState<T extends ChartWidgetBase> extends State<T> 
                 border: Border.all(color: Colors.grey),
               ),
               child: SingleChartWidget(
+                chartKey: chartKey,
                 techListType: provider.selectedTechListType,
                 techCode: provider.selectedTechCode,
                 country: category == AnalysisCategory.countryTech ? targetCode : null,

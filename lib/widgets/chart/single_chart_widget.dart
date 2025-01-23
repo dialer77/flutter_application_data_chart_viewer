@@ -306,6 +306,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
 
     final interval = CommonUtils.instance.calculateInterval(maxValue);
     final maxYValue = maxValue * widget.maxYRatio;
+    final dialogKey = GlobalKey();
     return AnimatedBuilder(
       animation: _rotationController,
       builder: (context, child) {
@@ -365,24 +366,13 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                               }
                               return Expanded(child: Center(child: _buildLegend(chartLoopCodes)));
                             })(),
-                            Container(
-                              width: constraints.maxWidth * 0.06,
-                              height: constraints.maxHeight * 0.08,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: const Color.fromARGB(255, 109, 207, 245),
-                                ),
-                              ),
-                              child: CommonUtils.instance.saveMenuPopup(
-                                constraints: constraints,
-                                chartKey: widget.chartKey ?? GlobalKey(),
-                                tableKey: widget.tableKey,
-                                dataProvider: dataProvider,
-                                techCodes: [dataProvider.selectedTechCode ?? ''],
-                                chartCodes: chartLoopCodes,
-                              ),
+                            CommonUtils.instance.saveMenuPopup(
+                              constraints: constraints,
+                              chartKey: widget.chartKey ?? dialogKey,
+                              tableKey: widget.tableKey,
+                              dataProvider: dataProvider,
+                              techCodes: dataProvider.selectedTechCodes,
+                              chartCodes: chartLoopCodes,
                             ),
                           ],
                         ),
@@ -688,6 +678,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
     // CAGR과 추세선 데이터 계산
     final cagr = _calculateCAGR(chartData, years);
     final trendLineData = _calculateTrendLine(chartData, years);
+    var rotateData = _calculateRotateData(chartData, years, maxValue);
 
     return AnimatedBuilder(
       animation: _rotationController,
@@ -705,6 +696,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                         _buildCagrLineChart(
                           years: years,
                           trendLineData: trendLineData,
+                          rotateData: rotateData,
                           maxValue: maxValue,
                           interval: interval,
                           constraints: constraints,
@@ -805,6 +797,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
   Widget _buildCagrLineChart({
     required List<int> years,
     required List<FlSpot> trendLineData,
+    required List<FlSpot> rotateData,
     required double maxValue,
     required double interval,
     required BoxConstraints constraints,
@@ -929,14 +922,78 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
     double b = (validPoints * sumXLnY - sumX * sumLnY) / (validPoints * sumX2 - sumX * sumX);
     double a = exp((sumLnY - b * sumX) / validPoints);
 
-    // 추세선 포인트 생성
-    return List.generate(n, (i) {
-      double y = a * exp(b * i);
+    //추세선 배수
+    int multiple = 1;
+
+    return List.generate(n * multiple, (i) {
+      double y = a * exp(b * i / multiple);
       if (isMultiple) {
         y = y / ratio;
       }
-      return FlSpot(i.toDouble(), y > 0 ? y : 0); // 음수 값 방지
+      return FlSpot(i.toDouble() / multiple, y > 0 ? y : 0); // 음수 값 방지
     });
+  }
+
+  List<FlSpot> _calculateRotateData(Map<int, double> data, List<int> years, double maxValue) {
+    if (years.length < 2) return [];
+
+    bool isMultiple = false;
+    double ratio = 1e+7;
+    if (data.values.reduce(max) <= 1) {
+      data = data.map((key, value) => MapEntry(key, value * ratio));
+      isMultiple = true;
+    }
+
+    int n = years.length;
+    double sumX = 0;
+    double sumLnY = 0;
+    double sumXLnY = 0;
+    double sumX2 = 0;
+    int validPoints = 0;
+
+    // x축을 0부터 시작하는 인덱스로 변환하고 로그 변환된 y값 사용
+    for (int i = 0; i < n; i++) {
+      double x = i.toDouble();
+      double? y = max(data[years[i]] ?? 1, 1);
+
+      if (y > 0) {
+        double lnY = max(log(y), 0);
+        sumX += x;
+        sumLnY += lnY;
+        sumXLnY += x * lnY;
+        sumX2 += x * x;
+        validPoints++;
+      }
+    }
+
+    if (validPoints < 2) {
+      return List.generate(n, (i) => FlSpot(i.toDouble(), 0)); // 유효한 데이터 포인트가 2개 미만이면 0으로 채운 리스트 반환
+    }
+
+    // 지수 회귀 계수 계산
+    double b = (validPoints * sumXLnY - sumX * sumLnY) / (validPoints * sumX2 - sumX * sumX);
+    double a = exp((sumLnY - b * sumX) / validPoints);
+
+    //추세선 배수
+    int multiple = 1;
+
+    var list = List.generate(n * multiple, (i) {
+      double y = a * exp(b * i / multiple);
+      if (isMultiple) {
+        y = y / ratio;
+      }
+      return FlSpot(i.toDouble() / multiple, y > 0 ? y : 0); // 음수 값 방지
+    });
+    final maxYValue = maxValue * (widget.maxYRatio - 0.025);
+    list.removeWhere((spot) => spot.y > maxYValue);
+    // maxYValue에 대한 x값 계산
+    double targetY = maxYValue;
+    if (isMultiple) {
+      targetY = targetY * ratio;
+    }
+    double xAtMaxY = log(targetY / a) / b;
+    list.add(FlSpot(xAtMaxY, maxYValue));
+    return list;
   }
 
   double _calculateCAGR(Map<int, double> chartData, List<int> years) {

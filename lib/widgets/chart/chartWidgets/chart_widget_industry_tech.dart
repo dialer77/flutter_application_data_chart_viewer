@@ -9,12 +9,10 @@ class ChartWidgetIndustryTech extends StatefulWidget {
   const ChartWidgetIndustryTech({super.key});
 
   @override
-  State<ChartWidgetIndustryTech> createState() =>
-      _ChartWidgetIndustryTechState();
+  State<ChartWidgetIndustryTech> createState() => _ChartWidgetIndustryTechState();
 }
 
-class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech>
-    with SingleTickerProviderStateMixin {
+class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   AnalysisCategory get _category => AnalysisCategory.industryTech;
@@ -77,8 +75,9 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech>
 
   Widget _buildChartMultiLineType(List<String> techCodeList) {
     final provider = context.watch<AnalysisDataProvider>();
-    final chartKey = GlobalKey();
+
     return LayoutBuilder(builder: (context, constraints) {
+      final chartKey = GlobalKey();
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -148,23 +147,12 @@ class _ChartWidgetIndustryTechState extends State<ChartWidgetIndustryTech>
                     ),
                   ),
                   const Spacer(), // 중간 공간을 채움
-                  Container(
-                    width: constraints.maxHeight * 0.12,
-                    height: constraints.maxHeight * 0.08,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: const Color.fromARGB(255, 109, 207, 245),
-                      ),
-                    ),
-                    child: CommonUtils.instance.saveMenuPopup(
-                      constraints: constraints,
-                      chartKey: chartKey,
-                      tableKey: null,
-                      dataProvider: provider,
-                      techCodes: [techCode],
-                    ),
+                  CommonUtils.instance.saveMenuPopup(
+                    constraints: constraints,
+                    chartKey: chartKey,
+                    tableKey: null,
+                    dataProvider: provider,
+                    techCodes: [techCode],
                   ),
                 ],
               ),

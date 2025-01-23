@@ -112,34 +112,23 @@ class _ChartWidgetTechAssessmentState extends State<ChartWidgetTechAssessment> {
                     ),
                   ),
                 ),
-                Container(
-                  width: constraints.maxHeight * 0.12,
-                  height: constraints.maxHeight * 0.08,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: const Color.fromARGB(255, 109, 207, 245),
-                    ),
-                  ),
-                  child: CommonUtils.instance.saveMenuPopup(
-                    constraints: constraints,
-                    chartKey: chartKey,
-                    tableKey: null,
-                    dataProvider: dataProvider,
-                    techCodes: [dataProvider.selectedTechCode ?? ''],
-                    chartCodes: (() {
-                      List<String> chartCodes = [];
-                      if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
-                        chartCodes.add(dataProvider.selectedCountry ?? '');
-                      } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail) {
-                        chartCodes.add(dataProvider.selectedCompany ?? '');
-                      } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
-                        chartCodes.add(dataProvider.selectedAcademic ?? '');
-                      }
-                      return chartCodes;
-                    })(),
-                  ),
+                CommonUtils.instance.saveMenuPopup(
+                  constraints: constraints,
+                  chartKey: chartKey,
+                  tableKey: null,
+                  dataProvider: dataProvider,
+                  techCodes: [dataProvider.selectedTechCode ?? ''],
+                  chartCodes: (() {
+                    List<String> chartCodes = [];
+                    if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
+                      chartCodes.add(dataProvider.selectedCountry ?? '');
+                    } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail) {
+                      chartCodes.add(dataProvider.selectedCompany ?? '');
+                    } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
+                      chartCodes.add(dataProvider.selectedAcademic ?? '');
+                    }
+                    return chartCodes;
+                  })(),
                 ),
               ],
             ).withGridPlacement(

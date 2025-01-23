@@ -15,12 +15,10 @@ class ChartWidgetTechCompetition extends StatefulWidget {
   const ChartWidgetTechCompetition({super.key});
 
   @override
-  State<ChartWidgetTechCompetition> createState() =>
-      _ChartWidgetTechCompetitionState();
+  State<ChartWidgetTechCompetition> createState() => _ChartWidgetTechCompetitionState();
 }
 
-class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
-    with SingleTickerProviderStateMixin {
+class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition> with SingleTickerProviderStateMixin {
   final double _maxYRatio = 1.6;
   bool _isTableVisible = false;
 
@@ -48,28 +46,17 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
     if (provider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
       codes = provider.selectedCountries.toList();
       if (codes.isEmpty) {
-        codes = provider
-            .getAvailableCountriesFromTechCompetition(provider.selectedTechCode)
-            .take(10)
-            .toList();
+        codes = provider.getAvailableCountriesFromTechCompetition(provider.selectedTechCode).take(10).toList();
       }
-    } else if (provider.selectedSubCategory ==
-        AnalysisSubCategory.companyDetail) {
+    } else if (provider.selectedSubCategory == AnalysisSubCategory.companyDetail) {
       codes = provider.selectedCompanies.toList();
       if (codes.isEmpty) {
-        codes = provider
-            .getAvailableCompaniesFromTechCompetition(provider.selectedTechCode)
-            .take(10)
-            .toList();
+        codes = provider.getAvailableCompaniesFromTechCompetition(provider.selectedTechCode).take(10).toList();
       }
-    } else if (provider.selectedSubCategory ==
-        AnalysisSubCategory.academicDetail) {
+    } else if (provider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
       codes = provider.selectedAcademics.toList();
       if (codes.isEmpty) {
-        codes = provider
-            .getAvailableAcademicsFromTechCompetition(provider.selectedTechCode)
-            .take(10)
-            .toList();
+        codes = provider.getAvailableAcademicsFromTechCompetition(provider.selectedTechCode).take(10).toList();
       }
     }
     final chartKey = GlobalKey();
@@ -143,23 +130,12 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
                       ),
                     ),
                     const Spacer(), // 중간 공간을 채움
-                    Container(
-                      width: constraints.maxWidth * 0.06,
-                      height: constraints.maxHeight * 0.08,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: const Color.fromARGB(255, 109, 207, 245),
-                        ),
-                      ),
-                      child: CommonUtils.instance.saveMenuPopup(
-                        constraints: constraints,
-                        chartKey: chartKey,
-                        dataProvider: provider,
-                        techCodes: [provider.selectedTechCode ?? ''],
-                        chartCodes: codes,
-                      ),
+                    CommonUtils.instance.saveMenuPopup(
+                      constraints: constraints,
+                      chartKey: chartKey,
+                      dataProvider: provider,
+                      techCodes: [provider.selectedTechCode ?? ''],
+                      chartCodes: codes,
                     ),
                   ],
                 ),
@@ -183,9 +159,7 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
                     mainAxisAlignment: MainAxisAlignment.center, // 왼쪽 정렬 유지
                     children: [
                       Icon(
-                        _isTableVisible
-                            ? Icons.keyboard_arrow_down
-                            : Icons.keyboard_arrow_up,
+                        _isTableVisible ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
                         size: 28,
                         color: Colors.blue[700],
                       ),
@@ -259,8 +233,7 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
                   final color = provider.getColorForCode(codes[entry.key]);
 
                   return Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -274,11 +247,9 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
                             ),
                             const SizedBox(width: 4),
                             (() {
-                              if (provider.selectedSubCategory ==
-                                  AnalysisSubCategory.countryDetail) {
+                              if (provider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
                                 return CountryFlag.fromCountryCode(
-                                  CommonUtils.instance
-                                      .replaceCountryCode(codes[entry.key]),
+                                  CommonUtils.instance.replaceCountryCode(codes[entry.key]),
                                   height: 16,
                                   width: 16,
                                 );
@@ -288,8 +259,7 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
                             }()),
                             const SizedBox(width: 4),
                             Text(
-                              CommonUtils.instance
-                                  .replaceCountryCode(codes[entry.key]),
+                              CommonUtils.instance.replaceCountryCode(codes[entry.key]),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: color,
@@ -319,14 +289,8 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
       final chartData = provider.getTechCompetitionChartData(
         techCode: provider.selectedTechCode,
         dataCode: dataCode,
-        country:
-            provider.selectedSubCategory == AnalysisSubCategory.countryDetail
-                ? codes[i]
-                : null,
-        targetName:
-            provider.selectedSubCategory != AnalysisSubCategory.countryDetail
-                ? codes[i]
-                : null,
+        country: provider.selectedSubCategory == AnalysisSubCategory.countryDetail ? codes[i] : null,
+        targetName: provider.selectedSubCategory != AnalysisSubCategory.countryDetail ? codes[i] : null,
       );
       chartDataList[codes[i]] = chartData[2023] ?? 0.0;
     }
@@ -355,8 +319,7 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
                       final color = provider.getColorForCode(codes[entry.key]);
 
                       return Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -367,11 +330,9 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
                             ),
                             const SizedBox(width: 4),
                             (() {
-                              if (provider.selectedSubCategory ==
-                                  AnalysisSubCategory.countryDetail) {
+                              if (provider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
                                 return CountryFlag.fromCountryCode(
-                                  CommonUtils.instance
-                                      .replaceCountryCode(codes[entry.key]),
+                                  CommonUtils.instance.replaceCountryCode(codes[entry.key]),
                                   height: 16,
                                   width: 16,
                                 );
@@ -381,8 +342,7 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
                             }()),
                             const SizedBox(width: 4),
                             Text(
-                              CommonUtils.instance
-                                  .replaceCountryCode(codes[entry.key]),
+                              CommonUtils.instance.replaceCountryCode(codes[entry.key]),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: color,
@@ -414,9 +374,7 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
     required double interval,
   }) {
     final provider = context.watch<AnalysisDataProvider>();
-    final barWidth =
-        (MediaQuery.of(context).size.width / (chartData.length * 12))
-            .clamp(8.0, 24.0);
+    final barWidth = (MediaQuery.of(context).size.width / (chartData.length * 12)).clamp(8.0, 24.0);
 
     return Container(
       padding: const EdgeInsets.only(
@@ -433,8 +391,7 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
             enabled: true,
             touchTooltipData: BarTouchTooltipData(
               tooltipBgColor: Colors.white.withOpacity(0.8),
-              tooltipPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               tooltipMargin: 8,
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
                 try {
@@ -451,8 +408,7 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
                     children: const [],
                   );
                 } catch (e) {
-                  return BarTooltipItem(
-                      ',', const TextStyle(color: Colors.black));
+                  return BarTooltipItem(',', const TextStyle(color: Colors.black));
                 }
               },
               fitInsideHorizontally: true,
@@ -475,8 +431,7 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
             final code = entry.value;
             final value = chartData[code] ?? 0.0;
 
-            final shouldShow =
-                index <= (chartData.length - 1) * _controller.value;
+            final shouldShow = index <= (chartData.length - 1) * _controller.value;
 
             return BarChartGroupData(
               x: index,
@@ -513,17 +468,14 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
           showTitles: true,
           getTitlesWidget: (value, meta) {
             // value를 Decimal로 변환하고 소수점 두 자리로 반올림
-            final Decimal roundedValue =
-                Decimal.parse(value.toStringAsFixed(2)); // 소수점 두 자리로 반올림
-            final Decimal decimalInterval =
-                Decimal.parse(interval.toString()); // interval을 Decimal로 변환
+            final Decimal roundedValue = Decimal.parse(value.toStringAsFixed(2)); // 소수점 두 자리로 반올림
+            final Decimal decimalInterval = Decimal.parse(interval.toString()); // interval을 Decimal로 변환
 
             if (roundedValue % decimalInterval != Decimal.zero) {
               return const SizedBox.shrink(); // 최댓값일 경우 빈 위젯 반환
             }
             // roundedValue가 10 이상이면 정수로 표시
-            if (roundedValue >= Decimal.fromInt(10) ||
-                decimalInterval >= Decimal.fromInt(10)) {
+            if (roundedValue >= Decimal.fromInt(10) || decimalInterval >= Decimal.fromInt(10)) {
               return Text(
                 roundedValue.toString(), // 정수로 표시
                 style: const TextStyle(

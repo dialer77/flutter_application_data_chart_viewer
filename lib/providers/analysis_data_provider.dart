@@ -50,6 +50,12 @@ class AnalysisDataProvider extends ChangeNotifier {
     _startYear = 0;
     _endYear = 0;
   }
+  bool _visibleButton = true;
+  bool get visibleButton => _visibleButton;
+  void setVisibleButton(bool value) {
+    _visibleButton = value;
+    notifyListeners();
+  }
 
   //정의
   AnalysisDataType _selectedDataType = AnalysisDataType.patent;
@@ -913,11 +919,24 @@ class AnalysisDataProvider extends ChangeNotifier {
       case AnalysisCategory.industryTech:
         return '기술트렌드';
       case AnalysisCategory.countryTech:
-        return '국가트렌드';
+        if (_selectedSubCategory == AnalysisSubCategory.countryTrend) {
+          return '국가트렌드';
+        } else {
+          return '국가진단';
+        }
       case AnalysisCategory.companyTech:
-        return '기업트렌드';
+        if (_selectedSubCategory == AnalysisSubCategory.companyTrend) {
+          return '기업트렌드';
+        } else {
+          return '기업진단';
+        }
       case AnalysisCategory.academicTech:
-        return '기관트렌드';
+        if (_selectedSubCategory == AnalysisSubCategory.academicTrend) {
+          return '기관트렌드';
+        } else {
+          return '기관진단';
+        }
+
       case AnalysisCategory.techCompetition:
       case AnalysisCategory.techAssessment:
         switch (selectedSubCategory) {
@@ -1372,7 +1391,16 @@ class AnalysisDataProvider extends ChangeNotifier {
         var yearData = data.analysisDatas[dataCode];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
-          value = yearData[yearData.keys.last - 1] ?? 0.0;
+          switch (_selectedSubCategory) {
+            case AnalysisSubCategory.countryDetail:
+            case AnalysisSubCategory.companyDetail:
+            case AnalysisSubCategory.academicDetail:
+              value = yearData[yearData.keys.last - 1] ?? 0.0;
+              break;
+            default:
+              value = yearData[yearData.keys.last] ?? 0.0;
+              break;
+          }
         }
         countries[data.codeInfo.country] = value;
       }

@@ -886,7 +886,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
     if (years.length < 2) return [];
 
     bool isMultiple = false;
-    double ratio = 1e+7;
+    double ratio = 1e+4;
     if (data.values.reduce(max) <= 1) {
       data = data.map((key, value) => MapEntry(key, value * ratio));
       isMultiple = true;
@@ -938,7 +938,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
     if (years.length < 2) return [];
 
     bool isMultiple = false;
-    double ratio = 1e+7;
+    double ratio = 1e+4;
     if (data.values.reduce(max) <= 1) {
       data = data.map((key, value) => MapEntry(key, value * ratio));
       isMultiple = true;
@@ -998,14 +998,15 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
 
   double _calculateCAGR(Map<int, double> chartData, List<int> years) {
     var startYear = years.first;
-    // while (startYear < years.last && (chartData[startYear] == null || chartData[startYear] == 0)) {
-    //   startYear++;
-    // }
 
     final endYear = years.last - 1;
     late double startValue;
     if (chartData[startYear] == 0) {
-      startValue = 1e-7;
+      if (chartData.values.reduce(max) <= 1) {
+        startValue = 1e-4;
+      } else {
+        startValue = 1;
+      }
     } else {
       startValue = chartData[startYear] ?? 0;
     }

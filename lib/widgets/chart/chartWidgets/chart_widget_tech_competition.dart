@@ -21,6 +21,7 @@ class ChartWidgetTechCompetition extends StatefulWidget {
 class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition> with SingleTickerProviderStateMixin {
   final double _maxYRatio = 1.6;
   bool _isTableVisible = false;
+  final bool _isSaveVisible = false;
 
   late AnimationController _controller;
 
@@ -143,40 +144,81 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
               Expanded(
                 child: _buildChartBarType(codes),
               ),
-              InkWell(
-                onTap: () {
-                  setState(() {
-                    _isTableVisible = !_isTableVisible;
-                  });
-                },
-                child: Container(
-                  width: constraints.maxWidth,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.blue),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center, // 왼쪽 정렬 유지
-                    children: [
-                      Icon(
-                        _isTableVisible ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
-                        size: 28,
-                        color: Colors.blue[700],
-                      ),
-                      Text(
-                        _isTableVisible ? '테이블 닫기' : '테이블 보기',
-                        style: TextStyle(
-                          color: Colors.blue[700],
-                          fontWeight: FontWeight.bold,
+              Row(
+                children: [
+                  Flexible(
+                    flex: 9,
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          _isTableVisible = !_isTableVisible;
+                        });
+                      },
+                      child: Container(
+                        width: constraints.maxWidth,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.blue),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center, // 왼쪽 정렬 유지
+                          children: [
+                            Icon(
+                              _isTableVisible ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                              size: 28,
+                              color: Colors.blue[700],
+                            ),
+                            Text(
+                              _isTableVisible ? '테이블 닫기' : '테이블 보기',
+                              style: TextStyle(
+                                color: Colors.blue[700],
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 8),
-                    ],
+                    ),
                   ),
-                ),
+                  Visibility(
+                    visible: _isTableVisible,
+                    child: Flexible(
+                      flex: 1,
+                      child: OutlinedButton(
+                        onPressed: () {},
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.blue),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.download,
+                              size: 28,
+                              color: Colors.blue[700],
+                            ),
+                            Text(
+                              ' 저장',
+                              style: TextStyle(
+                                color: Colors.blue[700],
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
+
                 height: _isTableVisible ? 300 : 0, // 테이블의 최대 높이를 300으로 설정
                 child: const SingleChildScrollView(
                   child: SizedBox(
@@ -330,15 +372,16 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
                             ),
                             const SizedBox(width: 4),
                             (() {
-                              if (provider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
-                                return CountryFlag.fromCountryCode(
-                                  CommonUtils.instance.replaceCountryCode(codes[entry.key]),
-                                  height: 16,
-                                  width: 16,
-                                );
-                              } else {
-                                return const SizedBox.shrink();
+                              String countryCode = codes[entry.key];
+                              if (provider.selectedSubCategory != AnalysisSubCategory.countryDetail) {
+                                countryCode = provider.searchCountryCode(codes[entry.key]);
                               }
+
+                              return CountryFlag.fromCountryCode(
+                                CommonUtils.instance.replaceCountryCode(countryCode),
+                                height: 16,
+                                width: 16,
+                              );
                             }()),
                             const SizedBox(width: 4),
                             Text(
@@ -396,8 +439,9 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
                 try {
                   final codes = chartData.keys.toList();
-                  final code = codes[groupIndex];
+                  final code = CommonUtils.instance.replaceCountryCode(codes[groupIndex]);
                   final value = rod.toY;
+
                   return BarTooltipItem(
                     '$code ${value.toStringAsFixed(4)}',
                     const TextStyle(
@@ -459,8 +503,20 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
   FlTitlesData _buildTitlesData(List<String> codes, double interval) {
     return FlTitlesData(
       show: true,
-      bottomTitles: const AxisTitles(
-        sideTitles: SideTitles(showTitles: false),
+      bottomTitles: AxisTitles(
+        sideTitles: SideTitles(
+          showTitles: true,
+          getTitlesWidget: (value, meta) {
+            return Text(
+              '${(value + 1).toInt()}',
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+            );
+          },
+          reservedSize: 24,
+        ),
       ),
       // 좌측 타이틀 (값)
       leftTitles: AxisTitles(

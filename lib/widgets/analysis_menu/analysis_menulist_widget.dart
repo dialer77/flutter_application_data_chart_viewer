@@ -166,6 +166,14 @@ class _AnalysisMenuListWidgetState extends State<AnalysisMenuListWidget> {
 
   Widget _buildRangeSelector(AnalysisDataProvider provider, double fontSize) {
     RangeValues currentRangeValue = provider.getYearRange();
+
+    int endYear = provider.endYear;
+    if (provider.endYear > currentRangeValue.end.toInt()) {
+      endYear = currentRangeValue.end.toInt();
+    }
+
+    RangeValues yearRange = RangeValues(provider.startYear.toDouble(), endYear.toDouble());
+
     return Row(
       children: [
         Text(
@@ -174,16 +182,13 @@ class _AnalysisMenuListWidgetState extends State<AnalysisMenuListWidget> {
         ),
         Expanded(
           child: RangeSlider(
-            values: RangeValues(
-              provider.startYear.toDouble(),
-              provider.endYear.toDouble(),
-            ),
+            values: yearRange,
             min: currentRangeValue.start.toDouble(),
             max: currentRangeValue.end.toDouble(),
             divisions: currentRangeValue.end.toInt() - currentRangeValue.start.toInt(),
             labels: RangeLabels(
-              provider.startYear.toString(),
-              provider.endYear.toString(),
+              yearRange.start.round().toString(),
+              yearRange.end.round().toString(),
             ),
             onChanged: (RangeValues values) {
               provider.setYearRange(

@@ -371,7 +371,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                               chartKey: widget.chartKey ?? dialogKey,
                               tableKey: widget.tableKey,
                               dataProvider: dataProvider,
-                              techCodes: dataProvider.selectedTechCodes,
+                              techCodes: dataProvider.selectedTechCodes.isNotEmpty ? dataProvider.selectedTechCodes : [dataProvider.selectedTechCode ?? ''],
                               chartCodes: chartLoopCodes,
                             ),
                           ],
@@ -886,7 +886,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
     if (years.length < 2) return [];
 
     bool isMultiple = false;
-    double ratio = 1e+7;
+    double ratio = 1e+5;
     if (data.values.reduce(max) <= 1) {
       data = data.map((key, value) => MapEntry(key, value * ratio));
       isMultiple = true;
@@ -922,15 +922,12 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
     double b = (validPoints * sumXLnY - sumX * sumLnY) / (validPoints * sumX2 - sumX * sumX);
     double a = exp((sumLnY - b * sumX) / validPoints);
 
-    //추세선 배수
-    int multiple = 1;
-
-    return List.generate(n * multiple, (i) {
-      double y = a * exp(b * i / multiple);
+    return List.generate(n, (i) {
+      double y = a * exp(b * i);
       if (isMultiple) {
         y = y / ratio;
       }
-      return FlSpot(i.toDouble() / multiple, y > 0 ? y : 0); // 음수 값 방지
+      return FlSpot(i.toDouble(), y > 0 ? y : 0); // 음수 값 방지
     });
   }
 
@@ -938,7 +935,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
     if (years.length < 2) return [];
 
     bool isMultiple = false;
-    double ratio = 1e+7;
+    double ratio = 1e+5;
     if (data.values.reduce(max) <= 1) {
       data = data.map((key, value) => MapEntry(key, value * ratio));
       isMultiple = true;
@@ -998,14 +995,34 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
 
   double _calculateCAGR(Map<int, double> chartData, List<int> years) {
     var startYear = years.first;
-    // while (startYear < years.last && (chartData[startYear] == null || chartData[startYear] == 0)) {
-    //   startYear++;
-    // }
+    final dataProvider = context.read<AnalysisDataProvider>();
 
-    final endYear = years.last - 1;
+    int endYear = years.last - 1;
+    switch (dataProvider.selectedCategory) {
+      case AnalysisCategory.countryTech:
+      case AnalysisCategory.companyTech:
+      case AnalysisCategory.academicTech:
+        if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ||
+            dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail ||
+            dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
+          break;
+        } else {
+          endYear = years.last;
+        }
+        break;
+      default:
+        break;
+    }
+
+    final yearsGap = years.last - years.first;
     late double startValue;
     if (chartData[startYear] == 0) {
-      startValue = 1e-7;
+      // chartData 의 최댓값이 1보다 작거나 같으면 1e-5 로 설정하고 아니면 1로 설정
+      if (chartData.values.reduce(max) <= 1) {
+        startValue = 1e-5;
+      } else {
+        startValue = 1;
+      }
     } else {
       startValue = chartData[startYear] ?? 0;
     }
@@ -1013,7 +1030,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
     final endValue = chartData[endYear] ?? 0;
 
     // CAGR = (최종값/초기값)^(1/기간) - 1
-    return pow((endValue / startValue), 1 / (years.last - years.first - 1)) - 1;
+    return pow((endValue / startValue), 1 / yearsGap) - 1;
   }
 
   /// 다중 선 차트를 위한 범례를 생성

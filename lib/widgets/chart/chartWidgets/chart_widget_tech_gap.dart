@@ -16,6 +16,8 @@ class ChartWidgetTechGap extends StatefulWidget {
 
 class _ChartWidgetTechGapState extends State<ChartWidgetTechGap> {
   bool _isTableVisible = false;
+  bool _isMaxHeightTable = false;
+
   @override
   Widget build(BuildContext context) {
     final dataProvider = context.watch<AnalysisDataProvider>();
@@ -31,51 +33,151 @@ class _ChartWidgetTechGapState extends State<ChartWidgetTechGap> {
     return LayoutBuilder(builder: (context, constraints) {
       return Column(
         children: [
-          Expanded(
-              child: _buildChartMultiLineType(
-            targetNames,
-            dataProvider,
-            tableKey,
-          )),
-          InkWell(
-            onTap: () {
-              setState(() {
-                _isTableVisible = !_isTableVisible;
-              });
-            },
-            child: Container(
-              width: constraints.maxWidth,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center, // 왼쪽 정렬 유지
-                children: [
-                  Icon(
-                    _isTableVisible ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
-                    size: 28,
-                    color: Colors.blue[700],
-                  ),
-                  Text(
-                    _isTableVisible ? '테이블 닫기' : '테이블 보기',
-                    style: TextStyle(
-                      color: Colors.blue[700],
-                      fontWeight: FontWeight.bold,
+          Visibility(
+            visible: !_isMaxHeightTable,
+            child: Expanded(
+                child: _buildChartMultiLineType(
+              targetNames,
+              dataProvider,
+              tableKey,
+            )),
+          ),
+          Row(
+            children: [
+              Flexible(
+                flex: 18,
+                child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      if (_isMaxHeightTable) {
+                        return;
+                      }
+                      _isTableVisible = !_isTableVisible;
+                    });
+                  },
+                  child: Container(
+                    width: constraints.maxWidth,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center, // 왼쪽 정렬 유지
+                      children: [
+                        Icon(
+                          _isTableVisible ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                          size: 28,
+                          color: Colors.blue[700],
+                        ),
+                        Text(
+                          _isTableVisible ? '테이블 닫기' : '테이블 보기',
+                          style: TextStyle(
+                            color: Colors.blue[700],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                ],
+                ),
               ),
-            ),
+              Visibility(
+                visible: _isTableVisible,
+                child: Flexible(
+                  flex: 1,
+                  child: Container(
+                    width: constraints.maxWidth,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue),
+                    ),
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          _isMaxHeightTable = !_isMaxHeightTable;
+                        });
+                      },
+                      child: Center(
+                        child: Icon(
+                          _isMaxHeightTable ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                          size: 28,
+                          color: Colors.blue[700],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Visibility(
+                visible: _isTableVisible,
+                child: Flexible(
+                  flex: 2,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      if (tableKey.currentContext != null) {
+                        CommonUtils.instance.saveImage(
+                          chartKey: tableKey,
+                          format: 'PNG',
+                        );
+                      }
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.blue),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.download,
+                          size: 28,
+                          color: Colors.blue[700],
+                        ),
+                        Text(
+                          ' 저장',
+                          style: TextStyle(
+                            color: Colors.blue[700],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            height: _isTableVisible ? 300 : 0, // 테이블의 최대 높이를 300으로 설정
+            height: (() {
+              if (_isMaxHeightTable) {
+                return constraints.maxHeight.toDouble() * 0.9;
+              }
+
+              if (_isTableVisible) {
+                return 300.toDouble();
+              } else {
+                return 0.toDouble();
+              }
+            }()),
             child: SingleChildScrollView(
               child: SizedBox(
                 width: double.infinity,
-                height: 300,
+                height: (() {
+                  if (_isMaxHeightTable) {
+                    return constraints.maxHeight.toDouble() * 0.9;
+                  }
+
+                  if (_isTableVisible) {
+                    return 300.toDouble();
+                  } else {
+                    return 0.toDouble();
+                  }
+                }()),
                 child: RepaintBoundary(
                   key: tableKey,
                   child: const TableTechGapDataWidget(),

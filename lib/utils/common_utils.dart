@@ -94,6 +94,10 @@ class CommonUtils {
     ];
   }
 
+  Future<void> saveImage({required String format, required GlobalKey chartKey}) async {
+    await _handleImageExport(format: format, chartKey: chartKey);
+  }
+
   bool _isVisible = true;
   Widget saveMenuPopup({
     required BoxConstraints constraints,

@@ -694,7 +694,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                     builder: (context, constraints) => Stack(
                       children: [
                         _buildCagrLineChart(
-                          years: years,
+                          years: chartData.keys.toList()..sort(),
                           trendLineData: trendLineData,
                           rotateData: rotateData,
                           maxValue: maxValue,
@@ -702,7 +702,7 @@ class _SingleChartWidgetState extends State<SingleChartWidget> with TickerProvid
                           constraints: constraints,
                         ),
                         _buildBarChart(
-                          years: years,
+                          years: chartData.keys.toList()..sort(),
                           chartData: chartData,
                           maxValue: maxValue,
                           interval: interval,

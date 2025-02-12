@@ -21,7 +21,7 @@ class ChartWidgetTechCompetition extends StatefulWidget {
 class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition> with SingleTickerProviderStateMixin {
   final double _maxYRatio = 1.6;
   bool _isTableVisible = false;
-  final bool _isSaveVisible = false;
+  bool _isMaxHeightTable = false;
 
   late AnimationController _controller;
 
@@ -61,6 +61,7 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
       }
     }
     final chartKey = GlobalKey();
+    final tableKey = GlobalKey();
     return RepaintBoundary(
       key: chartKey,
       child: LayoutBuilder(builder: (context, constraints) {
@@ -69,88 +70,97 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
           height: constraints.maxHeight,
           child: Column(
             children: [
-              Container(
-                width: constraints.maxWidth,
-                height: constraints.maxHeight * 0.1,
-                padding: EdgeInsets.symmetric(
-                  horizontal: constraints.maxWidth * 0.035,
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      alignment: Alignment.centerLeft,
-                      width: constraints.maxWidth * 0.175,
-                      height: constraints.maxHeight * 0.1,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: const Color.fromARGB(255, 109, 207, 245),
-                          width: 1,
+              Visibility(
+                visible: !_isMaxHeightTable,
+                child: Container(
+                  width: constraints.maxWidth,
+                  height: constraints.maxHeight * 0.1,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: constraints.maxWidth * 0.035,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        width: constraints.maxWidth * 0.175,
+                        height: constraints.maxHeight * 0.1,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: const Color.fromARGB(255, 109, 207, 245),
+                            width: 1,
+                          ),
                         ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Center(
-                          child: Text(
-                            " ${provider.selectedSubCategory} 기술경쟁력 ",
-                            style: TextStyle(
-                              fontSize: constraints.maxHeight * 0.035,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.brown,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Center(
+                            child: Text(
+                              " ${provider.selectedSubCategory} 기술경쟁력 ",
+                              style: TextStyle(
+                                fontSize: constraints.maxHeight * 0.035,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.brown,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    SizedBox(width: constraints.maxWidth * 0.2025),
-                    Container(
-                      alignment: Alignment.centerLeft,
-                      width: constraints.maxWidth * 0.175,
-                      height: constraints.maxHeight * 0.1,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: const Color.fromARGB(255, 109, 207, 245),
-                          width: 1,
+                      SizedBox(width: constraints.maxWidth * 0.2025),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        width: constraints.maxWidth * 0.175,
+                        height: constraints.maxHeight * 0.1,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: const Color.fromARGB(255, 109, 207, 245),
+                            width: 1,
+                          ),
                         ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Center(
-                          child: Text(
-                            " ${provider.selectedTechCode} ",
-                            style: TextStyle(
-                              fontSize: constraints.maxHeight * 0.035,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.brown,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Center(
+                            child: Text(
+                              " ${provider.selectedTechCode} ",
+                              style: TextStyle(
+                                fontSize: constraints.maxHeight * 0.035,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.brown,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    const Spacer(), // 중간 공간을 채움
-                    CommonUtils.instance.saveMenuPopup(
-                      constraints: constraints,
-                      chartKey: chartKey,
-                      dataProvider: provider,
-                      techCodes: [provider.selectedTechCode ?? ''],
-                      chartCodes: codes,
-                    ),
-                  ],
+                      const Spacer(), // 중간 공간을 채움
+                      CommonUtils.instance.saveMenuPopup(
+                        constraints: constraints,
+                        chartKey: chartKey,
+                        dataProvider: provider,
+                        techCodes: [provider.selectedTechCode ?? ''],
+                        chartCodes: codes,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              Expanded(
-                child: _buildChartBarType(codes),
+              Visibility(
+                visible: !_isMaxHeightTable,
+                child: Expanded(
+                  child: _buildChartBarType(codes),
+                ),
               ),
               Row(
                 children: [
                   Flexible(
-                    flex: 9,
+                    flex: 18,
                     child: InkWell(
                       onTap: () {
                         setState(() {
+                          if (_isMaxHeightTable) {
+                            return;
+                          }
                           _isTableVisible = !_isTableVisible;
                         });
                       },
@@ -185,8 +195,43 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
                     visible: _isTableVisible,
                     child: Flexible(
                       flex: 1,
+                      child: Container(
+                        width: constraints.maxWidth,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.blue),
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              _isMaxHeightTable = !_isMaxHeightTable;
+                            });
+                          },
+                          child: Center(
+                            child: Icon(
+                              _isMaxHeightTable ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                              size: 28,
+                              color: Colors.blue[700],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: _isTableVisible,
+                    child: Flexible(
+                      flex: 2,
                       child: OutlinedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          // 버튼 클릭 시 실행할 로직
+                          if (tableKey.currentContext != null) {
+                            CommonUtils.instance.saveImage(
+                              chartKey: tableKey,
+                              format: 'PNG',
+                            );
+                          }
+                        },
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Colors.blue),
                           shape: RoundedRectangleBorder(
@@ -216,17 +261,27 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
                   ),
                 ],
               ),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
+              LayoutBuilder(builder: (context, constraints2) {
+                return RepaintBoundary(
+                  key: tableKey,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
 
-                height: _isTableVisible ? 300 : 0, // 테이블의 최대 높이를 300으로 설정
-                child: const SingleChildScrollView(
-                  child: SizedBox(
-                    height: 300,
-                    child: TableChartData(),
+                    height: (() {
+                      if (_isMaxHeightTable) {
+                        return constraints.maxHeight.toDouble() * 0.9;
+                      }
+
+                      if (_isTableVisible) {
+                        return 300.toDouble();
+                      } else {
+                        return 0.toDouble();
+                      }
+                    })(), // 테이블의 최대 높이를 300으로 설정
+                    child: const TableChartData(),
                   ),
-                ),
-              ),
+                );
+              }),
             ],
           ),
         );
@@ -419,85 +474,112 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
     final provider = context.watch<AnalysisDataProvider>();
     final barWidth = (MediaQuery.of(context).size.width / (chartData.length * 12)).clamp(8.0, 24.0);
 
-    return Container(
-      padding: const EdgeInsets.only(
-        top: 16,
-        left: 40,
-        right: 16,
-        bottom: 24,
-      ),
-      child: BarChart(
-        BarChartData(
-          alignment: BarChartAlignment.spaceAround,
-          maxY: maxValue * _maxYRatio,
-          barTouchData: BarTouchData(
-            enabled: true,
-            touchTooltipData: BarTouchTooltipData(
-              tooltipBgColor: Colors.white.withOpacity(0.8),
-              tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              tooltipMargin: 8,
-              getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                try {
-                  final codes = chartData.keys.toList();
-                  final code = CommonUtils.instance.replaceCountryCode(codes[groupIndex]);
-                  final value = rod.toY;
+    return LayoutBuilder(builder: (context, constraints) {
+      return Stack(
+        children: [
+          BarChart(
+            BarChartData(
+              alignment: BarChartAlignment.spaceAround,
+              maxY: maxValue * _maxYRatio,
+              barTouchData: BarTouchData(
+                enabled: false, // 터치 기능 비활성화
+              ),
+              titlesData: _buildTitlesData(chartData.keys.toList(), interval),
+              gridData: const FlGridData(show: false),
+              borderData: FlBorderData(
+                show: true,
+                border: Border(
+                  left: BorderSide(color: Colors.grey.shade400),
+                  right: const BorderSide(color: Colors.transparent),
+                  top: const BorderSide(color: Colors.transparent),
+                  bottom: BorderSide(color: Colors.grey.shade400),
+                ),
+              ),
+              barGroups: chartData.keys.toList().asMap().entries.map((entry) {
+                final index = entry.key;
+                final code = entry.value;
+                final value = chartData[code] ?? 0.0;
 
-                  return BarTooltipItem(
-                    '$code ${value.toStringAsFixed(4)}',
-                    const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                final shouldShow = index <= (chartData.length - 1) * _controller.value;
+
+                return BarChartGroupData(
+                  x: index,
+                  barRods: [
+                    BarChartRodData(
+                      toY: shouldShow ? value : 0,
+                      color: provider.getColorForCode(code),
+                      width: barWidth,
+                      borderRadius: BorderRadius.circular(2),
+                      backDrawRodData: BackgroundBarChartRodData(
+                        show: true,
+                        toY: shouldShow ? value : 0,
+                        color: Colors.transparent,
+                      ),
                     ),
-                    children: const [],
-                  );
-                } catch (e) {
-                  return BarTooltipItem(',', const TextStyle(color: Colors.black));
-                }
-              },
-              fitInsideHorizontally: true,
-              fitInsideVertically: true,
+                  ],
+                  barsSpace: 4,
+                );
+              }).toList(),
             ),
           ),
-          titlesData: _buildTitlesData(chartData.keys.toList(), interval),
-          gridData: const FlGridData(show: false),
-          borderData: FlBorderData(
-            show: true,
-            border: Border(
-              left: BorderSide(color: Colors.grey.shade400),
-              right: const BorderSide(color: Colors.transparent),
-              top: const BorderSide(color: Colors.transparent),
-              bottom: BorderSide(color: Colors.grey.shade400),
-            ),
-          ),
-          barGroups: chartData.keys.toList().asMap().entries.map((entry) {
+          // Add bar value labels
+          ...chartData.keys.toList().asMap().entries.map((entry) {
             final index = entry.key;
             final code = entry.value;
             final value = chartData[code] ?? 0.0;
-
             final shouldShow = index <= (chartData.length - 1) * _controller.value;
 
-            return BarChartGroupData(
-              x: index,
-              barRods: [
-                BarChartRodData(
-                  toY: shouldShow ? value : 0,
-                  color: provider.getColorForCode(code),
-                  width: barWidth,
-                  borderRadius: BorderRadius.circular(2),
-                  backDrawRodData: BackgroundBarChartRodData(
-                    show: true,
-                    toY: shouldShow ? value : 0,
-                    color: Colors.transparent,
+            String countryCode = CommonUtils.instance.replaceCountryCode(code);
+            if (provider.selectedSubCategory != AnalysisSubCategory.countryDetail) {
+              countryCode = CommonUtils.instance.replaceCountryCode(provider.searchCountryCode(code));
+            }
+            if (!shouldShow) return const SizedBox.shrink();
+
+            // Calculate position for value label
+            final barX = (constraints.maxWidth - 42) * (index + 0.5) / chartData.length;
+            final barY = (constraints.maxHeight) - (value / (maxValue * _maxYRatio)) * (constraints.maxHeight - 40) - 40; // Adjust for padding
+
+            return Positioned(
+              left: barX + 15, // Center align with bar
+              top: barY - 26, // Position above bar
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 200),
+                opacity: shouldShow ? 1.0 : 0.0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: provider.getColorForCode(code),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      CountryFlag.fromCountryCode(
+                        countryCode,
+                        height: 16,
+                        width: 16,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        value.toStringAsFixed(2),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: provider.getColorForCode(code),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-              barsSpace: 4,
+              ),
             );
-          }).toList(),
-        ),
-      ),
-    );
+          }),
+        ],
+      );
+    });
   }
 
   FlTitlesData _buildTitlesData(List<String> codes, double interval) {

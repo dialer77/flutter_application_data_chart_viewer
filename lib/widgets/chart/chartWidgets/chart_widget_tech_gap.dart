@@ -113,38 +113,63 @@ class _ChartWidgetTechGapState extends State<ChartWidgetTechGap> {
                 visible: _isTableVisible,
                 child: Flexible(
                   flex: 2,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      if (tableKey.currentContext != null) {
-                        CommonUtils.instance.saveImage(
-                          chartKey: tableKey,
-                          format: 'PNG',
-                        );
+                  child: PopupMenuButton<String>(
+                    offset: Offset(constraints.maxHeight * 0, constraints.maxHeight * 0.02),
+                    position: PopupMenuPosition.under,
+                    onSelected: (String value) async {
+                      switch (value) {
+                        case 'PNG':
+                        case 'JPG':
+                          CommonUtils.instance.saveImage(format: value, chartKey: tableKey);
+                          break;
+                        case 'CSV':
+                          CommonUtils.instance.saveCsv(globalKey: tableKey, dataProvider: dataProvider);
+                          break;
                       }
                     },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.blue),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                    itemBuilder: (context) => [
+                      PopupMenuItem<String>(
+                        value: 'PNG',
+                        height: constraints.maxHeight * 0.05,
+                        padding: EdgeInsets.zero,
+                        child: const Center(child: Text('PNG')),
                       ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.download,
-                          size: 28,
-                          color: Colors.blue[700],
-                        ),
-                        Text(
-                          ' 저장',
-                          style: TextStyle(
+                      PopupMenuItem<String>(
+                        value: 'JPG',
+                        height: constraints.maxHeight * 0.05,
+                        padding: EdgeInsets.zero,
+                        child: const Center(child: Text('JPG')),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'CSV',
+                        height: constraints.maxHeight * 0.05,
+                        padding: EdgeInsets.zero,
+                        child: const Center(child: Text('CSV')),
+                      ),
+                    ],
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.download,
+                            size: 28,
                             color: Colors.blue[700],
-                            fontWeight: FontWeight.bold,
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
+                          Text(
+                            ' 저장',
+                            style: TextStyle(
+                              color: Colors.blue[700],
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                      ),
                     ),
                   ),
                 ),

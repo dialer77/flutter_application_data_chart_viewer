@@ -17,22 +17,6 @@ class TableChartData extends StatelessWidget {
   Widget build(BuildContext context) {
     final dataProvider = context.watch<AnalysisDataProvider>();
 
-    // final techCode = dataProvider.selectedTechCode;
-    // var countries = dataProvider.selectedCountries.toList();
-    // if (countries.isEmpty) {
-    //   countries = dataProvider.getAvailableCountries(techCode).take(10).toList();
-    // }
-
-    // var companies = dataProvider.selectedCompanies.toList();
-    // if (companies.isEmpty) {
-    //   companies = dataProvider.getAvailableCompanies().take(10).toList();
-    // }
-
-    // var academics = dataProvider.selectedAcademics.toList();
-    // if (academics.isEmpty) {
-    //   academics = dataProvider.getAvailableAcademics().take(10).toList();
-    // }
-
     final ScrollController horizontalController = ScrollController();
     final ScrollController verticalController = ScrollController();
     return LayoutBuilder(

@@ -232,7 +232,7 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
                               CommonUtils.instance.saveImage(format: value, chartKey: chartKey);
                               break;
                             case 'CSV':
-                              // _handleCsvExport(chartKey, dataProvider, techCodes, chartCodes);
+                              CommonUtils.instance.saveCsv(globalKey: chartKey, dataProvider: provider);
                               break;
                           }
                         },
@@ -256,23 +256,29 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
                             child: const Center(child: Text('CSV')),
                           ),
                         ],
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.download,
-                              size: 28,
-                              color: Colors.blue[700],
-                            ),
-                            Text(
-                              ' 저장',
-                              style: TextStyle(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.blue),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.download,
+                                size: 28,
                                 color: Colors.blue[700],
-                                fontWeight: FontWeight.bold,
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                          ],
+                              Text(
+                                ' 저장',
+                                style: TextStyle(
+                                  color: Colors.blue[700],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                            ],
+                          ),
                         ),
                       ),
                     ),

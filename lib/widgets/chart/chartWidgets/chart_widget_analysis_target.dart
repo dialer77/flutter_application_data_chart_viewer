@@ -161,39 +161,63 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                       visible: _isTableVisible,
                       child: Flexible(
                         flex: 2,
-                        child: OutlinedButton(
-                          onPressed: () {
-                            // 버튼 클릭 시 실행할 로직
-                            if (tableKey.currentContext != null) {
-                              CommonUtils.instance.saveImage(
-                                chartKey: tableKey,
-                                format: 'PNG',
-                              );
+                        child: PopupMenuButton<String>(
+                          offset: Offset(constraints.maxHeight * 0, constraints.maxHeight * 0.02),
+                          position: PopupMenuPosition.under,
+                          onSelected: (String value) async {
+                            switch (value) {
+                              case 'PNG':
+                              case 'JPG':
+                                CommonUtils.instance.saveImage(format: value, chartKey: tableKey);
+                                break;
+                              case 'CSV':
+                                CommonUtils.instance.saveCsv(globalKey: tableKey, dataProvider: provider);
+                                break;
                             }
                           },
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.blue),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                          itemBuilder: (context) => [
+                            PopupMenuItem<String>(
+                              value: 'PNG',
+                              height: constraints.maxHeight * 0.05,
+                              padding: EdgeInsets.zero,
+                              child: const Center(child: Text('PNG')),
                             ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.download,
-                                size: 28,
-                                color: Colors.blue[700],
-                              ),
-                              Text(
-                                ' 저장',
-                                style: TextStyle(
+                            PopupMenuItem<String>(
+                              value: 'JPG',
+                              height: constraints.maxHeight * 0.05,
+                              padding: EdgeInsets.zero,
+                              child: const Center(child: Text('JPG')),
+                            ),
+                            PopupMenuItem<String>(
+                              value: 'CSV',
+                              height: constraints.maxHeight * 0.05,
+                              padding: EdgeInsets.zero,
+                              child: const Center(child: Text('CSV')),
+                            ),
+                          ],
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.blue),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.download,
+                                  size: 28,
                                   color: Colors.blue[700],
-                                  fontWeight: FontWeight.bold,
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                            ],
+                                Text(
+                                  ' 저장',
+                                  style: TextStyle(
+                                    color: Colors.blue[700],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -213,55 +237,53 @@ class _ChartWidgetAnalysisTargetState extends State<ChartWidgetAnalysisTarget> w
                       return 0.toDouble();
                     }
                   }()), // 테이블의 최대 높이를 300으로 설정
-                  child: SingleChildScrollView(
-                    child: SizedBox(
-                      height: (() {
-                        if (_isMaxHeightTable) {
-                          return constraints.maxHeight.toDouble() * 0.9;
-                        }
-
-                        if (_isTableVisible) {
+                  child: Visibility(
+                    visible: _isTableVisible,
+                    child: SingleChildScrollView(
+                      child: SizedBox(
+                        height: (() {
+                          if (_isMaxHeightTable) {
+                            return constraints.maxHeight.toDouble() * 0.9;
+                          }
                           return 300.toDouble();
-                        } else {
-                          return 0.toDouble();
-                        }
-                      }()),
-                      child: RepaintBoundary(
-                        key: tableKey,
-                        child: ChartTableWidget(
-                          title: (() {
-                            switch (provider.selectedSubCategory) {
-                              case AnalysisSubCategory.techInnovationIndex:
-                                return 'Citation Index';
-                              case AnalysisSubCategory.marketExpansionIndex:
-                                return 'Market Index';
-                              case AnalysisSubCategory.rdInvestmentIndex:
-                                return 'Investment Index';
-                              default:
-                                return '';
-                            }
-                          }()),
-                          headerTitles: (() {
-                            switch (provider.selectedCategory) {
-                              case AnalysisCategory.countryTech:
-                                return const [
-                                  (TableDataType.country, '국가 순위'),
-                                ];
-                              case AnalysisCategory.companyTech:
-                                return const [
-                                  (TableDataType.country, '기업 순위'),
-                                  (TableDataType.name, '기업'),
-                                ];
-                              case AnalysisCategory.academicTech:
-                                return const [
-                                  (TableDataType.country, '대학 순위'),
-                                  (TableDataType.name, '대학'),
-                                ];
-                              default:
-                                return [(TableDataType.country, '')];
-                            }
-                          }()),
-                          tableChartDataModels: provider.getTableChartDataModels(),
+                        }()),
+                        child: RepaintBoundary(
+                          key: tableKey,
+                          child: ChartTableWidget(
+                            title: (() {
+                              switch (provider.selectedSubCategory) {
+                                case AnalysisSubCategory.techInnovationIndex:
+                                  return 'Citation Index';
+                                case AnalysisSubCategory.marketExpansionIndex:
+                                  return 'Market Index';
+                                case AnalysisSubCategory.rdInvestmentIndex:
+                                  return 'Investment Index';
+                                default:
+                                  return '';
+                              }
+                            }()),
+                            headerTitles: (() {
+                              switch (provider.selectedCategory) {
+                                case AnalysisCategory.countryTech:
+                                  return const [
+                                    (TableDataType.country, '국가 순위'),
+                                  ];
+                                case AnalysisCategory.companyTech:
+                                  return const [
+                                    (TableDataType.country, '기업 순위'),
+                                    (TableDataType.name, '기업'),
+                                  ];
+                                case AnalysisCategory.academicTech:
+                                  return const [
+                                    (TableDataType.country, '대학 순위'),
+                                    (TableDataType.name, '대학'),
+                                  ];
+                                default:
+                                  return [(TableDataType.country, '')];
+                              }
+                            }()),
+                            tableChartDataModels: provider.getTableChartDataModels(),
+                          ),
                         ),
                       ),
                     ),

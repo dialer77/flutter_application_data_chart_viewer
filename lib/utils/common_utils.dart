@@ -98,147 +98,118 @@ class CommonUtils {
     await _handleImageExport(format: format, chartKey: chartKey);
   }
 
-  Future<void> saveCsv({required GlobalKey globalKey, required AnalysisDataProvider dataProvider, required List<String> techCodes, List<String>? chartCodes}) async {
+  Future<void> saveCsv({
+    required GlobalKey globalKey,
+    required AnalysisDataProvider dataProvider,
+  }) async {
     try {
+      if (dataProvider.selectedCategory == AnalysisCategory.countryTech ||
+          dataProvider.selectedCategory == AnalysisCategory.companyTech ||
+          dataProvider.selectedCategory == AnalysisCategory.academicTech) {
+        List<String> codes = [];
+
+        if (dataProvider.selectedCategory == AnalysisCategory.countryTech) {
+          codes = dataProvider.selectedCountries.toList();
+          if (codes.isEmpty) {
+            codes = dataProvider.getAvailableCountries(dataProvider.selectedTechCode).take(10).toList();
+          }
+        } else if (dataProvider.selectedCategory == AnalysisCategory.companyTech) {
+          codes = dataProvider.selectedCompanies.toList();
+          if (codes.isEmpty) {
+            codes = dataProvider.getAvailableCompanies().take(10).toList();
+          }
+        } else if (dataProvider.selectedCategory == AnalysisCategory.academicTech) {
+          codes = dataProvider.selectedAcademics.toList();
+          if (codes.isEmpty) {
+            codes = dataProvider.getAvailableAcademics().take(10).toList();
+          }
+        } else {
+          codes = dataProvider.selectedTechCodes.whereType<String>().toList();
+        }
+
+        List<String> techCodes = dataProvider.selectedTechCodes.isNotEmpty ? dataProvider.selectedTechCodes : [dataProvider.selectedTechCode ?? ''];
+        await _handleCsvExport(globalKey, dataProvider, techCodes, codes);
+        return;
+      }
+
       // CSV 헤더와 데이터 생성
       final StringBuffer csvContent = StringBuffer();
 
       // 헤더 추가 (순위, 국가명, 연도별 데이터)
-      StringBuffer csvHeader = StringBuffer();
-      csvHeader.write('${dataProvider.selectedCategory},${dataProvider.selectedSubCategory},${dataProvider.selectedDataType},${dataProvider.selectedTechListType}');
+      final StringBuffer csvHeader = StringBuffer();
+      csvHeader.writeln('${dataProvider.selectedCategory},${dataProvider.selectedSubCategory},${dataProvider.selectedDataType},${dataProvider.selectedTechListType},${dataProvider.selectedTechCode}');
 
-      bool isFirst = true;
-      AnalysisCategory category = dataProvider.selectedCategory;
-      AnalysisSubCategory subCategory = dataProvider.selectedSubCategory;
-      Map<int, double> chartData = {};
+      if (dataProvider.selectedCategory == AnalysisCategory.techCompetition) {
+        int rank = 1;
+        var datas = dataProvider.getTechCompetitionData();
+        var dataCodes = dataProvider.getTechCompetitionDataCodes();
 
-      for (var techCode in techCodes) {
-        if (chartCodes != null && chartCodes.isNotEmpty && dataProvider.selectedCategory != AnalysisCategory.industryTech) {
-          for (var chartCode in chartCodes) {
-            if (category == AnalysisCategory.techCompetition) {
-              final dataCodes = dataProvider.getTechCompetitionDataCodes();
-              for (var dataCode in dataCodes) {
-                chartData = dataProvider.getChartData(
-                  techListType: dataProvider.selectedTechListType,
-                  techCode: techCode,
-                  country: subCategory == AnalysisSubCategory.countryDetail ? chartCode : null,
-                  targetName: subCategory != AnalysisSubCategory.countryDetail ? chartCode : null,
-                  dataCode: dataCode,
-                );
+        String dataName = '';
+        switch (dataProvider.selectedSubCategory) {
+          case AnalysisSubCategory.countryDetail:
+            dataName = 'Country';
+            break;
+          case AnalysisSubCategory.companyDetail:
+            dataName = 'Company';
+            break;
+          case AnalysisSubCategory.academicDetail:
+            dataName = 'INSTITUTE';
+            break;
+          default:
+            dataName = 'Country';
+        }
 
-                if (isFirst) {
-                  csvHeader.writeln(',$techCode');
-                  String yearData = chartData.keys.join(',');
-                  csvContent.writeln(",,$yearData");
-                  isFirst = false;
-                }
+        csvHeader.writeln('Rank,$dataName,${dataCodes.join(',')}');
 
-                csvContent.writeln("$chartCode,$dataCode, ${chartData.values.join(',')}");
-              }
-            } else if (category == AnalysisCategory.techAssessment) {
-              csvHeader = StringBuffer();
-              csvHeader.write('${dataProvider.selectedCategory},${dataProvider.selectedSubCategory},${dataProvider.selectedDataType},$chartCode');
-              chartData = dataProvider.getChartData(
-                techListType: AnalysisTechListType.lc,
-                techCode: dataProvider.selectedLcTechCode,
-                country: subCategory == AnalysisSubCategory.countryDetail ? chartCode : null,
-                targetName: subCategory != AnalysisSubCategory.countryDetail ? chartCode : null,
-              );
-              if (isFirst) {
-                csvHeader.writeln('');
-                String yearData = chartData.keys.join(',');
-                csvContent.writeln(",,$yearData");
-                isFirst = false;
-              }
-              csvContent.writeln('LC,$techCode,${chartData.values.join(',')}');
-              Set<String> mcTechCodes = dataProvider.selectedMcTechCodes;
-              if (mcTechCodes.isEmpty) {
-                mcTechCodes = dataProvider.getDataCodeNames(AnalysisTechListType.mc);
-              }
-              for (var mcTechCode in mcTechCodes) {
-                chartData = dataProvider.getChartData(
-                  techListType: AnalysisTechListType.mc,
-                  techCode: mcTechCode,
-                  country: subCategory == AnalysisSubCategory.countryDetail ? chartCode : null,
-                  targetName: subCategory != AnalysisSubCategory.countryDetail ? chartCode : null,
-                );
+        for (var dataKey in datas.keys) {
+          var data = datas[dataKey];
+          csvContent.writeln('$rank,$dataKey,${data?.entries.map((e) => e.value).join(',')}');
+          rank++;
+        }
+      } else if (dataProvider.selectedCategory == AnalysisCategory.techGap) {
+        final techCode = dataProvider.selectedTechCode;
+        List<String> targetNames = [];
+        if (dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail) {
+          targetNames = dataProvider.selectedCountries.isEmpty ? dataProvider.getAvailableCountriesFromTechGap(techCode).take(10).toList() : dataProvider.selectedCountries.toList();
+        } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail) {
+          targetNames = dataProvider.selectedCompanies.isEmpty ? dataProvider.getAvailableCompaniesFromTechGap(techCode).take(10).toList() : dataProvider.selectedCompanies.toList();
+        } else if (dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail) {
+          targetNames = dataProvider.selectedAcademics.isEmpty ? dataProvider.getAvailableAcademicsFromTechGap(techCode).take(10).toList() : dataProvider.selectedAcademics.toList();
+        }
 
-                csvContent.writeln('MC,$mcTechCode,${chartData.values.join(',')}');
-              }
-              Set<String> scTechCodes = dataProvider.selectedScTechCodes;
-              if (scTechCodes.isEmpty) {
-                scTechCodes = dataProvider.getDataCodeNames(AnalysisTechListType.sc);
-              }
+        csvHeader.writeln('기준,${targetNames.join(',')}');
 
-              for (var scTechCode in scTechCodes) {
-                chartData = dataProvider.getChartData(
-                  techListType: AnalysisTechListType.sc,
-                  techCode: scTechCode,
-                  country: subCategory == AnalysisSubCategory.countryDetail ? chartCode : null,
-                  targetName: subCategory != AnalysisSubCategory.countryDetail ? chartCode : null,
-                );
-
-                csvContent.writeln('SC,$scTechCode,${chartData.values.join(',')}');
-              }
-            } else {
-              chartData = dataProvider.getChartData(
-                techListType: dataProvider.selectedTechListType,
-                techCode: techCode,
-                country: category == AnalysisCategory.countryTech ||
-                        (category == AnalysisCategory.techGap && subCategory == AnalysisSubCategory.countryDetail) ||
-                        (category == AnalysisCategory.techAssessment && subCategory == AnalysisSubCategory.countryDetail) ||
-                        (category == AnalysisCategory.techCompetition && subCategory == AnalysisSubCategory.countryDetail)
-                    ? chartCode
-                    : null,
-                targetName: category == AnalysisCategory.companyTech ||
-                        category == AnalysisCategory.academicTech ||
-                        (category == AnalysisCategory.techAssessment && subCategory != AnalysisSubCategory.countryDetail) ||
-                        (category == AnalysisCategory.techGap && (subCategory == AnalysisSubCategory.companyDetail || subCategory == AnalysisSubCategory.academicDetail)) ||
-                        (category == AnalysisCategory.techCompetition && subCategory != AnalysisSubCategory.countryDetail)
-                    ? chartCode
-                    : null,
-                dataCode: category == AnalysisCategory.techCompetition ? "TC" : null,
-              );
-
-              if (isFirst) {
-                csvHeader.writeln(',$techCode');
-
-                String dataCode = dataProvider.getDataCode() ?? '';
-                if (dataCode != '') {
-                  String yearData = chartData.keys.map((key) => '${dataCode}_$key').join(',');
-                  csvContent.writeln(",$yearData");
-                } else {
-                  String yearData = chartData.keys.join(',');
-                  csvContent.writeln(",$yearData");
-                }
-                isFirst = false;
-              }
-
-              csvContent.writeln("$chartCode,${chartData.values.join(',')}");
+        for (int row = 0; row < targetNames.length; row++) {
+          csvContent.write('${targetNames[row]},');
+          for (int col = 0; col < targetNames.length; col++) {
+            if (row == col) {
+              csvContent.write('-,');
+              continue;
             }
-          }
-        } else {
-          chartData = dataProvider.getChartData(
-            techListType: dataProvider.selectedTechListType,
-            techCode: techCode,
-            country: null,
-            targetName: null,
-          );
 
-          if (isFirst) {
-            csvHeader.writeln('');
-            String dataCode = dataProvider.getDataCode() ?? '';
-            if (dataCode != '') {
-              String yearData = chartData.keys.map((key) => '${dataCode}_$key').join(',');
-              csvContent.writeln(",$yearData");
-            } else {
-              String yearData = chartData.keys.join(',');
-              csvContent.writeln(",$yearData");
-            }
-            isFirst = false;
-          }
+            double rowValue = dataProvider
+                .getChartData(
+                    techListType: dataProvider.selectedTechListType,
+                    techCode: techCode,
+                    country: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? targetNames[row] : null,
+                    targetName:
+                        dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail ? targetNames[row] : null)
+                .values
+                .last;
+            double colValue = dataProvider
+                .getChartData(
+                    techListType: dataProvider.selectedTechListType,
+                    techCode: techCode,
+                    country: dataProvider.selectedSubCategory == AnalysisSubCategory.countryDetail ? targetNames[col] : null,
+                    targetName:
+                        dataProvider.selectedSubCategory == AnalysisSubCategory.companyDetail || dataProvider.selectedSubCategory == AnalysisSubCategory.academicDetail ? targetNames[col] : null)
+                .values
+                .last;
+            double gap = (rowValue - colValue) * 10;
 
-          csvContent.writeln("$techCode,${chartData.values.join(',')}");
+            csvContent.write('$gap,');
+          }
+          csvContent.writeln('');
         }
       }
 

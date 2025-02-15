@@ -580,14 +580,13 @@ class AnalysisDataProvider extends ChangeNotifier {
         }
         var dataFiltered = dataModels?.where((data) => data.codeInfo.sheetName == sheetName).toList();
 
-        dataCode = dataCode == "TC" ? "" : dataCode;
-
         for (var country in countries) {
           if (data[country] == null) {
             data[country] = {};
           }
           final datas = dataFiltered?.where((data) => data.codeInfo.country == country).toList();
-          data[country]?[dataCode] = datas?.first.analysisDatas[dataCode].values.last ?? 0.0;
+          final dataValues = datas?.first.analysisDatas[dataCode == "TC" ? "" : dataCode];
+          data[country]?[dataCode] = dataValues?[endYear] ?? 0.0;
         }
       }
       return data;
@@ -598,7 +597,7 @@ class AnalysisDataProvider extends ChangeNotifier {
       for (var company in companies) {
         data[company] = {};
         for (var dataCode in dataCodes) {
-          data[company]?[dataCode] = getChartData(techListType: selectedTechListType, techCode: techCode, targetName: company, dataCode: dataCode).values.last;
+          data[company]?[dataCode] = getChartData(techListType: selectedTechListType, techCode: techCode, targetName: company, dataCode: dataCode)[endYear] ?? 0.0;
         }
       }
       return data;
@@ -609,7 +608,7 @@ class AnalysisDataProvider extends ChangeNotifier {
       for (var academic in academics) {
         data[academic] = {};
         for (var dataCode in dataCodes) {
-          data[academic]?[dataCode] = getChartData(techListType: selectedTechListType, techCode: techCode, targetName: academic, dataCode: dataCode).values.last;
+          data[academic]?[dataCode] = getChartData(techListType: selectedTechListType, techCode: techCode, targetName: academic, dataCode: dataCode)[endYear] ?? 0.0;
         }
       }
       return data;
@@ -1166,7 +1165,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
-          value = yearData[yearData.keys.last - 1] ?? 0.0;
+          value = yearData[endYear] ?? 0.0;
         }
         countries[data.codeInfo.country] = value;
       }
@@ -1190,7 +1189,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
-          value = yearData[yearData.keys.last - 1] ?? 0.0;
+          value = yearData[endYear] ?? 0.0;
         }
         companies[data.codeInfo.name] = value;
       }
@@ -1214,7 +1213,7 @@ class AnalysisDataProvider extends ChangeNotifier {
         var yearData = data.analysisDatas[""];
         double value = 0.0;
         if (yearData != null && yearData.isNotEmpty) {
-          value = yearData[yearData.keys.last - 1] ?? 0.0;
+          value = yearData[endYear] ?? 0.0;
         }
         academics[data.codeInfo.name] = value;
       }

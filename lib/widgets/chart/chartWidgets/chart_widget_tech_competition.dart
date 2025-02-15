@@ -389,7 +389,7 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
         country: provider.selectedSubCategory == AnalysisSubCategory.countryDetail ? codes[i] : null,
         targetName: provider.selectedSubCategory != AnalysisSubCategory.countryDetail ? codes[i] : null,
       );
-      chartDataList[codes[i]] = chartData[2023] ?? 0.0;
+      chartDataList[codes[i]] = chartData[provider.endYear] ?? 0.0;
     }
 
     // 최소값과 최대값 계산

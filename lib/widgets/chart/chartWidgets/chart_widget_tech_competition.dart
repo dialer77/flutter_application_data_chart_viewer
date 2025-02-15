@@ -222,22 +222,40 @@ class _ChartWidgetTechCompetitionState extends State<ChartWidgetTechCompetition>
                     visible: _isTableVisible,
                     child: Flexible(
                       flex: 2,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          // 버튼 클릭 시 실행할 로직
-                          if (tableKey.currentContext != null) {
-                            CommonUtils.instance.saveImage(
-                              chartKey: tableKey,
-                              format: 'PNG',
-                            );
+                      child: PopupMenuButton<String>(
+                        offset: Offset(constraints.maxHeight * 0, constraints.maxHeight * 0.02),
+                        position: PopupMenuPosition.under,
+                        onSelected: (String value) async {
+                          switch (value) {
+                            case 'PNG':
+                            case 'JPG':
+                              CommonUtils.instance.saveImage(format: value, chartKey: chartKey);
+                              break;
+                            case 'CSV':
+                              // _handleCsvExport(chartKey, dataProvider, techCodes, chartCodes);
+                              break;
                           }
                         },
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.blue),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                        itemBuilder: (context) => [
+                          PopupMenuItem<String>(
+                            value: 'PNG',
+                            height: constraints.maxHeight * 0.05,
+                            padding: EdgeInsets.zero,
+                            child: const Center(child: Text('PNG')),
                           ),
-                        ),
+                          PopupMenuItem<String>(
+                            value: 'JPG',
+                            height: constraints.maxHeight * 0.05,
+                            padding: EdgeInsets.zero,
+                            child: const Center(child: Text('JPG')),
+                          ),
+                          PopupMenuItem<String>(
+                            value: 'CSV',
+                            height: constraints.maxHeight * 0.05,
+                            padding: EdgeInsets.zero,
+                            child: const Center(child: Text('CSV')),
+                          ),
+                        ],
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

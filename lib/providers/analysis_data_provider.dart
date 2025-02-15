@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_data_chart_viewer/models/analysis_data_model.dart';
@@ -17,6 +18,7 @@ class AnalysisDataProvider extends ChangeNotifier {
 
       final futures = AnalysisDataType.values.map((dataType) async {
         final rawData = await _repository.loadAnalysisData(dataType);
+        _yearRange = searchYearRange(rawData, _yearRange);
         final result = MapEntry(dataType, rawData.entries.expand((entry) => entry.value.map((item) => AnalysisDataModel.fromMap(entry.key, item))).toList());
         return result;
       });
@@ -34,6 +36,37 @@ class AnalysisDataProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  RangeValues _yearRange = const RangeValues(0, 9999);
+  RangeValues searchYearRange(Map<String, List<Map<String, dynamic>>> rawData, RangeValues yearRange) {
+    int minYear = 9999;
+    int maxYear = 0;
+
+    for (var entry in rawData.entries) {
+      for (var item in entry.value) {
+        final keys = item.keys.toList();
+
+        for (var key in keys) {
+          final int? year = int.tryParse(key);
+          if (year != null) {
+            if (year > maxYear) maxYear = year;
+            if (year < minYear) minYear = year;
+          } else {
+            int? year = int.tryParse(key.split('_').last);
+            if (year != null) {
+              year += 2000;
+              if (year > maxYear) maxYear = year;
+              if (year < minYear) minYear = year;
+            }
+          }
+        }
+
+        yearRange = RangeValues(max(yearRange.start, minYear.toDouble()), min(yearRange.end, maxYear.toDouble()));
+      }
+    }
+
+    return yearRange;
   }
 
   final Map<String, String> _countryCodeMap = {};
@@ -984,6 +1017,10 @@ class AnalysisDataProvider extends ChangeNotifier {
 
   // Year Range
   RangeValues getYearRange() {
+    if (_selectedCategory != AnalysisCategory.techGap) {
+      return _yearRange;
+    }
+
     int minYear = 9999;
     int maxYear = 0;
 

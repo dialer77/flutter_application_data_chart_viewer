@@ -98,6 +98,208 @@ class CommonUtils {
     await _handleImageExport(format: format, chartKey: chartKey);
   }
 
+  Future<void> saveCsv({required GlobalKey globalKey, required AnalysisDataProvider dataProvider, required List<String> techCodes, List<String>? chartCodes}) async {
+    try {
+      // CSV 헤더와 데이터 생성
+      final StringBuffer csvContent = StringBuffer();
+
+      // 헤더 추가 (순위, 국가명, 연도별 데이터)
+      StringBuffer csvHeader = StringBuffer();
+      csvHeader.write('${dataProvider.selectedCategory},${dataProvider.selectedSubCategory},${dataProvider.selectedDataType},${dataProvider.selectedTechListType}');
+
+      bool isFirst = true;
+      AnalysisCategory category = dataProvider.selectedCategory;
+      AnalysisSubCategory subCategory = dataProvider.selectedSubCategory;
+      Map<int, double> chartData = {};
+
+      for (var techCode in techCodes) {
+        if (chartCodes != null && chartCodes.isNotEmpty && dataProvider.selectedCategory != AnalysisCategory.industryTech) {
+          for (var chartCode in chartCodes) {
+            if (category == AnalysisCategory.techCompetition) {
+              final dataCodes = dataProvider.getTechCompetitionDataCodes();
+              for (var dataCode in dataCodes) {
+                chartData = dataProvider.getChartData(
+                  techListType: dataProvider.selectedTechListType,
+                  techCode: techCode,
+                  country: subCategory == AnalysisSubCategory.countryDetail ? chartCode : null,
+                  targetName: subCategory != AnalysisSubCategory.countryDetail ? chartCode : null,
+                  dataCode: dataCode,
+                );
+
+                if (isFirst) {
+                  csvHeader.writeln(',$techCode');
+                  String yearData = chartData.keys.join(',');
+                  csvContent.writeln(",,$yearData");
+                  isFirst = false;
+                }
+
+                csvContent.writeln("$chartCode,$dataCode, ${chartData.values.join(',')}");
+              }
+            } else if (category == AnalysisCategory.techAssessment) {
+              csvHeader = StringBuffer();
+              csvHeader.write('${dataProvider.selectedCategory},${dataProvider.selectedSubCategory},${dataProvider.selectedDataType},$chartCode');
+              chartData = dataProvider.getChartData(
+                techListType: AnalysisTechListType.lc,
+                techCode: dataProvider.selectedLcTechCode,
+                country: subCategory == AnalysisSubCategory.countryDetail ? chartCode : null,
+                targetName: subCategory != AnalysisSubCategory.countryDetail ? chartCode : null,
+              );
+              if (isFirst) {
+                csvHeader.writeln('');
+                String yearData = chartData.keys.join(',');
+                csvContent.writeln(",,$yearData");
+                isFirst = false;
+              }
+              csvContent.writeln('LC,$techCode,${chartData.values.join(',')}');
+              Set<String> mcTechCodes = dataProvider.selectedMcTechCodes;
+              if (mcTechCodes.isEmpty) {
+                mcTechCodes = dataProvider.getDataCodeNames(AnalysisTechListType.mc);
+              }
+              for (var mcTechCode in mcTechCodes) {
+                chartData = dataProvider.getChartData(
+                  techListType: AnalysisTechListType.mc,
+                  techCode: mcTechCode,
+                  country: subCategory == AnalysisSubCategory.countryDetail ? chartCode : null,
+                  targetName: subCategory != AnalysisSubCategory.countryDetail ? chartCode : null,
+                );
+
+                csvContent.writeln('MC,$mcTechCode,${chartData.values.join(',')}');
+              }
+              Set<String> scTechCodes = dataProvider.selectedScTechCodes;
+              if (scTechCodes.isEmpty) {
+                scTechCodes = dataProvider.getDataCodeNames(AnalysisTechListType.sc);
+              }
+
+              for (var scTechCode in scTechCodes) {
+                chartData = dataProvider.getChartData(
+                  techListType: AnalysisTechListType.sc,
+                  techCode: scTechCode,
+                  country: subCategory == AnalysisSubCategory.countryDetail ? chartCode : null,
+                  targetName: subCategory != AnalysisSubCategory.countryDetail ? chartCode : null,
+                );
+
+                csvContent.writeln('SC,$scTechCode,${chartData.values.join(',')}');
+              }
+            } else {
+              chartData = dataProvider.getChartData(
+                techListType: dataProvider.selectedTechListType,
+                techCode: techCode,
+                country: category == AnalysisCategory.countryTech ||
+                        (category == AnalysisCategory.techGap && subCategory == AnalysisSubCategory.countryDetail) ||
+                        (category == AnalysisCategory.techAssessment && subCategory == AnalysisSubCategory.countryDetail) ||
+                        (category == AnalysisCategory.techCompetition && subCategory == AnalysisSubCategory.countryDetail)
+                    ? chartCode
+                    : null,
+                targetName: category == AnalysisCategory.companyTech ||
+                        category == AnalysisCategory.academicTech ||
+                        (category == AnalysisCategory.techAssessment && subCategory != AnalysisSubCategory.countryDetail) ||
+                        (category == AnalysisCategory.techGap && (subCategory == AnalysisSubCategory.companyDetail || subCategory == AnalysisSubCategory.academicDetail)) ||
+                        (category == AnalysisCategory.techCompetition && subCategory != AnalysisSubCategory.countryDetail)
+                    ? chartCode
+                    : null,
+                dataCode: category == AnalysisCategory.techCompetition ? "TC" : null,
+              );
+
+              if (isFirst) {
+                csvHeader.writeln(',$techCode');
+
+                String dataCode = dataProvider.getDataCode() ?? '';
+                if (dataCode != '') {
+                  String yearData = chartData.keys.map((key) => '${dataCode}_$key').join(',');
+                  csvContent.writeln(",$yearData");
+                } else {
+                  String yearData = chartData.keys.join(',');
+                  csvContent.writeln(",$yearData");
+                }
+                isFirst = false;
+              }
+
+              csvContent.writeln("$chartCode,${chartData.values.join(',')}");
+            }
+          }
+        } else {
+          chartData = dataProvider.getChartData(
+            techListType: dataProvider.selectedTechListType,
+            techCode: techCode,
+            country: null,
+            targetName: null,
+          );
+
+          if (isFirst) {
+            csvHeader.writeln('');
+            String dataCode = dataProvider.getDataCode() ?? '';
+            if (dataCode != '') {
+              String yearData = chartData.keys.map((key) => '${dataCode}_$key').join(',');
+              csvContent.writeln(",$yearData");
+            } else {
+              String yearData = chartData.keys.join(',');
+              csvContent.writeln(",$yearData");
+            }
+            isFirst = false;
+          }
+
+          csvContent.writeln("$techCode,${chartData.values.join(',')}");
+        }
+      }
+
+      // 파일 저장 위치 선택
+      String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: '저장할 위치를 선택하세요',
+        fileName: 'chart_data.csv',
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+      );
+
+      if (outputFile != null) {
+        // 파일 확장자 확인 및 추가
+        if (!outputFile.toLowerCase().endsWith('.csv')) {
+          outputFile = '$outputFile.csv';
+        }
+
+        // 파일 저장 - UTF-8 인코딩 적용
+        final file = File(outputFile);
+        // UTF-8 with BOM을 위한 바이트 배열
+        final List<int> bom = [0xEF, 0xBB, 0xBF];
+        final List<int> content = [...bom, ...utf8.encode(csvHeader.toString()), ...utf8.encode(csvContent.toString())];
+        await file.writeAsBytes(content);
+
+        // 저장 완료 다이얼로그 표시
+        showDialog(
+          context: globalKey.currentContext!,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('저장 완료'),
+              content: Text('CSV 파일이 저장되었습니다.\n저장 위치: ${file.path}'),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('확인'),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } catch (e) {
+      // 에러 발생 시 다이얼로그 표시
+      showDialog(
+        context: globalKey.currentContext!,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('오류'),
+            content: Text('CSV 파일 저장 중 오류가 발생했습니다.\n$e'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('확인'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
   bool _isVisible = true;
   Widget saveMenuPopup({
     required BoxConstraints constraints,
@@ -153,12 +355,6 @@ class CommonUtils {
                   padding: EdgeInsets.zero,
                   child: const Center(child: Text('JPG')),
                 ),
-                // PopupMenuItem<String>(
-                //   value: 'SVG',
-                //   height: constraints.maxHeight * 0.05,
-                //   padding: EdgeInsets.zero,
-                //   child: const Center(child: Text('SVG')),
-                // ),
                 PopupMenuItem<String>(
                   value: 'CSV',
                   height: constraints.maxHeight * 0.05,
